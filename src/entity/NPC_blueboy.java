@@ -24,14 +24,14 @@ public class NPC_blueboy extends Entity {
         solidAreaDefaultY = solidArea.y;
     }
     public void getImage() {
-            up1 = setup("/player/boy_up_1");
-            up2 = setup("/player/boy_up_2");
-            down1 = setup("/player/boy_down_1");
-            down2 = setup("/player/boy_down_2");
-            left1 = setup("/player/boy_left_1");
-            left2 = setup("/player/boy_left_2");
-            right1 = setup("/player/boy_right_1");
-            right2 = setup("/player/boy_right_2");
+            up1 = setup("/player/boy_up_1", gp.TileSize, gp.TileSize);
+            up2 = setup("/player/boy_up_2", gp.TileSize, gp.TileSize);
+            down1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
+            down2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
+            left1 = setup("/player/boy_left_1", gp.TileSize, gp.TileSize);
+            left2 = setup("/player/boy_left_2", gp.TileSize, gp.TileSize);
+            right1 = setup("/player/boy_right_1", gp.TileSize, gp.TileSize);
+            right2 = setup("/player/boy_right_2", gp.TileSize, gp.TileSize);
     }
     public void setDialogue() {
 

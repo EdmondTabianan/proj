@@ -31,6 +31,9 @@ public class Player extends Entity {
         solidArea.width = 32;
         solidArea.height = 32; 
 
+        attackArea.width = 36;
+        attackArea.height = 36;
+
         setDefaultValues();
         getPlayerImage();
         getPlayerAttackImage();
@@ -49,20 +52,20 @@ public class Player extends Entity {
             //sidle1 = setup("/player/boy_idle_1.png");
             up1 = setup("/player/boy_up_1", gp.TileSize, gp.TileSize);
             up2 = setup("/player/boy_up_2", gp.TileSize, gp.TileSize);
-            // up1 = setup("/player/up_1");
-            // up2 = setup("/player/up_2");
+            // up1 = setup("/player/up_1", gp.TileSize, gp.TileSize);
+            // up2 = setup("/player/up_2", gp.TileSize, gp.TileSize);
             down1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
             down2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
-            // down1 = setup("/player/down_1");
-            // down2 = setup("/player/down_2");
+            // down1 = setup("/player/down_1", gp.TileSize, gp.TileSize);
+            // down2 = setup("/player/down_2", gp.TileSize, gp.TileSize);
             left1 = setup("/player/boy_left_1", gp.TileSize, gp.TileSize);
             left2 = setup("/player/boy_left_2", gp.TileSize, gp.TileSize);
-            // left1 = setup("/player/left_1");
-            // left2 = setup("/player/left_2");
+            // left1 = setup("/player/left_1", gp.TileSize, gp.TileSize);
+            // left2 = setup("/player/left_2", gp.TileSize, gp.TileSize);
             right1 = setup("/player/boy_right_1", gp.TileSize, gp.TileSize);
             right2 = setup("/player/boy_right_2", gp.TileSize, gp.TileSize);
-            // right1 = setup (null);
-            // right2 = setup( null);
+            // right1 = setup ("/player/right_1", gp.TileSize, gp.TileSize);
+            // right2 = setup ("/player/right_2", gp.TileSize, gp.TileSize);
     }
     public void getPlayerAttackImage() {
         attackUp1 = setup("/player/boy_attack_up_1", gp.TileSize, gp.TileSize*2);
@@ -162,6 +165,31 @@ public class Player extends Entity {
         }
         if (spriteCounter > 5 && spriteCounter <= 25) {
             spriteNum = 2;
+
+            // save the current worldx, worldy, solidArea
+            int currentWorldX = worldX;
+            int currentWorldY = worldY;
+            int solidAreaWidth = solidArea.width;
+            int solidAreaHeight = solidArea.height;
+            // adjust players worldx for the attactarea
+            switch (Direction) {
+                case "up": worldY -= attackArea.height; break;
+                case "down": worldY += attackArea.height; break;
+                case "left": worldX -= attackArea.width; break;
+                case "right": worldX += attackArea.width; break;
+            }
+            //attackarea become solid area
+            solidArea.width = attackArea.width;
+            solidArea.height = attackArea.height;
+            // check monster collision with updated worldx, worldy, and solidarea
+            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+            damageMonster(monsterIndex);
+
+            // after checking collision resotre the original data
+            worldX = currentWorldX;
+            worldY = currentWorldY;
+            solidArea.width = solidAreaWidth;
+            solidArea.height = solidAreaHeight;
         }
         if (spriteCounter > 25) {
             spriteNum = 1;
@@ -193,6 +221,18 @@ public class Player extends Entity {
             if (Invincible == false) {
                 life -= 1;
                 Invincible = true;
+            }
+        }
+    }
+    public void damageMonster(int i) {
+        if (i != 999) {
+            if (gp.monster[i].Invincible == false) {
+                gp.monster[i].life -= 1;
+                gp.monster[i].Invincible = true;
+
+                if (gp.monster[i].life <= 0) {
+                    gp.monster[i] = null;
+                }
             }
         }
     }

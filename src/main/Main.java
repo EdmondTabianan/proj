@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Graphics;
 import javax.swing.JFrame;
 
 public class Main {

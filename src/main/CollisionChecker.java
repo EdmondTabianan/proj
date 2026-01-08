@@ -96,7 +96,7 @@ public class CollisionChecker {
         return index;
     }
     //NPC OR MONSTER
-    public int checkEntity(Entity entity, Entity[] target ) {
+    public int checkEntity(Entity entity, Entity[] target) {
         int index = 999;
 
         for (int i = 0; i < target.length; i++){

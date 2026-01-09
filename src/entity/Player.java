@@ -3,6 +3,7 @@ package entity;
 import main.KeyHandler;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -19,6 +20,8 @@ public class Player extends Entity {
     public Player (GamePanel gp, KeyHandler keyH) {
         super(gp);
         this.keyH = keyH;
+
+        type = 0;
         
         screenX = gp.ScreenWidth/2 - (gp.TileSize/2);
         screenY = gp.ScreenHeight/2 - (gp.TileSize/2);
@@ -45,27 +48,27 @@ public class Player extends Entity {
         Direction = "down";
 
         // Player status
-        maxLife = 20;
+        maxLife = 6;
         life = maxLife;
     }
     public void getPlayerImage() {
             //sidle1 = setup("/player/boy_idle_1.png");
-            up1 = setup("/player/boy_up_1", gp.TileSize, gp.TileSize);
-            up2 = setup("/player/boy_up_2", gp.TileSize, gp.TileSize);
-            // up1 = setup("/player/up_1", gp.TileSize, gp.TileSize);
-            // up2 = setup("/player/up_2", gp.TileSize, gp.TileSize);
-            down1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
-            down2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
-            // down1 = setup("/player/down_1", gp.TileSize, gp.TileSize);
-            // down2 = setup("/player/down_2", gp.TileSize, gp.TileSize);
-            left1 = setup("/player/boy_left_1", gp.TileSize, gp.TileSize);
-            left2 = setup("/player/boy_left_2", gp.TileSize, gp.TileSize);
-            // left1 = setup("/player/left_1", gp.TileSize, gp.TileSize);
-            // left2 = setup("/player/left_2", gp.TileSize, gp.TileSize);
-            right1 = setup("/player/boy_right_1", gp.TileSize, gp.TileSize);
-            right2 = setup("/player/boy_right_2", gp.TileSize, gp.TileSize);
-            // right1 = setup ("/player/right_1", gp.TileSize, gp.TileSize);
-            // right2 = setup ("/player/right_2", gp.TileSize, gp.TileSize);
+            // up1 = setup("/player/boy_up_1", gp.TileSize, gp.TileSize);
+            // up2 = setup("/player/boy_up_2", gp.TileSize, gp.TileSize);
+            up1 = setup("/player/up_1", gp.TileSize, gp.TileSize);
+            up2 = setup("/player/up_2", gp.TileSize, gp.TileSize);
+            // down1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
+            // down2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
+            down1 = setup("/player/down_1", gp.TileSize, gp.TileSize);
+            down2 = setup("/player/down_2", gp.TileSize, gp.TileSize);
+            // left1 = setup("/player/boy_left_1", gp.TileSize, gp.TileSize);
+            // left2 = setup("/player/boy_left_2", gp.TileSize, gp.TileSize);
+            left1 = setup("/player/left_1", gp.TileSize, gp.TileSize);
+            left2 = setup("/player/left_2", gp.TileSize, gp.TileSize);
+            // right1 = setup("/player/boy_right_1", gp.TileSize, gp.TileSize);
+            // right2 = setup("/player/boy_right_2", gp.TileSize, gp.TileSize);
+            right1 = setup ("/player/right_1", gp.TileSize, gp.TileSize);
+            right2 = setup ("/player/right_2", gp.TileSize, gp.TileSize);
     }
     public void getPlayerAttackImage() {
         attackUp1 = setup("/player/boy_attack_up_1", gp.TileSize, gp.TileSize*2);
@@ -155,7 +158,7 @@ public class Player extends Entity {
                 InvincibleCounter = 0;
             }
         }
-
+        
     }
     public void attacking() {
         spriteCounter++;
@@ -210,6 +213,7 @@ public class Player extends Entity {
                     gp.npc[i].speak();
             }
             else {
+                    gp.playSE(7);
                     attacking = true;
             }
         }
@@ -219,6 +223,7 @@ public class Player extends Entity {
 
         if(i != 999) {
             if (Invincible == false) {
+                gp.playSE(6);
                 life -= 1;
                 Invincible = true;
             }
@@ -227,11 +232,13 @@ public class Player extends Entity {
     public void damageMonster(int i) {
         if (i != 999) {
             if (gp.monster[i].Invincible == false) {
+                gp.playSE(5);
                 gp.monster[i].life -= 1;
                 gp.monster[i].Invincible = true;
+                gp.monster[i].damageReaction();
 
                 if (gp.monster[i].life <= 0) {
-                    gp.monster[i] = null;
+                    gp.monster[i].dying = true;
                 }
             }
         }
@@ -299,5 +306,18 @@ public class Player extends Entity {
             // g2.setFont(new Font("arial", Font.PLAIN, 24));
             // g2.setColor(Color.white);
             // g2.drawString("Invible" + InvincibleCounter, 10, 400);
+            // if (type == 0) {
+            //     double oneScale = (double)gp.TileSize / maxLife;
+            //     double hpBarValue = oneScale * life;
+        
+            //     g2.setColor(new Color(35, 35, 35));
+            //     g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
+        
+            //     g2.setColor(new Color(255, 0, 30));
+            //     g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
+
+            //     g2.setColor(new Color(0, 0, 255));
+            //     g2.fillRect(screenX, screenY - 5, (int) hpBarValue, 3);
+            // }
     }    
 }

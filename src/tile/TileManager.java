@@ -23,7 +23,7 @@ public class TileManager {
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadMap();
+        loadMap("/map/ano.txt");
     }
 
     public void getTileImage() {
@@ -120,9 +120,9 @@ public class TileManager {
             e.printStackTrace();
         }
     }
-    public void loadMap () {
+    public void loadMap(String filepath) {
     	try {
-    		InputStream is = getClass().getResourceAsStream("/map/ano.txt");
+    		InputStream is = getClass().getResourceAsStream(filepath);
     		BufferedReader br = new BufferedReader(new InputStreamReader(is));
     		
     		int col = 0;

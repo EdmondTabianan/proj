@@ -1,0 +1,371 @@
+package entity;
+
+import main.KeyHandler;
+import object.OBJ_Shield_Wood;
+import object.OBJ_Sword_Normal;
+
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+import main.GamePanel;
+
+public class Xylo extends Entity {
+
+    KeyHandler keyH;
+    
+    public final int screenX;
+    public final int screenY;
+    int standCounter = 0;
+    public boolean attackCanceled = false;
+
+    public Xylo (GamePanel gp, KeyHandler keyH) {
+        super(gp);
+        this.keyH = keyH;
+
+        type = 0;
+        characterused = 1;
+        
+        screenX = gp.ScreenWidth/2 - (gp.TileSize/2);
+        screenY = gp.ScreenHeight/2 - (gp.TileSize/2);
+
+        solidArea = new java.awt.Rectangle();
+        solidArea.x = 8;
+        solidArea.y = 16;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+        solidArea.width = 32;
+        solidArea.height = 32; 
+
+        attackArea.width = 36;
+        attackArea.height = 36;
+
+        setDefaultValues();
+        getPlayerImage();
+        getPlayerAttackImage();
+    }
+    public void setDefaultValues() {
+        worldX = gp.TileSize * 23;
+        worldY = gp.TileSize * 21;
+        speed = 4;
+        Direction = "down";
+
+        // Player status
+        level = 1;
+        maxLife = 6;
+        life = maxLife;
+        strength = 1; // the higher the strength, damage is higher.
+        dexterity = 1; // the higher the dexterity, less the damage.
+        exp = 0;
+        nextLevelExp = 5;
+        coin = 0;
+        currentweapon = new OBJ_Sword_Normal(gp);
+        currentShield = new OBJ_Shield_Wood(gp);
+        attack = getAttack(); // total damage of weapon
+        defense = getDefense(); // total defense 
+    }
+    public int getAttack(){
+        return attack = strength * currentweapon.attackvalue;
+    }
+    public int getDefense(){
+        return defense = dexterity * currentShield.defenseValue;
+    }
+    public void getPlayerImage() {
+            up1 = setup("/xylo/b_up_1", gp.TileSize, gp.TileSize);
+            up2 = setup("/xylo/b_up_2", gp.TileSize, gp.TileSize);
+            down1 = setup("/xylo/b_down_1", gp.TileSize, gp.TileSize);
+            down2 = setup("/xylo/b_down_2", gp.TileSize, gp.TileSize);
+            left1 = setup("/xylo/b_left_1", gp.TileSize, gp.TileSize);
+            left2 = setup("/xylo/b_left_2", gp.TileSize, gp.TileSize);
+            right1 = setup ("/xylo/b_right_1", gp.TileSize, gp.TileSize);
+            right2 = setup ("/xylo/b_right_2", gp.TileSize, gp.TileSize);
+    }
+    public void getPlayerAttackImage() {
+        attackUp1 = setup("/player/boy_attack_up_1", gp.TileSize, gp.TileSize*2);
+        attackUp2 = setup("/player/boy_attack_up_2", gp.TileSize, gp.TileSize*2);
+        attackDown1 = setup("/player/boy_attack_down_1", gp.TileSize, gp.TileSize*2);
+        attackDown2 = setup("/player/boy_attack_down_2", gp.TileSize, gp.TileSize*2);
+        attackLeft1 = setup("/player/boy_attack_left_1", gp.TileSize*2, gp.TileSize);
+        attackLeft2 = setup("/player/boy_attack_left_2", gp.TileSize*2, gp.TileSize);
+        attackRight1 = setup("/player/boy_attack_right_1", gp.TileSize*2, gp.TileSize);
+        attackRight2 = setup("/player/boy_attack_right_2", gp.TileSize*2, gp.TileSize);
+    }
+    public void update() {
+
+        if (attacking == true){
+            attacking();
+        }
+        else if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true || keyH.enterPressed == true) {
+
+            if (keyH.upPressed == true) {
+                Direction = "up";
+            } 
+            if (keyH.downPressed == true) {
+                Direction = "down";
+            }
+            if (keyH.leftPressed == true) {
+                Direction = "left";              
+            }
+            if (keyH.rightPressed == true) {
+                Direction = "right";                
+            }
+
+            //Check tile collision
+            collisionOn = false;
+            gp.cChecker.checkTile(this);
+
+            // check object collision
+            int objIndex = gp.cChecker.checkObject(this, true);
+            pickUpObject(objIndex);
+
+            // Check NPC Collision
+            int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
+            interactNPC(npcIndex);
+
+            // check monster collision
+            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+            contactMonster(monsterIndex);            
+
+            // Check Event
+            gp.eHandler.checkEvent();
+
+
+            // if collision is false, player can move
+            if (collisionOn == false && keyH.enterPressed == false) {
+                switch (Direction) {
+                    case "up": worldY -= speed; break;
+                    case "down": worldY += speed; break;
+                    case "left": worldX -= speed; break;
+                    case "right": worldX += speed; break;
+                }
+            }
+
+            if(keyH.enterPressed == true && attackCanceled == false) {
+                gp.playSE(7);
+                attacking = true;
+                spriteCounter = 0;
+            }
+
+            attackCanceled = false;
+            gp.keyH.enterPressed =false;
+
+            spriteCounter++;
+            if (spriteCounter > 10) {
+                if (spriteNum == 1) {
+                    spriteNum = 2;
+                } else if (spriteNum == 2) {
+                    spriteNum = 1;
+                }
+                spriteCounter = 0;
+            }
+        }
+        else {
+            standCounter++;
+            if(standCounter == 20) {
+                spriteNum = 1;
+                standCounter = 0;
+            }
+            spriteNum = 1;
+        }
+        // Invincibility Logic
+        if (Invincible == true) {
+            InvincibleCounter++;
+            if (InvincibleCounter > 60) { // 1 second at 60 FPS
+                Invincible = false;
+                InvincibleCounter = 0;
+            }
+        }
+        
+    }
+    public void attacking() {
+        spriteCounter++;
+
+        if (spriteCounter <= 5) {
+            spriteNum = 1;
+        }
+        if (spriteCounter > 5 && spriteCounter <= 25) {
+            spriteNum = 2;
+
+            // save the current worldx, worldy, solidArea
+            int currentWorldX = worldX;
+            int currentWorldY = worldY;
+            int solidAreaWidth = solidArea.width;
+            int solidAreaHeight = solidArea.height;
+            // adjust players worldx for the attactarea
+            switch (Direction) {
+                case "up": worldY -= attackArea.height; break;
+                case "down": worldY += attackArea.height; break;
+                case "left": worldX -= attackArea.width; break;
+                case "right": worldX += attackArea.width; break;
+            }
+            //attackarea become solid area
+            solidArea.width = attackArea.width;
+            solidArea.height = attackArea.height;
+            // check monster collision with updated worldx, worldy, and solidarea
+            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+            damageMonster(monsterIndex);
+
+            // after checking collision resotre the original data
+            worldX = currentWorldX;
+            worldY = currentWorldY;
+            solidArea.width = solidAreaWidth;
+            solidArea.height = solidAreaHeight;
+        }
+        if (spriteCounter > 25) {
+            spriteNum = 1;
+            spriteCounter = 0;
+            attacking = false;
+        }
+    }
+    public void pickUpObject(int i) {
+
+        if(i != 999) {  
+            
+        }
+    }
+    public void interactNPC(int i) {
+        if(gp.keyH.enterPressed == true) {
+            if (i != 999) {
+                    attackCanceled = true;
+                    gp.gameState = gp.dialogueState;
+                    gp.npc[i].speak();
+            }
+            
+        }
+    }
+
+    public void contactMonster(int i) {
+
+        if(i != 999) {
+            if (Invincible == false) {
+                gp.playSE(6);
+
+                int damage = attack - gp.monster[i].attack - defense;
+                if(damage < 0) {
+                    damage = 0;
+                }
+                life -= damage;
+                Invincible = true;
+            }
+        }
+    }
+    public void damageMonster(int i) {
+        if (i != 999) {
+            if (gp.monster[i].Invincible == false) {
+                gp.playSE(5);
+
+                int damage = attack - gp.monster[i].defense;
+                if(damage < 0) {
+                    damage = 0;
+                }
+                gp.monster[i].life -= damage;
+                gp.ui.showMessage(damage + "damage!");
+                gp.monster[i].Invincible = true;
+                gp.monster[i].damageReaction();
+
+                if (gp.monster[i].life <= 0) {
+                    gp.monster[i].dying = true;
+                    gp.ui.showMessage("Killed the " + gp.monster[i].name + "!");
+                    gp.ui.showMessage("exp + " + gp.monster[i].exp);
+                    exp += gp.monster[i].exp;
+                    checkLevelUp();
+                }
+            }
+        }
+    }
+    public void checkLevelUp() {
+
+        if (exp >= nextLevelExp) {
+            level++;
+            nextLevelExp = nextLevelExp*2;
+            maxLife += 2;
+            strength++;
+            dexterity++;
+            attack = getAttack();
+            defense = getDefense();
+
+            gp.playSE(8);
+            gp.gameState = gp.dialogueState;
+            gp.ui.currentDialogue = "you are level" + level + "now!\n"
+                + "You fell stronger!";
+        }
+    }
+    public void draw(Graphics2D g2) {
+    //    g2.setColor(Color.white);
+    //    g2.fillRect(x, y, gp.TileSize, gp.TileSize);
+
+        BufferedImage image = null;
+        int tempScreenX = screenX;
+        int tempScreenY = screenY;
+
+        switch (Direction) {
+            case "up":
+                if (attacking == false) {
+                    if (spriteNum == 1) { image = up1; }
+                    if (spriteNum == 2) { image = up2; }
+                }
+                if (attacking == true) { 
+                    tempScreenY = screenY - gp.TileSize;
+                    if (spriteNum == 1) { image = attackUp1; }
+                    if (spriteNum == 2) { image = attackUp2; }
+                }
+                break;
+            case "down":
+                if (attacking == false) {
+                    if (spriteNum == 1) { image = down1; }
+                    if (spriteNum == 2) { image = down2; }
+                }
+                if (attacking == true) { 
+                    if (spriteNum == 1) { image = attackDown1; }
+                    if (spriteNum == 2) { image = attackDown2; }
+                }
+                break;
+            case "left":
+                if (attacking == false) {
+                    if (spriteNum == 1) { image = left1; }
+                    if (spriteNum == 2) { image = left2; }
+                }
+                if (attacking == true) { 
+                    tempScreenX = screenX - gp.TileSize;
+                    if (spriteNum == 1) { image = attackLeft1; }
+                    if (spriteNum == 2) { image = attackLeft2; }
+                }
+               
+                break;
+            case "right":
+                if (attacking == false) {
+                    if (spriteNum == 1) { image = right1; }   
+                    if (spriteNum == 2) { image = right2; }
+                }
+                if (attacking == true) { 
+                    if (spriteNum == 1) { image = attackRight1; }
+                    if (spriteNum == 2) { image = attackRight2; }
+                }
+                break;
+        }
+
+        if (Invincible == true) {
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+        }
+            g2.drawImage(image, tempScreenX, tempScreenY,null);
+
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+            // g2.setFont(new Font("arial", Font.PLAIN, 24));
+            // g2.setColor(Color.white);
+            // g2.drawString("Invible" + InvincibleCounter, 10, 400);
+            // if (type == 0) {
+            //     double oneScale = (double)gp.TileSize / maxLife;
+            //     double hpBarValue = oneScale * life;
+        
+            //     g2.setColor(new Color(35, 35, 35));
+            //     g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
+        
+            //     g2.setColor(new Color(255, 0, 30));
+            //     g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
+
+            //     g2.setColor(new Color(0, 0, 255));
+            //     g2.fillRect(screenX, screenY - 5, (int) hpBarValue, 3);
+            // }
+    }    
+}

@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import entity.Entity;
 import entity.NPC_blueboy;
 import entity.Player;
+import entity.Xylo;
+import entity.Alexandria;
 import tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -41,6 +43,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     // Entity and Object
     public Player player = new Player(this, keyH);
+    public Alexandria alexandria = new Alexandria(this, keyH);
+    public Xylo xylo = new Xylo(this, keyH);
     public NPC_blueboy npc_blueboy = new NPC_blueboy(this);
     public Entity obj[] = new Entity[10];
     public Entity npc[] = new Entity[10];
@@ -53,6 +57,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int playState = 1;
     public final int pauseState = 2;
     public final int dialogueState = 3;
+    public final int characterState = 4;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(ScreenWidth, ScreenHeight));
@@ -139,7 +144,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         // Debug
         long drawStart = 0;
-        if (keyH.checkDrawTime == true){
+        if (keyH.showDebugText == true){
             drawStart = System.nanoTime();
         }
 
@@ -189,22 +194,25 @@ public class GamePanel extends JPanel implements Runnable {
             }
             // Empty entites list
             entityList.clear();
-            // for (int i = 0; i <entityList.size(); i++) {
-            //     entityList.remove(i);
-            // }
 
-            //UI
             ui.draw(g2);
         }
 
 
         //Debug
-        if (keyH.checkDrawTime == true){
+        if (keyH.showDebugText == true){
             long drawEnd = System.nanoTime();
             long passed = drawEnd - drawStart;
+            g2.setFont(new Font("Arial", Font.PLAIN,20));
             g2.setColor(Color.white);
-            g2.drawString("Draw Time: " + passed, 10, 400);
-            System.out.println("Draw Time: " + passed);
+            int x = 10;
+            int y = 400;
+            int lineHeight = 20;
+            g2.drawString("worldX" + player.worldX, x, y); y += lineHeight;
+            g2.drawString("worldY" + player.worldY, x, y); y += lineHeight;
+            g2.drawString("Col" + (player.worldX + player.solidArea.x)/TileSize, x, y); y += lineHeight;
+            g2.drawString("Row" + (player.worldY + player.solidArea.y)/TileSize, x, y); y += lineHeight;
+            g2.drawString("Draw Time: " + passed, x, y);
         }
         g2.dispose();
     }

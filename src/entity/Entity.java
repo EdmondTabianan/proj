@@ -43,11 +43,26 @@ public class Entity {
     int hpBarCounter = 0;
 
     // characte attri
+    public int characterused; // 0 = alexandria 1 = xylo
     public int type; // 0 = player 1 = npc 2 = mob
     public String name;
     public int speed;
     public int maxLife;
     public int life;
+    public int level;
+    public int strength;
+    public int attack;
+    public int defense;
+    public int dexterity;
+    public int exp;
+    public int nextLevelExp;
+    public int coin;
+    public Entity currentweapon;
+    public Entity currentShield;
+
+    // item attri
+    public int attackvalue;
+    public int defenseValue;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -88,9 +103,26 @@ public class Entity {
         boolean contactPlayer = gp.cChecker.checkPlayer(this);
 
         if(this.type == 2 && contactPlayer == true) {
+            if (characterused == 0) {
+                if (gp.alexandria.Invincible == false) {
+                    gp.playSE(6);
+                    int damage = attack - gp.alexandria.defense;
+                    if(damage < 0) {
+                        damage = 0;
+                    }
+                    gp.alexandria.life -= damage;
+    
+                    gp.player.Invincible = true; 
+                }
+            }
             if (gp.player.Invincible == false) {
                 gp.playSE(6);
-                gp.player.life -= 1;
+                int damage = attack - gp.player.defense;
+                if(damage < 0) {
+                    damage = 0;
+                }
+                gp.player.life -= damage;
+
                 gp.player.Invincible = true; 
             }
         }
@@ -203,7 +235,7 @@ public class Entity {
         int i = 5;
 
         if(dyingCounter <= i) { changeAlpha(g2, 0f); }
-        if(dyingCounter > i  && dyingCounter <= i*2) { changeAlpha(g2, 1f); }
+        if(dyingCounter > i   && dyingCounter <= i*2) { changeAlpha(g2, 1f); }
         if(dyingCounter > i*2 && dyingCounter <= i*3) { changeAlpha(g2, 0f); }
         if(dyingCounter > i*3 && dyingCounter <= i*4) { changeAlpha(g2, 1f); }
         if(dyingCounter > i*4 && dyingCounter <= i*5) { changeAlpha(g2, 0f); }

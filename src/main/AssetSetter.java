@@ -2,6 +2,7 @@ package main;
 
 import entity.NPC_blueboy;
 import monster.MON_GreenSlime;
+import object.OBJ_Door;
 
 public class AssetSetter {
 
@@ -12,30 +13,47 @@ public class AssetSetter {
     }
 
     public void setObject() {
-        // gp.obj[0] = new OBJ_Door(gp);
-        // gp.obj[0].worldX = gp.TileSize*21;
-        // gp.obj[0].worldY = gp.TileSize*22;
+        gp.obj[0] = new OBJ_Door(gp);
+        gp.obj[0].worldX = gp.TileSize*20;
+        gp.obj[0].worldY = gp.TileSize*24;
     }
     public void setNPC() {
-        gp.npc[0] = new NPC_blueboy(gp);
-        gp.npc[0].worldX = gp.TileSize*21;
-        gp.npc[0].worldY = gp.TileSize*21;
-        gp.npc[1] = new NPC_blueboy(gp);
-        gp.npc[1].worldX = gp.TileSize*24;
-        gp.npc[1].worldY = gp.TileSize*21;
+        int i = 0;
+        gp.npc[i] = new NPC_blueboy(gp);
+        gp.npc[i].worldX = gp.TileSize*21;
+        gp.npc[i].worldY = gp.TileSize*21;
+        gp.npc[i] = new NPC_blueboy(gp);
+        gp.npc[i].worldX = gp.TileSize*24;
+        gp.npc[i].worldY = gp.TileSize*21;
     }
     public void setMonster() {
-        gp.monster[0] = new MON_GreenSlime(gp);
-        gp.monster[0].worldX = gp.TileSize*22;
-        gp.monster[0].worldY = gp.TileSize*23;
-        gp.monster[1] = new MON_GreenSlime(gp);
-        gp.monster[1].worldX = gp.TileSize*20;
-        gp.monster[1].worldY = gp.TileSize*23;
-        gp.monster[2] = new MON_GreenSlime(gp);
-        gp.monster[2].worldX = gp.TileSize*24;
-        gp.monster[2].worldY = gp.TileSize*23;
-        gp.monster[3] = new MON_GreenSlime(gp);
-        gp.monster[3].worldX = gp.TileSize*25;
-        gp.monster[3].worldY = gp.TileSize*23;
+        int i = 0;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*18;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*20;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*24;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*25;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*30;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*35;
+        gp.monster[i].worldY = gp.TileSize*23;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*40;
+        gp.monster[i].worldY = gp.TileSize*30;
     }
 }

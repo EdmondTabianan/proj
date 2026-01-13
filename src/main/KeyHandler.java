@@ -6,7 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     GamePanel gp;
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed, shotKeyPressed;
     boolean showDebugText = false;
     Sound music = new Sound();
     Sound se = new Sound();
@@ -122,6 +122,9 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_C){
             gp.gameState = gp.characterState;
          }
+         if (code == KeyEvent.VK_F) {
+            shotKeyPressed = true;
+         }
  
          // Debug
          if (code == KeyEvent.VK_T) {
@@ -148,7 +151,34 @@ public class KeyHandler implements KeyListener {
     public void characterState(int code) {
         if(code == KeyEvent.VK_C) {
             gp.gameState = gp.playState;
+        }
+        if (code == KeyEvent.VK_UP) {
+            if (gp.ui.slotRow != 0) {
+                gp.ui.slotRow--;
+                gp.playSE(9);
+            }
         } 
+        if (code == KeyEvent.VK_DOWN) {
+            if (gp.ui.slotRow != 3) {
+            gp.ui.slotRow++;
+            gp.playSE(9);
+            }
+        } 
+        if (code == KeyEvent.VK_LEFT) {
+            if (gp.ui.slotCol != 0) {
+            gp.ui.slotCol--;
+            gp.playSE(9);
+            }
+        } 
+        if (code == KeyEvent.VK_RIGHT) {
+            if (gp.ui.slotCol != 4) {
+            gp.ui.slotCol++;
+            gp.playSE(9);
+            }
+        } 
+        if (code == KeyEvent.VK_X) {
+            gp.player.selectItem();
+        }
     }
 
     @Override
@@ -166,6 +196,9 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_RIGHT) {
             rightPressed = false;
         }
+        if (code == KeyEvent.VK_F) {
+            shotKeyPressed = false;
+         }
     }
     
 }

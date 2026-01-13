@@ -10,8 +10,6 @@ import javax.swing.JPanel;
 import entity.Entity;
 import entity.NPC_blueboy;
 import entity.Player;
-import entity.Xylo;
-import entity.Alexandria;
 import tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -43,12 +41,11 @@ public class GamePanel extends JPanel implements Runnable {
 
     // Entity and Object
     public Player player = new Player(this, keyH);
-    public Alexandria alexandria = new Alexandria(this, keyH);
-    public Xylo xylo = new Xylo(this, keyH);
     public NPC_blueboy npc_blueboy = new NPC_blueboy(this);
     public Entity obj[] = new Entity[10];
     public Entity npc[] = new Entity[10];
     public Entity monster[] = new Entity[20];
+    public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entityList = new ArrayList<>();
 
     // GAME STATE
@@ -133,6 +130,16 @@ public class GamePanel extends JPanel implements Runnable {
                     }
                 }
             }
+            for (int i = 0; i < projectileList.size(); i++) {
+                if(projectileList.get(i)!= null) {
+                    if(projectileList.get(i).alive == true) {
+                        projectileList.get(i).update();
+                    } 
+                    if(projectileList.get(i).alive == false) {
+                        projectileList.remove(i);
+                    }
+                }
+            }
         }
         if (gameState == pauseState) {
             // nothing
@@ -174,6 +181,11 @@ public class GamePanel extends JPanel implements Runnable {
             for(int i = 0; i < monster.length; i++) {
                 if (monster[i] != null) {
                     entityList.add(monster[i]);
+                }
+            }
+            for(int i = 0; i < projectileList.size(); i++) {
+                if (projectileList.get(i) != null) {
+                    entityList.add(projectileList.get(i));
                 }
             }
 

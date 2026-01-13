@@ -12,6 +12,7 @@ public class OBJ_Key extends Entity {
          
         name = "Key";
         down1 = setup("/objects/key", gp.TileSize, gp.TileSize);
+        description = "[" + name + "]\n opens door";
     }
 
 }

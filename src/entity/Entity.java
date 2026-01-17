@@ -50,8 +50,9 @@ public class Entity {
     public int speed;
     public int maxLife;
     public int life;
-    public int MaxMana;
+    public int maxMana;
     public int mana;
+    public int arrow;
     public int level;
     public int strength;
     public int attack;
@@ -62,7 +63,8 @@ public class Entity {
     public int coin;
     public Entity currentweapon;
     public Entity currentShield;
-    public Projectile projectile;
+    public Projectile arrows;
+    public Projectile projectiles;
 
     // item attri
     public int attackvalue;
@@ -120,16 +122,7 @@ public class Entity {
         boolean contactPlayer = gp.cChecker.checkPlayer(this);
 
         if(this.type == type_monster && contactPlayer == true) {
-            if (gp.player.Invincible == false) {
-                gp.playSE(6);
-                int damage = attack - gp.player.defense;
-                if(damage < 0) {
-                    damage = 0;
-                }
-                gp.player.life -= damage;
-
-                gp.player.Invincible = true; 
-            }
+            damagaplayer(attack);
         }
 
         
@@ -168,6 +161,23 @@ public class Entity {
                 InvincibleCounter = 0;
             }
         }
+        if (shotAvailableCounter < 30) {
+            shotAvailableCounter++;
+            //System.err.println(shotAvailableCounter);
+        }
+    }
+    public void damagaplayer(int attack) {
+        if (gp.player.Invincible == false) {
+            gp.playSE(6);
+            int damage = attack - gp.player.defense;
+            if(damage < 0) {
+                damage = 0;
+            }
+            gp.player.life -= damage;
+
+            gp.player.Invincible = true; 
+        }
+        
     }
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
@@ -237,7 +247,7 @@ public class Entity {
     public void dyingAnimation(Graphics2D g2) {
         dyingCounter++;
 
-        int i = 5;
+        int i = 3;
 
         if(dyingCounter <= i) { changeAlpha(g2, 0f); }
         if(dyingCounter > i   && dyingCounter <= i*2) { changeAlpha(g2, 1f); }

@@ -7,6 +7,7 @@ import object.OBJ_Door;
 import object.OBJ_Key;
 import object.OBJ_Potion_Red;
 import object.OBJ_Shield_Blue;
+import object.OBJ_piramid;
 
 public class AssetSetter {
 
@@ -18,8 +19,8 @@ public class AssetSetter {
 
     public void setObject() {
         int i = 0;
-        gp.obj[i] = new OBJ_Door(gp);
-        gp.obj[i].worldX = gp.TileSize*20;
+        gp.obj[i] = new OBJ_piramid(gp);
+        gp.obj[i].worldX = gp.TileSize*15;
         gp.obj[i].worldY = gp.TileSize*24;
         i++;
         gp.obj[i] = new OBJ_Key(gp);
@@ -39,25 +40,25 @@ public class AssetSetter {
         gp.obj[i].worldY = gp.TileSize*22;
     }
     public void setNPC() {
-        int i = 0;
-        gp.npc[i] = new NPC_blueboy(gp);
-        gp.npc[i].worldX = gp.TileSize*21;
-        gp.npc[i].worldY = gp.TileSize*21;
-        i++;
-        gp.npc[i] = new NPC_blueboy(gp);
-        gp.npc[i].worldX = gp.TileSize*24;
-        gp.npc[i].worldY = gp.TileSize*21;
+        // int i = 0;
+        // gp.npc[i] = new NPC_blueboy(gp);
+        // gp.npc[i].worldX = gp.TileSize*21;
+        // gp.npc[i].worldY = gp.TileSize*21;
+        // i++;
+        // gp.npc[i] = new NPC_blueboy(gp);
+        // gp.npc[i].worldX = gp.TileSize*24;
+        // gp.npc[i].worldY = gp.TileSize*21;
     }
     public void setMonster() {
         int i = 0;
-        gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*18;
-        gp.monster[i].worldY = gp.TileSize*23;
-        i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*20;
-        gp.monster[i].worldY = gp.TileSize*23;
-        i++;
+        // gp.monster[i] = new MON_GreenSlime(gp);
+        // gp.monster[i].worldX = gp.TileSize*18;
+        // gp.monster[i].worldY = gp.TileSize*23;
+        // i++;
+        // gp.monster[i] = new MON_GreenSlime(gp);
+        // gp.monster[i].worldX = gp.TileSize*20;
+        // gp.monster[i].worldY = gp.TileSize*23;
+        // i++;
         gp.monster[i] = new MON_GreenSlime(gp);
         gp.monster[i].worldX = gp.TileSize*24;
         gp.monster[i].worldY = gp.TileSize*23;
@@ -69,13 +70,13 @@ public class AssetSetter {
         gp.monster[i] = new MON_GreenSlime(gp);
         gp.monster[i].worldX = gp.TileSize*30;
         gp.monster[i].worldY = gp.TileSize*23;
-        i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*35;
-        gp.monster[i].worldY = gp.TileSize*23;
-        i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*40;
-        gp.monster[i].worldY = gp.TileSize*30;
+        // i++;
+        // gp.monster[i] = new MON_GreenSlime(gp);
+        // gp.monster[i].worldX = gp.TileSize*35;
+        // gp.monster[i].worldY = gp.TileSize*23;
+        // i++;
+        // gp.monster[i] = new MON_GreenSlime(gp);
+        // gp.monster[i].worldX = gp.TileSize*40;
+        // gp.monster[i].worldY = gp.TileSize*30;
     }
 }

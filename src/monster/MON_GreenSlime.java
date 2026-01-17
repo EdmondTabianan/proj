@@ -4,6 +4,7 @@ import java.util.Random;
 
 import entity.Entity;
 import main.GamePanel;
+import object.OBJ_Bato;
 
 public class MON_GreenSlime extends Entity {
 
@@ -17,11 +18,12 @@ public class MON_GreenSlime extends Entity {
         type = type_monster;
         name = "Green Slime";
         speed = 1;
-        maxLife = 10;
+        maxLife = 5;
         life = maxLife;
-        attack = 1;
+        attack = 2;
         defense = 0;
         exp = 2;
+        projectiles = new OBJ_Bato(gp);
 
         solidArea.x = 3;
         solidArea.y = 10;
@@ -64,6 +66,15 @@ public class MON_GreenSlime extends Entity {
                 Direction = "right";
             }
             actionLockCounter = 0;
+
+            
+        }
+        int i = new Random().nextInt(100)+1;
+        //if (i > 99 && projectile.alive == false && shotAvailableCounter == 30) {
+        if (i > 99 && projectiles.alive == false && gp.player.shotAvailableCounter == 30) {
+            projectiles.set(worldX, worldY, Direction, true, this);
+            gp.projectileList.add(projectiles);
+            shotAvailableCounter = 0;
         }
     }
     public void damageReaction() {

@@ -126,6 +126,7 @@ public class eventHandler {
              gp.player.attackCanceled = true;
              gp.ui.currentDialogue = "You drink water.\nyour life been recovered";
              gp.player.life = gp.player.maxLife;
+             gp.player.mana = gp.player.maxMana;
              gp.aSetter.setMonster();
         }
     }

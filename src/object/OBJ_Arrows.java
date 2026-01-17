@@ -1,5 +1,6 @@
 package object;
 
+import entity.Entity;
 import entity.Projectile;
 import main.GamePanel;
 
@@ -12,10 +13,10 @@ public class OBJ_Arrows extends Projectile {
         this.gp = gp;
 
         name = "Arrow";
-        speed = 10;
-        maxLife = 160;
+        speed = 6;
+        maxLife = 80;
         life = maxLife;
-        attack = 2;
+        attack = 3;
         useCost = 1;
         alive = false;
         getImage();
@@ -23,14 +24,23 @@ public class OBJ_Arrows extends Projectile {
 
     public void getImage() {
         up1 = setup("/projectile/arrow_up_1", gp.TileSize, gp.TileSize);
-        up2 = setup("/projectile/arrow_up_1", gp.TileSize, gp.TileSize);
+        up2 = setup("/projectile/arrow_up_2", gp.TileSize, gp.TileSize);
         down1 = setup("/projectile/arrow_down_1", gp.TileSize, gp.TileSize);
-        down2 = setup("/projectile/arrow_down_1", gp.TileSize, gp.TileSize);
+        down2 = setup("/projectile/arrow_down_2", gp.TileSize, gp.TileSize);
         left1 = setup("/projectile/arrow_left_1", gp.TileSize, gp.TileSize);
-        left2 = setup("/projectile/arrow_left_1", gp.TileSize, gp.TileSize);
+        left2 = setup("/projectile/arrow_left_2", gp.TileSize, gp.TileSize);
         right1 = setup("/projectile/arrow_right_1", gp.TileSize, gp.TileSize);
-        right2 = setup("/projectile/arrow_right_1", gp.TileSize, gp.TileSize);
+        right2 = setup("/projectile/arrow_right_2", gp.TileSize, gp.TileSize);
 
     }
-    
+    public boolean haveResource(Entity user) {
+        boolean haveResource = false;
+        if (user.arrow >= useCost) {
+            haveResource = true;
+        }
+        return haveResource;
+    }
+    public void SubtractResource(Entity user) {
+        user.arrow -= useCost;
+    }
 }

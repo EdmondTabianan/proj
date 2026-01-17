@@ -2,8 +2,9 @@ package object;
 
 import entity.Entity;
 import main.GamePanel;
+import java.util.Random;
 
-public class OBJ_Sword_Normal extends Entity{
+public class OBJ_Sword_Normal extends Entity {
 
     public OBJ_Sword_Normal(GamePanel gp) {
         super(gp);
@@ -12,9 +13,8 @@ public class OBJ_Sword_Normal extends Entity{
         name = "Normal Sword";
         down1 = setup("/objects/sword_normal", gp.TileSize, gp.TileSize);
         attackvalue = 2;
-        description = "[" + name + "]\n dull sword\n" + "attack: " + attackvalue;
+        description = "[" + name + "]\n Dull sword\n" + "attack: " + attackvalue;
         attackArea.width = 36;
         attackArea.height = 36;
     }
-
 }

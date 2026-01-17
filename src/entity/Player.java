@@ -5,9 +5,11 @@ import object.OBJ_Arrows;
 import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
+import object.OBJ_ice;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -60,6 +62,9 @@ public class Player extends Entity {
         level = 1;
         maxLife = 6;
         life = maxLife;
+        maxMana = 4;
+        mana = maxMana;
+        arrow = 10;
         strength = 1; // the higher the strength, damage is higher.
         dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
@@ -67,7 +72,9 @@ public class Player extends Entity {
         coin = 0;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
-        projectile = new OBJ_Arrows(gp);
+        arrows = new OBJ_Arrows(gp);
+        projectiles = new OBJ_ice(gp);
+        // projectiles = new OBJ_Arrows(gp);
         attack = getAttack(); // total damage of weapon
         defense = getDefense(); // total defense 
     }
@@ -196,14 +203,35 @@ public class Player extends Entity {
             spriteNum = 1;
         }
 
-        // arrow shoot
-        if (gp.keyH.shotKeyPressed == true && projectile.alive == false && shotAvailableCounter == 30) {
+        // ice shoot
+        if (gp.keyH.shotKeyPressed == true && projectiles.alive == false && 
+            shotAvailableCounter == 30 && projectiles.haveResource(this) == true
+        ) {
 
             // set default coordination, direction and user
-            projectile.set(worldX, worldY, Direction, true, this);
+            projectiles.set(worldX, worldY, Direction, true, this);
+
+            // subtract the cost (mana, arrows, etc)
+            projectiles.SubtractResource(this);
 
             // add it to the list
-            gp.projectileList.add(projectile);
+            gp.projectileList.add(projectiles);
+
+            shotAvailableCounter = 0;
+        }
+        // arrow shoot
+        if (gp.keyH.arrowKeyPressed == true && arrows.alive == false && 
+            shotAvailableCounter == 30 && arrows.haveResource(this) == true
+        ) {
+
+            // set default coordination, direction and user
+            arrows.set(worldX, worldY, Direction, true, this);
+
+            // subtract the cost (mana, arrows, etc)
+            arrows.SubtractResource(this);
+
+            // add it to the list
+            gp.projectileList.add(arrows);
 
             shotAvailableCounter = 0;
 
@@ -221,6 +249,7 @@ public class Player extends Entity {
 
         if (shotAvailableCounter < 30) {
             shotAvailableCounter++;
+            //System.err.println(shotAvailableCounter);
         }
         
     }
@@ -288,8 +317,7 @@ public class Player extends Entity {
                     attackCanceled = true;
                     gp.gameState = gp.dialogueState;
                     gp.npc[i].speak();
-            }
-            
+            }   
         }
     }
 
@@ -301,7 +329,7 @@ public class Player extends Entity {
                 gp.playSE(6);
 
                 int damage = attack - (gp.monster[i].attack - defense);
-                if(damage < 0) {
+                if(damage <= 0) {
                     damage = 0;
                 }
                 life -= damage;
@@ -340,6 +368,8 @@ public class Player extends Entity {
             nextLevelExp = nextLevelExp*2;
             maxLife += 2;
             life += 2;
+            maxMana += 1;
+            mana += 1;
             strength++;
             dexterity++;
             attack = getAttack();
@@ -437,22 +467,26 @@ public class Player extends Entity {
         }
             g2.drawImage(image, tempScreenX, tempScreenY,null);
 
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+            // g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
             // g2.setFont(new Font("arial", Font.PLAIN, 24));
-            // g2.setColor(Color.white);
-            // g2.drawString("Invible" + InvincibleCounter, 10, 400);
-            // if (type == 0) {
-            //     double oneScale = (double)gp.TileSize / maxLife;
-            //     double hpBarValue = oneScale * life;
+            //g2.setColor(Color.white);
+            //g2.drawString("Invible" + InvincibleCounter, 10, 400);
+            if (type == 0) {
+                double oneScale = (double)gp.TileSize / maxLife;
+                double hpBarValue = oneScale * life;
+                double manaScale = (double)gp.TileSize / maxMana;
+                double mpBarValue = manaScale * mana;
         
-            //     g2.setColor(new Color(35, 35, 35));
-            //     g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
+                g2.setColor(new Color(35, 35, 35));
+                g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
         
-            //     g2.setColor(new Color(255, 0, 30));
-            //     g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
+                g2.setColor(new Color(255, 0, 30));
+                g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
 
-            //     g2.setColor(new Color(0, 0, 255));
-            //     g2.fillRect(screenX, screenY - 5, (int) hpBarValue, 3);
-            // }
+                g2.setColor(new Color(35, 35, 35));
+                g2.fillRect(screenX, screenY - 5, gp.TileSize + 2, 4);
+                g2.setColor(new Color(0, 0, 255));
+                g2.fillRect(screenX, screenY - 5, (int) mpBarValue, 3);
+            }
     }    
 }

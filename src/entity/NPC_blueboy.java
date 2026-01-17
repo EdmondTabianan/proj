@@ -79,7 +79,6 @@ public class NPC_blueboy extends Entity {
         }
     }
     public void speak(){
-
         // Do this specfic stuff
         super.speak();
     }

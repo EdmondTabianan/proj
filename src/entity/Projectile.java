@@ -8,8 +8,6 @@ public class Projectile extends Entity {
 
     public Projectile(GamePanel gp) {
         super(gp);
-        
-
     }
     public void set(int worldX, int worldY, String Direction, boolean alive, Entity user ) {
 
@@ -31,7 +29,11 @@ public class Projectile extends Entity {
             }
         }
         if (user != gp.player) {
-
+            boolean contactPlayer = gp.cChecker.checkPlayer(this);
+            if(gp.player.Invincible == false && contactPlayer == true) {
+                damagaplayer(attack); 
+                alive = false;
+            }
         }
 
         switch (Direction) {
@@ -56,4 +58,9 @@ public class Projectile extends Entity {
             spriteCounter = 0;
         }
     }
+    public boolean haveResource(Entity user) {
+        boolean haveResource = false;
+        return haveResource;
+    }
+    public void SubtractResource(Entity user) {}
 }

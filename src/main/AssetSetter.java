@@ -11,6 +11,7 @@ import object.OBJ_ManaCrystal;
 import object.OBJ_Potion_Red;
 import object.OBJ_Shield_Blue;
 import object.OBJ_piramid;
+import tile_interactive.IT_Drytree;
 
 public class AssetSetter {
 
@@ -33,10 +34,10 @@ public class AssetSetter {
         gp.obj[i] = new OBJ_Shield_Blue(gp);
         gp.obj[i].worldX = gp.TileSize*20;
         gp.obj[i].worldY = gp.TileSize*27;
-        // i++;
-        // gp.obj[i] = new OBJ_Axe(gp);
-        // gp.obj[i].worldX = gp.TileSize*20;
-        // gp.obj[i].worldY = gp.TileSize*22;
+        i++;
+        gp.obj[i] = new OBJ_Axe(gp);
+        gp.obj[i].worldX = gp.TileSize*20;
+        gp.obj[i].worldY = gp.TileSize*22;
         i++;
         gp.obj[i] = new OBJ_Potion_Red(gp);
         gp.obj[i].worldX = gp.TileSize*22;
@@ -105,5 +106,11 @@ public class AssetSetter {
         // gp.monster[i] = new MON_GreenSlime(gp);
         // gp.monster[i].worldX = gp.TileSize*40;
         // gp.monster[i].worldY = gp.TileSize*30;
+    }
+    public void setInteractiveTile() {
+        
+        int i = 0;
+        gp.iTile[i] = new IT_Drytree(gp, 27, 18);i++;
+        gp.iTile[i] = new IT_Drytree(gp, 18, 27);
     }
 }

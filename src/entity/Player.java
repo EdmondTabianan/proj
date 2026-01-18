@@ -381,13 +381,19 @@ public class Player extends Entity {
     }
     public void damageInteractiveTile(int i) {
 
-        if (i != 999 && gp.iTile[i].destructible == true) {
+        if (i != 999 && gp.iTile[i].destructible == true 
+            && gp.iTile[i].isCorrectItem(this)== true && gp.iTile[i].Invincible == false) { 
             
-            gp.iTile[i] = null;
+            gp.iTile[i].playSE();
+            gp.iTile[i].life--;
+            gp.iTile[i].Invincible = true;
 
-
+            if (gp.iTile[i].life <= 0) {
+                gp.iTile[i] = gp.iTile[i].getDestroyedForm();
+            }
         }
     }
+
     public void checkLevelUp() {
 
         if (exp >= nextLevelExp) {

@@ -17,7 +17,7 @@ public class TileManager {
     public TileManager(GamePanel gp) {
         this.gp = gp;
 
-        tile = new Tile[100];
+        tile = new Tile[200];
         mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
@@ -28,7 +28,7 @@ public class TileManager {
 
         // try {
 
-            setup(0, "grass00", false);
+            setup(0, "000", false);
             setup(1, "grass00", false);
             setup(2, "grass01", false);
             setup(3, "road00", false);
@@ -66,7 +66,7 @@ public class TileManager {
             setup(34, "floor01", false);
             setup(35, "table01", true);
             setup(36, "apple", true);
-            setup(37, "house", true);
+            setup(37, "trunk", false);
             setup(38, "water016", false);
             setup(39, "water014", true);
             setup(40, "water018", true);

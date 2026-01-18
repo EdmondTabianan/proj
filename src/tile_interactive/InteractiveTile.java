@@ -12,6 +12,24 @@ public class InteractiveTile extends Entity {
         super(gp);   
         this.gp = gp;
     }
+    public boolean isCorrectItem(Entity entity) {
+        boolean isCorrectItem = false;
+        return isCorrectItem;
+    }
+    public void playSE() {
+    }
+    public InteractiveTile getDestroyedForm() {
+        InteractiveTile tile = null;
+        return tile;
+    }
     public void update() {      
+
+        if(Invincible == true) {
+            InvincibleCounter++;
+            if(InvincibleCounter > 20) {
+                Invincible = false;
+                InvincibleCounter = 0;
+            }
+        }
     }   
 }

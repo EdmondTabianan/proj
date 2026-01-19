@@ -2,10 +2,12 @@ package entity;
 
 import main.KeyHandler;
 import object.OBJ_Arrows;
+import object.OBJ_Axe;
 import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
 import object.OBJ_ice;
+import tile_interactive.InteractiveTile;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -66,11 +68,12 @@ public class Player extends Entity {
         mana = maxMana;
         arrow = 10;
         strength = 1; // the higher the strength, damage is higher.
-        dexterity = 1; // the higher the dexterity, less the damage.
+        dexterity = 1; // the higher the dexterity, less the dsamage.
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        currentweapon = new OBJ_Sword_Normal(gp);
+        // currentweapon = new OBJ_Sword_Normal(gp);
+        currentweapon = new OBJ_Axe(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         arrows = new OBJ_Arrows(gp);
         projectiles = new OBJ_ice(gp);
@@ -163,11 +166,10 @@ public class Player extends Entity {
             
             // check interactive tile collision
             int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
-            //gp.iTile[iTileIndex].interactve();
+            if (iTileIndex != 999) {}
 
             // Check Event
             gp.eHandler.checkEvent();
-
 
             // if collision is false, player can move
             if (collisionOn == false && keyH.enterPressed == false) {
@@ -304,6 +306,7 @@ public class Player extends Entity {
             spriteNum = 1;
             spriteCounter = 0;
             attacking = false;
+            collisionOn = false;
         }
     }
     public void pickUpObject(int i) {
@@ -388,8 +391,19 @@ public class Player extends Entity {
             gp.iTile[i].life--;
             gp.iTile[i].Invincible = true;
 
+            // generate particle 
+            // generateParticle(gp.iTile[i],gp.iTile[i]);
+            if (gp.iTile[i] != null) {
+                generateParticle(gp.iTile[i], gp.iTile[i]);
+            }            
+
             if (gp.iTile[i].life <= 0) {
-                gp.iTile[i] = gp.iTile[i].getDestroyedForm();
+                InteractiveTile destroyed = gp.iTile[i].getDestroyedForm();
+                destroyed.Invincible = false;
+                destroyed.collision = false;
+                destroyed.collisionOn = false;
+                gp.iTile[i] = destroyed;
+                // gp.iTile[i] = gp.iTile[i].getDestroyedForm();
             }
         }
     }

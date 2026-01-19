@@ -13,10 +13,8 @@ public class Sound {
 
     public Sound() {
         int i = 0;
-        soundURL[i] = getClass().getResource("/sound/BlueBoyadventure.wav");
-        i++;
-        soundURL[i] = getClass().getResource("/sound/coin.wav");
-        i++;
+        soundURL[i] = getClass().getResource("/sound/BlueBoyadventure.wav");i++;
+        soundURL[i] = getClass().getResource("/sound/coin.wav");i++;
         soundURL[i] = getClass().getResource("/sound/powerup.wav");i++;
         soundURL[i] = getClass().getResource("/sound/unlock.wav");i++;
         soundURL[i] = getClass().getResource("/sound/fanfare.wav");i++;
@@ -24,7 +22,7 @@ public class Sound {
         soundURL[i] = getClass().getResource("/sound/receivedamage.wav");i++;
         soundURL[i] = getClass().getResource("/sound/0110.wav");i++;
         soundURL[i] = getClass().getResource("/sound/levelup.wav");i++;
-        soundURL[i] = getClass().getResource("/sound/cursor.wav");
+        soundURL[i] = getClass().getResource("/sound/cursor.wav");i++;
         soundURL[i] = getClass().getResource("/sound/cuttree.wav");
     } 
     public void setFile(int i) {

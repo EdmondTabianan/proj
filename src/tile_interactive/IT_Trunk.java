@@ -9,6 +9,13 @@ public class IT_Trunk extends InteractiveTile {
         this.worldY = gp.TileSize * row;
 
         down1 = setup("/tiles_interactive/trunk", gp.TileSize, gp.TileSize);
+        image = down1;
+
+        destructible = false;
+        collision = false;
+        collisionOn = false;
+        System.out.println("collision = " + collisionOn);
+
 
         solidArea.x = 0;
         solidArea.y = 0;

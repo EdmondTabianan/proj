@@ -3,84 +3,77 @@ package entity;
 import main.KeyHandler;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
-
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-
 import main.GamePanel;
 
 public class Player extends Entity {
-
-    KeyHandler keyH;
     
+    KeyHandler keyH;
     public final int screenX;
     public final int screenY;
     int standCounter = 0;
     public boolean attackCanceled = false;
-
-    public Player (GamePanel gp, KeyHandler keyH) {
+    
+    public Player(GamePanel gp, KeyHandler keyH) {
         super(gp);
         this.keyH = keyH;
-
+        
         type = 0;
+        characterused = 0; // Default character
         
         screenX = gp.ScreenWidth/2 - (gp.TileSize/2);
         screenY = gp.ScreenHeight/2 - (gp.TileSize/2);
-
+        
         solidArea = new java.awt.Rectangle();
         solidArea.x = 8;
         solidArea.y = 16;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
         solidArea.width = 32;
-        solidArea.height = 32; 
-
+        solidArea.height = 32;
+        
         attackArea.width = 36;
         attackArea.height = 36;
-
+        
         setDefaultValues();
-        getPlayerImage();
+        setCharacterImages(); // Call this to set initial images
         getPlayerAttackImage();
     }
-    public void setDefaultValues() {
-        worldX = gp.TileSize * 23;
-        worldY = gp.TileSize * 21;
-        speed = 4;
-        Direction = "down";
-
-        // Player status
-        level = 1;
-        maxLife = 6;
-        life = maxLife;
-        strength = 1; // the higher the strength, damage is higher.
-        dexterity = 1; // the higher the dexterity, less the damage.
-        exp = 0;
-        nextLevelExp = 5;
-        coin = 0;
-        currentweapon = new OBJ_Sword_Normal(gp);
-        currentShield = new OBJ_Shield_Wood(gp);
-        attack = getAttack(); // total damage of weapon
-        defense = getDefense(); // total defense 
+    
+    public void setCharacterImages() {
+        if (characterused == 0) { // Alexandria
+            getAlexandriaImages();
+        } else if (characterused == 1) { // Xylo
+            getXyloImages();
+        }
     }
-    public int getAttack(){
-        return attack = strength * currentweapon.attackvalue;
+    
+    public void getAlexandriaImages() {
+        up1 = setup("/player/up_1", gp.TileSize, gp.TileSize);
+        up2 = setup("/player/up_2", gp.TileSize, gp.TileSize);
+        down1 = setup("/player/down_1", gp.TileSize, gp.TileSize);
+        down2 = setup("/player/down_2", gp.TileSize, gp.TileSize);
+        left1 = setup("/player/left_1", gp.TileSize, gp.TileSize);
+        left2 = setup("/player/left_2", gp.TileSize, gp.TileSize);
+        right1 = setup("/player/right_1", gp.TileSize, gp.TileSize);
+        right2 = setup("/player/right_2", gp.TileSize, gp.TileSize);
     }
-    public int getDefense(){
-        return defense = dexterity * currentShield.defenseValue;
+    
+    public void getXyloImages() {
+        up1 = setup("/xylo/b_up_1", gp.TileSize, gp.TileSize);
+        up2 = setup("/xylo/b_up_2", gp.TileSize, gp.TileSize);
+        down1 = setup("/xylo/b_down_1", gp.TileSize, gp.TileSize);
+        down2 = setup("/xylo/b_down_2", gp.TileSize, gp.TileSize);
+        left1 = setup("/xylo/b_left_1", gp.TileSize, gp.TileSize);
+        left2 = setup("/xylo/b_left_2", gp.TileSize, gp.TileSize);
+        right1 = setup("/xylo/b_right_1", gp.TileSize, gp.TileSize);
+        right2 = setup("/xylo/b_right_2", gp.TileSize, gp.TileSize);
     }
-    public void getPlayerImage() {
-            up1 = setup("/player/up_1", gp.TileSize, gp.TileSize);
-            up2 = setup("/player/up_2", gp.TileSize, gp.TileSize);
-            down1 = setup("/player/down_1", gp.TileSize, gp.TileSize);
-            down2 = setup("/player/down_2", gp.TileSize, gp.TileSize);
-            left1 = setup("/player/left_1", gp.TileSize, gp.TileSize);
-            left2 = setup("/player/left_2", gp.TileSize, gp.TileSize);
-            right1 = setup ("/player/right_1", gp.TileSize, gp.TileSize);
-            right2 = setup ("/player/right_2", gp.TileSize, gp.TileSize);
-    }
+    
     public void getPlayerAttackImage() {
+        // Using the same attack images for both characters
         attackUp1 = setup("/player/boy_attack_up_1", gp.TileSize, gp.TileSize*2);
         attackUp2 = setup("/player/boy_attack_up_2", gp.TileSize, gp.TileSize*2);
         attackDown1 = setup("/player/boy_attack_down_1", gp.TileSize, gp.TileSize*2);
@@ -90,13 +83,73 @@ public class Player extends Entity {
         attackRight1 = setup("/player/boy_attack_right_1", gp.TileSize*2, gp.TileSize);
         attackRight2 = setup("/player/boy_attack_right_2", gp.TileSize*2, gp.TileSize);
     }
-    public void update() {
-
-        if (attacking == true){
-            attacking();
+    
+    public void setDefaultValues() {
+        worldX = gp.TileSize * 23;
+        worldY = gp.TileSize * 21;
+        Direction = "down";
+        
+        // Player status - Set different values based on character
+        level = 1;
+        exp = 0;
+        nextLevelExp = 5;
+        coin = 0;
+        currentweapon = new OBJ_Sword_Normal(gp);
+        currentShield = new OBJ_Shield_Wood(gp);
+        
+        if (characterused == 0) { // Alexandria - Tank/Defender
+            speed = 3; // Slower but tankier
+            maxLife = 8; // Higher health
+            life = maxLife;
+            strength = 2; // Good damage
+            dexterity = 3; // High defense
+        } else if (characterused == 1) { // Xylo - Agile/Attacker
+            speed = 5; // Faster movement
+            maxLife = 5; // Lower health
+            life = maxLife;
+            strength = 3; // Higher damage
+            dexterity = 1; // Lower defense
         }
-        else if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true || keyH.enterPressed == true) {
-
+        
+        attack = getAttack();
+        defense = getDefense();
+    }
+    
+    // Update stats when character is changed
+    public void updateCharacterStats() {
+        if (characterused == 0) { // Alexandria
+            speed = 3;
+            maxLife = 8;
+            life = maxLife;
+            strength = 2;
+            dexterity = 3;
+        } else if (characterused == 1) { // Xylo
+            speed = 5;
+            maxLife = 5;
+            life = maxLife;
+            strength = 3;
+            dexterity = 1;
+        }
+        
+        attack = getAttack();
+        defense = getDefense();
+    }
+    
+    public int getAttack() {
+        return attack = strength * currentweapon.attackvalue;
+    }
+    
+    public int getDefense() {
+        return defense = dexterity * currentShield.defenseValue;
+    }
+    
+    public void update() {
+        if (attacking == true) {
+            attacking();
+        } else if (keyH.upPressed == true || keyH.downPressed == true || 
+                   keyH.leftPressed == true || keyH.rightPressed == true || 
+                   keyH.enterPressed == true) {
+            
             if (keyH.upPressed == true) {
                 Direction = "up";
             } 
@@ -110,11 +163,11 @@ public class Player extends Entity {
                 Direction = "right";                
             }
 
-            //Check tile collision
+            // Check tile collision
             collisionOn = false;
             gp.cChecker.checkTile(this);
 
-            // check object collision
+            // Check object collision
             int objIndex = gp.cChecker.checkObject(this, true);
             pickUpObject(objIndex);
 
@@ -122,15 +175,14 @@ public class Player extends Entity {
             int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
             interactNPC(npcIndex);
 
-            // check monster collision
+            // Check monster collision
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
             contactMonster(monsterIndex);            
 
             // Check Event
             gp.eHandler.checkEvent();
 
-
-            // if collision is false, player can move
+            // If collision is false, player can move
             if (collisionOn == false && keyH.enterPressed == false) {
                 switch (Direction) {
                     case "up": worldY -= speed; break;
@@ -140,14 +192,14 @@ public class Player extends Entity {
                 }
             }
 
-            if(keyH.enterPressed == true && attackCanceled == false) {
+            if (keyH.enterPressed == true && attackCanceled == false) {
                 gp.playSE(7);
                 attacking = true;
                 spriteCounter = 0;
             }
 
             attackCanceled = false;
-            gp.keyH.enterPressed =false;
+            gp.keyH.enterPressed = false;
 
             spriteCounter++;
             if (spriteCounter > 10) {
@@ -158,15 +210,15 @@ public class Player extends Entity {
                 }
                 spriteCounter = 0;
             }
-        }
-        else {
+        } else {
             standCounter++;
-            if(standCounter == 20) {
+            if (standCounter == 20) {
                 spriteNum = 1;
                 standCounter = 0;
             }
             spriteNum = 1;
         }
+        
         // Invincibility Logic
         if (Invincible == true) {
             InvincibleCounter++;
@@ -175,8 +227,8 @@ public class Player extends Entity {
                 InvincibleCounter = 0;
             }
         }
-        
     }
+    
     public void attacking() {
         spriteCounter++;
 
@@ -186,26 +238,29 @@ public class Player extends Entity {
         if (spriteCounter > 5 && spriteCounter <= 25) {
             spriteNum = 2;
 
-            // save the current worldx, worldy, solidArea
+            // Save the current worldX, worldY, solidArea
             int currentWorldX = worldX;
             int currentWorldY = worldY;
             int solidAreaWidth = solidArea.width;
             int solidAreaHeight = solidArea.height;
-            // adjust players worldx for the attactarea
+            
+            // Adjust player's worldX for the attack area
             switch (Direction) {
                 case "up": worldY -= attackArea.height; break;
                 case "down": worldY += attackArea.height; break;
                 case "left": worldX -= attackArea.width; break;
                 case "right": worldX += attackArea.width; break;
             }
-            //attackarea become solid area
+            
+            // Attack area becomes solid area
             solidArea.width = attackArea.width;
             solidArea.height = attackArea.height;
-            // check monster collision with updated worldx, worldy, and solidarea
+            
+            // Check monster collision with updated worldX, worldY, and solidArea
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
             damageMonster(monsterIndex);
 
-            // after checking collision resotre the original data
+            // After checking collision restore the original data
             worldX = currentWorldX;
             worldY = currentWorldY;
             solidArea.width = solidAreaWidth;
@@ -217,30 +272,30 @@ public class Player extends Entity {
             attacking = false;
         }
     }
+    
     public void pickUpObject(int i) {
-        if(i != 999) {  
-            
+        if (i != 999) {  
+            // Pick up object logic here
         }
     }
+    
     public void interactNPC(int i) {
-        if(gp.keyH.enterPressed == true) {
+        if (gp.keyH.enterPressed == true) {
             if (i != 999) {
-                    attackCanceled = true;
-                    gp.gameState = gp.dialogueState;
-                    gp.npc[i].speak();
+                attackCanceled = true;
+                gp.gameState = gp.dialogueState;
+                gp.npc[i].speak();
             }
-            
         }
     }
 
     public void contactMonster(int i) {
-
-        if(i != 999) {
+        if (i != 999) {
             if (Invincible == false) {
                 gp.playSE(6);
 
-                int damage = attack - gp.monster[i].attack - defense;
-                if(damage < 0) {
+                int damage = gp.monster[i].attack - defense;
+                if (damage < 0) {
                     damage = 0;
                 }
                 life -= damage;
@@ -248,17 +303,18 @@ public class Player extends Entity {
             }
         }
     }
+    
     public void damageMonster(int i) {
         if (i != 999) {
             if (gp.monster[i].Invincible == false) {
                 gp.playSE(5);
 
                 int damage = attack - gp.monster[i].defense;
-                if(damage < 0) {
+                if (damage < 0) {
                     damage = 0;
                 }
                 gp.monster[i].life -= damage;
-                gp.ui.showMessage(damage + "damage!");
+                gp.ui.showMessage(damage + " damage!");
                 gp.monster[i].Invincible = true;
                 gp.monster[i].damageReaction();
 
@@ -272,27 +328,36 @@ public class Player extends Entity {
             }
         }
     }
+    
     public void checkLevelUp() {
-
         if (exp >= nextLevelExp) {
             level++;
-            nextLevelExp = nextLevelExp*2;
-            maxLife += 2;
-            strength++;
-            dexterity++;
+            nextLevelExp = nextLevelExp * 2;
+            
+            // Different level up bonuses based on character
+            if (characterused == 0) { // Alexandria
+                maxLife += 3; // More health per level
+                life = maxLife;
+                strength += 1; // Moderate strength increase
+                dexterity += 2; // Good defense increase
+            } else if (characterused == 1) { // Xylo
+                maxLife += 2; // Less health per level
+                life = maxLife;
+                strength += 2; // Higher strength increase
+                dexterity += 1; // Moderate defense increase
+            }
+            
             attack = getAttack();
             defense = getDefense();
 
             gp.playSE(8);
             gp.gameState = gp.dialogueState;
-            gp.ui.currentDialogue = "you are level" + level + "now!\n"
-                + "You fell stronger!";
+            gp.ui.currentDialogue = "You are level " + level + " now!\n"
+                + "You feel stronger!";
         }
     }
+    
     public void draw(Graphics2D g2) {
-    //    g2.setColor(Color.white);
-    //    g2.fillRect(x, y, gp.TileSize, gp.TileSize);
-
         BufferedImage image = null;
         int tempScreenX = screenX;
         int tempScreenY = screenY;
@@ -329,7 +394,6 @@ public class Player extends Entity {
                     if (spriteNum == 1) { image = attackLeft1; }
                     if (spriteNum == 2) { image = attackLeft2; }
                 }
-               
                 break;
             case "right":
                 if (attacking == false) {
@@ -346,24 +410,8 @@ public class Player extends Entity {
         if (Invincible == true) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
         }
-            g2.drawImage(image, tempScreenX, tempScreenY,null);
-
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-            // g2.setFont(new Font("arial", Font.PLAIN, 24));
-            // g2.setColor(Color.white);
-            // g2.drawString("Invible" + InvincibleCounter, 10, 400);
-            // if (type == 0) {
-            //     double oneScale = (double)gp.TileSize / maxLife;
-            //     double hpBarValue = oneScale * life;
         
-            //     g2.setColor(new Color(35, 35, 35));
-            //     g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
-        
-            //     g2.setColor(new Color(255, 0, 30));
-            //     g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
-
-            //     g2.setColor(new Color(0, 0, 255));
-            //     g2.fillRect(screenX, screenY - 5, (int) hpBarValue, 3);
-            // }
-    }    
+        g2.drawImage(image, tempScreenX, tempScreenY, null);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+    }
 }

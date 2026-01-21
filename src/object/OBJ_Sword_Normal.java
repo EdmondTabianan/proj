@@ -10,7 +10,7 @@ public class OBJ_Sword_Normal extends Entity{
 
         name = "Normal Sword";
         down1 = setup("/objects/sword_normal", gp.TileSize, gp.TileSize);
-        attackvalue = 2;
+        attackvalue = 1;
     }
 
 }

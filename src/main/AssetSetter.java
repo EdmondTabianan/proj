@@ -2,6 +2,7 @@ package main;
 
 import entity.NPC_blueboy;
 import monster.MON_GreenSlime;
+import monster.MON_snik;
 import object.OBJ_Door;
 
 public class AssetSetter {
@@ -28,31 +29,31 @@ public class AssetSetter {
     }
     public void setMonster() {
         int i = 0;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*18;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*20;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*24;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*25;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*30;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*35;
         gp.monster[i].worldY = gp.TileSize*23;
         i++;
-        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i] = new MON_snik(gp);
         gp.monster[i].worldX = gp.TileSize*40;
         gp.monster[i].worldY = gp.TileSize*30;
     }

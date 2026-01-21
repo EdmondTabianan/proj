@@ -103,18 +103,6 @@ public class Entity {
         boolean contactPlayer = gp.cChecker.checkPlayer(this);
 
         if(this.type == 2 && contactPlayer == true) {
-            if (characterused == 0) {
-                if (gp.alexandria.Invincible == false) {
-                    gp.playSE(6);
-                    int damage = attack - gp.alexandria.defense;
-                    if(damage < 0) {
-                        damage = 0;
-                    }
-                    gp.alexandria.life -= damage;
-    
-                    gp.player.Invincible = true; 
-                }
-            }
             if (gp.player.Invincible == false) {
                 gp.playSE(6);
                 int damage = attack - gp.player.defense;

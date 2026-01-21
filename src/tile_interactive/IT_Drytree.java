@@ -22,7 +22,7 @@ public class IT_Drytree extends InteractiveTile {
 
         down1 = setup("/tiles_interactive/drytree", gp.TileSize, gp.TileSize);
         destructible = true;
-        life = 5;
+        life = 1;
     }
     public boolean isCorrectItem(Entity entity) {
         boolean isCorrectItem = false;

@@ -55,7 +55,7 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = gp.TileSize * 23;
         worldY = gp.TileSize * 21;
-        speed = 4;
+        speed = 10;
         Direction = "down";
 
         // Player status
@@ -70,11 +70,11 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
+        hasKey = 0;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         arrows = new OBJ_Arrows(gp);
         projectiles = new OBJ_ice(gp);
-        // projectiles = new OBJ_Arrows(gp);
         attack = getAttack(); // total damage of weapon
         defense = getDefense(); // total defense 
     }
@@ -82,7 +82,6 @@ public class Player extends Entity {
 
         inventory.add(currentweapon);
         inventory.add(currentShield);
-        inventory.add(new OBJ_Key(gp));
     }
     public int getAttack(){
         attackArea = currentweapon.attackArea;
@@ -307,27 +306,39 @@ public class Player extends Entity {
         }
     }
     public void pickUpObject(int i) {
-
         if (i != 999) {
-            //pick up items
+            // Debug: Print object info
+            System.out.println("Object name: " + gp.obj[i].name);
+            System.out.println("Object type: " + gp.obj[i].type);
+            System.out.println("type_key constant: " + type_key);
+            
+            // Check for key
+            if (gp.obj[i].type == type_key) {
+                gp.playSE(2);
+                hasKey++;
+                System.out.println("Keys: " + hasKey);
+                gp.ui.showMessage("You got a key!");
+                gp.obj[i] = null;
+                return;
+            }
+            
+            // For other pickup-only items
             if(gp.obj[i].type == type_pickupOnly) {
                 gp.obj[i].use(this);
                 gp.obj[i] = null;
+                return; // Exit after handling pickup-only
             }
-            else {  
-                String text;
-                if(inventory.size() != maxInventorySize) {
-
-                    inventory.add(gp.obj[i]);
-                    gp.playSE(1);
-                    text = "Got a" + gp.obj[i].name + "!";
-                }
-                else {
-                    text = "you cannot carry any more!";
-                }
-                gp.ui.showMessage(text);
-                gp.obj[i] = null;
+            
+            // For regular inventory items
+            if(inventory.size() != maxInventorySize) {
+                inventory.add(gp.obj[i]);
+                gp.playSE(1);
+                gp.ui.showMessage("Got a " + gp.obj[i].name + "!");
             }
+            else {
+                gp.ui.showMessage("You cannot carry any more!");
+            }
+            gp.obj[i] = null;
         }
     }
     public void interactNPC(int i) {

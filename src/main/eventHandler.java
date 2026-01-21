@@ -1,5 +1,7 @@
 package main;
 
+import entity.Entity;
+
 public class eventHandler {
     GamePanel gp;
     EventRect eventRect[][];
@@ -32,7 +34,6 @@ public class eventHandler {
     }
 
     public void checkEvent() {
-
         // Check if the player char is more than 1 tile from event
         int xDistance = Math.abs(gp.player.worldX - previouseEventX);
         int yDistance = Math.abs(gp.player.worldY - previouseEventY);
@@ -42,17 +43,14 @@ public class eventHandler {
         }
 
         if(canTouchEvent == true) {
-            // if(hit(27,14,"right") == true ) {damagePit(27,16,gp.dialogueState);}
-            //if(hit(27,14,"right") == true ) {teleport1(gp.dialogueState);}
-            // if(hit(23,19,"any") == true ) {damagePit(27,16,gp.dialogueState);}
-            //if(hit(23,12, "up") == true) {healingPool(23,12,gp.dialogueState);}
             if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
             if(hit(26,35, "down") == true) {healingPool1(26,35,gp.dialogueState);}
             if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
+            if(hit(46, 42, "down") == true) {transport(gp.dialogueState);}
         }
     }
+    
     public boolean hit (int col, int row, String regDirection) {
-        
         boolean hit = false;
 
         gp.player.solidArea.x = gp.player.worldX + gp.player.solidArea.x;
@@ -60,12 +58,9 @@ public class eventHandler {
         eventRect[col][row].x = col*gp.TileSize + eventRect[col][row].x;
         eventRect[col][row].y = row*gp.TileSize + eventRect[col][row].y;
 
-        //&& eventRect[col][row].eventDone == false 
-        // if eventDone is false damagePit is working other wise the damagePit will not work unless the player walk one tiles 
         if (gp.player.solidArea.intersects(eventRect[col][row]) && eventRect[col][row].eventDone == false) {
             if (gp.player.Direction.contentEquals(regDirection) || regDirection.contentEquals("any")){
                 hit = true;
-
                 previouseEventX = gp.player.worldX;
                 previouseEventY = gp.player.worldY;
             }
@@ -78,52 +73,22 @@ public class eventHandler {
 
         return hit;
     }
+    
     public void teleport1(int gameState) {
-
         gp.gameState = gameState;
         gp.player.worldX = gp.TileSize*24;
         gp.player.worldY = gp.TileSize*14;
     } 
+    
     public void teleport(int gameState) {
-
         gp.gameState = gameState;
         gp.ui.currentDialogue ="Teleport";
         gp.player.worldX = gp.TileSize*29;
         gp.player.worldY = gp.TileSize*20;
     } 
-    // public void damagePit(int col, int row, int gameState) {
-
-    //     if (eventRect[col][row].eventDone == false) {
-    //         gp.gameState = gameState;
-    //         gp.ui.currentDialogue = "you fall in a trap";
-    //         gp.player.life -= 1;
-    //         // if damagePit happen it change eventDone to true to make it work one time
-    //         // but it not happen
-    //         //eventRect[col][row].eventDone = true;
-    //         canTouchEvent = false;
-    //     }
-    // }
-    // public void damagePit(int col, int row, int gameState) {
-
-    //     if (eventRect[col][row].eventDone == false) {
-    
-    //         gp.gameState = gameState;
-    //         gp.ui.currentDialogue = "You fell in a trap!";
-    //         gp.player.life -= 1;
-    
-    //         // Teleport player safely next to the pit
-    //         gp.player.worldX = gp.TileSize * (col - 1);
-    //         gp.player.worldY = gp.TileSize * 14; // One tile above the pit
-    
-    //         // Prevent immediate retrigger
-    //         canTouchEvent = false;
-    //         //eventRect[col][row].eventDone = true;
-    //     }
-    // }
     
     public void healingPool(int col, int row, int gameState) {
          if(gp.keyH.enterPressed == true) {
-
              gp.gameState = gameState;
              gp.player.attackCanceled = true;
              gp.ui.currentDialogue = "You drink water.\nyour life been recovered";
@@ -132,9 +97,9 @@ public class eventHandler {
              gp.aSetter.setMonster();
         }
     }
+    
     public void healingPool1(int col, int row, int gameState) {
         if(gp.keyH.enterPressed == true) {
-
             gp.gameState = gameState;
             gp.player.attackCanceled = true;
             gp.ui.currentDialogue = "You drink water.\nyour life been recovered";
@@ -142,4 +107,49 @@ public class eventHandler {
             gp.player.mana = gp.player.maxMana;
             gp.aSetter.setMonster();
        }
-   }}
+    }
+    public void transport(int gameState) {
+        if(gp.keyH.enterPressed == true) {
+            gp.gameState = gameState;
+            gp.player.attackCanceled = true;
+            
+            // Check if player has a key
+            if(gp.player.hasKey > 0) {
+                gp.player.hasKey--; // Use one key
+                
+                // Play sound effect for using key
+                gp.playSE(2); // Assuming 2 is key use sound
+                
+                gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
+                
+                // Small delay for effect
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                
+                // Load the second map
+                gp.tileM.loadMap("/map/secondmap.txt");
+                
+                // Set new player position for the second map
+                gp.player.worldX = gp.TileSize * 24;
+                gp.player.worldY = gp.TileSize * 42;
+                
+                // Reset event handler for new map
+                gp.eHandler = new eventHandler(gp);
+                
+                // Reset monsters for new map
+                gp.aSetter.setMonster();
+                
+                // Play map change sound
+                gp.playSE(9); // Assuming 9 is transport sound
+                
+            } else {
+                gp.ui.currentDialogue = "The door is locked!\nYou need a key to enter.";
+                // Play locked door sound
+                gp.playSE(10); // Assuming 10 is locked sound
+            }
+        }
+    }
+}

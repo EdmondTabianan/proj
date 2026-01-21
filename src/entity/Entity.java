@@ -72,6 +72,7 @@ public class Entity {
     public int defenseValue;
     public String description = "";
     public int useCost;
+    public int hasKey = 0;
 
     // type
     public int type;
@@ -83,6 +84,8 @@ public class Entity {
     public final int type_shield = 5;
     public final int type_consumable = 6;
     public final int type_pickupOnly = 7;
+    public final int type_transport = 8;
+    public final int type_key = 9;
 
     public Entity(GamePanel gp) {
         this.gp = gp;

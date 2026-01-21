@@ -75,7 +75,7 @@ public class MON_GreenSlime extends Entity {
         }
         int i = new Random().nextInt(100)+1;
         //if (i > 99 && projectile.alive == false && shotAvailableCounter == 30) {
-        if (i > 99 && projectiles.alive == false && gp.player.shotAvailableCounter == 30) {
+        if (i > 99 && projectiles.alive == false && shotAvailableCounter == 30) {
             projectiles.set(worldX, worldY, Direction, true, this);
             gp.projectileList.add(projectiles);
             shotAvailableCounter = 0;
@@ -87,16 +87,19 @@ public class MON_GreenSlime extends Entity {
     }
     public void checkDrop() {
 
-        //cast a die 
+        //cast a die/dice
         int i = new Random().nextInt(100)+1;
         //set the monster drop
-        if (i<50) {
+        if (i<60) {
+            // nothing
+        }
+        if (i >=60 && i < 75) {
             dropItem(new OBJ_Coin_Bronze(gp));
         }
-        if (i >=50 && i < 75) {
+        if (i >=75 && i < 85) {
             dropItem(new OBJ_Heart(gp));
         }
-        if (i >=75 && i < 100) {
+        if (i >= 85 && i < 100) {
             dropItem(new OBJ_ManaCrystal(gp));
         }
         if (i == 100) {

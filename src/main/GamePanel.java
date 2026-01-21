@@ -57,6 +57,9 @@ public class GamePanel extends JPanel implements Runnable {
     public final int pauseState = 2;
     public final int dialogueState = 3;
     public final int characterState = 4;
+    public final int optionsState = 5;
+
+    public int monsterRespawnCounter = 0;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(ScreenWidth, ScreenHeight));
@@ -131,6 +134,10 @@ public class GamePanel extends JPanel implements Runnable {
                     if(monster[i].alive == false) {
                         monster[i].checkDrop();
                         monster[i] = null;
+                        monsterRespawnCounter++;
+                        if (monsterRespawnCounter == 120) {
+                            aSetter.setMonster();
+                        }
                     }
                 }
             }

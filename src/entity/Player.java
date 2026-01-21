@@ -224,8 +224,8 @@ public class Player extends Entity {
             shotAvailableCounter = 0;
         }
         // arrow shoot
-        if (gp.keyH.arrowKeyPressed == true && arrows.alive == false && 
-            shotAvailableCounter == 30 && arrows.haveResource(this) == true
+        if (gp.keyH.arrowKeyPressed == true && projectiles.alive == false && 
+            shotAvailableCounter == 30 && projectiles.haveResource(this) == true
         ) {
 
             // set default coordination, direction and user

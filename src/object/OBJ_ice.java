@@ -50,6 +50,4 @@ public class OBJ_ice extends Projectile {
         entity.mana += value;
         gp.playSE(2);
     }
-
-
 }

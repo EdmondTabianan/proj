@@ -45,7 +45,9 @@ public class eventHandler {
             // if(hit(27,14,"right") == true ) {damagePit(27,16,gp.dialogueState);}
             //if(hit(27,14,"right") == true ) {teleport1(gp.dialogueState);}
             // if(hit(23,19,"any") == true ) {damagePit(27,16,gp.dialogueState);}
-            if(hit(23,12, "up") == true) {healingPool(23,12,gp.dialogueState);}
+            //if(hit(23,12, "up") == true) {healingPool(23,12,gp.dialogueState);}
+            if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
+            if(hit(26,35, "down") == true) {healingPool1(26,35,gp.dialogueState);}
             if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
         }
     }
@@ -130,4 +132,14 @@ public class eventHandler {
              gp.aSetter.setMonster();
         }
     }
-}
+    public void healingPool1(int col, int row, int gameState) {
+        if(gp.keyH.enterPressed == true) {
+
+            gp.gameState = gameState;
+            gp.player.attackCanceled = true;
+            gp.ui.currentDialogue = "You drink water.\nyour life been recovered";
+            gp.player.life = gp.player.maxLife;
+            gp.player.mana = gp.player.maxMana;
+            gp.aSetter.setMonster();
+       }
+   }}

@@ -44,7 +44,10 @@ public class OBJ_ice extends Projectile {
     public void SubtractResource(Entity user) {
         user.mana -= useCost;
     }
-
-
-
+    public void use(Entity entity) {
+        
+        gp.ui.showMessage("+" + value + " life!");
+        entity.mana += value;
+        gp.playSE(2);
+    }
 }

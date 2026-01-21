@@ -11,6 +11,7 @@ import entity.Entity;
 import entity.NPC_blueboy;
 import entity.Player;
 import tile.TileManager;
+import tile_interactive.InteractiveTile;
 
 public class GamePanel extends JPanel implements Runnable {
     final int OriginalTileSize = 16; // 16x16 tile
@@ -42,9 +43,10 @@ public class GamePanel extends JPanel implements Runnable {
     // Entity and Object
     public Player player = new Player(this, keyH);
     public NPC_blueboy npc_blueboy = new NPC_blueboy(this);
-    public Entity obj[] = new Entity[10];
+    public Entity obj[] = new Entity[20];
     public Entity npc[] = new Entity[10];
     public Entity monster[] = new Entity[20];
+    public InteractiveTile iTile[] = new InteractiveTile[50];
     public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entityList = new ArrayList<>();
 
@@ -55,6 +57,9 @@ public class GamePanel extends JPanel implements Runnable {
     public final int pauseState = 2;
     public final int dialogueState = 3;
     public final int characterState = 4;
+    public final int optionsState = 5;
+
+    public int monsterRespawnCounter = 0;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(ScreenWidth, ScreenHeight));
@@ -70,6 +75,7 @@ public class GamePanel extends JPanel implements Runnable {
         aSetter.setObject();
         aSetter.setNPC();
         aSetter.setMonster();
+        aSetter.setInteractiveTile();
         //playMusic(0);
         //stopMusic();
         gameState = titleState;
@@ -126,7 +132,12 @@ public class GamePanel extends JPanel implements Runnable {
                         monster[i].update();
                     } 
                     if(monster[i].alive == false) {
+                        monster[i].checkDrop();
                         monster[i] = null;
+                        monsterRespawnCounter++;
+                        if (monsterRespawnCounter == 120) {
+                            aSetter.setMonster();
+                        }
                     }
                 }
             }
@@ -138,6 +149,11 @@ public class GamePanel extends JPanel implements Runnable {
                     if(projectileList.get(i).alive == false) {
                         projectileList.remove(i);
                     }
+                }
+            }
+            for (int i = 0; i < iTile.length; i++) {
+                if(iTile[i] != null) {
+                    iTile[i].update();
                 }
             }
         }
@@ -164,6 +180,13 @@ public class GamePanel extends JPanel implements Runnable {
             
             // draw tile
             tileM.draw(g2);
+
+            // Interactive Tile
+            for (int i = 0; i < iTile.length; i++) {
+                if(iTile[i] != null) {
+                    iTile[i].draw(g2);
+                }
+            }
 
             // add entities to the list
             entityList.add(player);

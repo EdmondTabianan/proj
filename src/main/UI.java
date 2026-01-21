@@ -33,6 +33,7 @@ public class UI {
     public int titleScreenState = 0; // 0 the first screen 1 second screen
     public int slotCol = 0;
     public int slotRow = 0;
+    int subState = 0;
 
     double playTime;
     DecimalFormat dFormat = new DecimalFormat("0.00");
@@ -87,6 +88,10 @@ public class UI {
         if (gp.gameState == gp.characterState) {
             drawCharacterScreen();
             drawInventory();
+        }
+        // OPTIONS STATE
+        if (gp.gameState == gp.optionsState) {
+            drawOptionsScreen();
         }
     }
     public void drawPlayerLife() {
@@ -170,14 +175,14 @@ public class UI {
             g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
 
             // Title Name
-            g2.setFont(g2.getFont().deriveFont(Font.BOLD,72F));
-            String text = "Baddie's Adventure";
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD,32F));
+            String text = "The Hunt: Lost Tomb of Cleopatra";
             int x = getXforCenteredText(text);
             int y = gp.TileSize*3;
 
             // shadow
             g2.setColor(Color.GRAY);
-            g2.drawString(text, x+5, y+5);
+            g2.drawString(text, x+3, y+3);
             // Main Color
             g2.setColor(Color.white);
             g2.drawString(text, x, y);
@@ -430,6 +435,184 @@ public class UI {
             
         }
 
+    }
+    public void drawOptionsScreen() {
+        g2.setColor(Color.white);
+        g2.setFont(g2.getFont().deriveFont(32f));
+
+        // Sub window
+        int frameX = gp.TileSize*5;
+        int frameY = gp.TileSize;
+        int frameWidth = gp.TileSize*8;
+        int frameHeight = gp.TileSize*10;
+        drawSubWindow(frameX, frameY, frameWidth, frameHeight);
+
+        switch (subState) {
+            case 0: options_top(frameX, frameY); break;
+            case 1: break; //save????????
+            case 2: option_control(frameX, frameY);break;
+            case 3: option_endGameConfirmation(frameX, frameY); break;
+        }
+    }
+    public void options_top(int frameX, int frameY) {
+
+        int textX;
+        int textY;
+
+        // Title
+        String text = "Options";    
+        textX = getXforCenteredText(text);
+        textY = frameY + gp.TileSize;
+        g2.drawString(text, textX, textY);
+
+        textX = frameX + gp.TileSize;
+        textY += gp.TileSize*2;
+        g2.drawString("save", textX, textY);
+        if (commandNum == 0) {
+            g2.drawString(">", textX-25, textY);
+        }
+
+        // music
+        textY += gp.TileSize;
+        g2.drawString("Music", textX, textY);
+        if (commandNum == 1) {
+            g2.drawString(">", textX-25, textY);
+        }
+
+        // sound effect
+        textY += gp.TileSize;
+        g2.drawString("SE", textX, textY);
+        if (commandNum == 2) {
+            g2.drawString(">", textX-25, textY);
+        }
+
+        // Control 
+        textY += gp.TileSize;
+        g2.drawString("Control", textX, textY);
+        if (commandNum == 3) {
+            g2.drawString(">", textX-25, textY);
+            if (gp.keyH.enterPressed == true) {
+                subState = 2;
+                commandNum = 0;
+                gp.keyH.enterPressed = false;
+            }
+        }
+        // quit game
+        textY += gp.TileSize;
+        g2.drawString("Quit game", textX, textY);
+        if (commandNum == 4) {
+            g2.drawString(">", textX-25, textY);
+            if (gp.keyH.enterPressed == true) {
+                subState = 3;
+                commandNum = 0;
+            }
+        }
+
+        //back
+        textY += gp.TileSize*8;
+        g2.drawString("Back", textX, textY);
+        if (commandNum == 5) {
+            g2.drawString(">", textX-25, textY);
+        }
+
+        // save box???
+        textX = frameX + gp.TileSize*5;
+        textY = frameY + gp.TileSize*2 + 24;
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRect(textX, textY, 23, 24);
+
+        // music
+        textY += gp.TileSize;
+        g2.drawRect(textX, textY, 120, 24); //120/5
+        int volumeWidth = 24 * gp.music.volumeScale;
+        g2.fillRect(textX, textY, volumeWidth, 24);
+
+        // Sound Effect
+        textY += gp.TileSize;
+        g2.drawRect(textX, textY, 120, 24);
+        volumeWidth = 24 * gp.se.volumeScale;
+        g2.fillRect(textX, textY, volumeWidth, 24);
+    }
+    public void option_control(int frameX, int frameY) {
+
+        int textX;
+        int textY;
+
+        //Title
+        String text = "Control";
+        textX = getXforCenteredText(text);
+        textY = frameY + gp.TileSize;
+        g2.drawString(text, textX, textY);
+
+        textX = frameX + gp.TileSize;
+        textY += gp.TileSize;
+        g2.drawString("Move", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Confirm/Attack", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Shoot", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Cast", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Character SCreen", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Pause", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Option", textX, textY);textY+=gp.TileSize;
+
+        textX = frameX + gp.TileSize*6;
+        textY = frameY + gp.TileSize*2;
+        g2.drawString("W/A/S/D", textX, textY);textY+=gp.TileSize;
+        g2.drawString("ENTER", textX, textY);textY+=gp.TileSize;
+        g2.drawString("Q", textX, textY);textY+=gp.TileSize;
+        g2.drawString("F", textX, textY);textY+=gp.TileSize;
+        g2.drawString("C", textX, textY);textY+=gp.TileSize;
+        g2.drawString("P", textX, textY);textY+=gp.TileSize;
+        g2.drawString("ESC", textX, textY);textY+=gp.TileSize;
+
+        // Back
+        textX = frameX + gp.TileSize;
+        textY = frameY + gp.TileSize * 9;
+        g2.drawString("Back", textX, textY);
+        if (commandNum == 0) {
+            g2.drawString(">", textX-25, textY);
+            if(gp.keyH.enterPressed == true) {
+                subState = 0;
+                commandNum = 0;
+                gp.keyH.enterPressed = false;
+            }
+        }
+    }
+    public void option_endGameConfirmation(int frameX, int frameY) {
+
+        int textX = frameX + gp.TileSize;
+        int textY = frameY + gp.TileSize;
+        
+        currentDialogue = "Quit the game and \nreturn to the title screen?";
+
+        for (String line: currentDialogue.split("\n")) {
+            g2.drawString(line, textX, textY);
+            textY += 40;
+        }
+
+        // YES
+        String text = "Yes";
+        textX = getXforCenteredText(text);
+        textY += gp.TileSize*3;
+        if (commandNum==0) {
+            g2.drawString(">", textX, textY);
+            if(gp.keyH.enterPressed == true) {
+                subState = 0;
+                commandNum = 0;
+                gp.gameState = gp.titleState;
+                gp.keyH.enterPressed = false;
+            }
+        }
+        // NO
+        text = "No";
+        textX = getXforCenteredText(text);
+        textY += gp.TileSize;
+        if (commandNum==1) {
+            g2.drawString(">", textX, textY);
+            if(gp.keyH.enterPressed == true) {
+                subState = 0;
+                commandNum = 4;
+            }
+        }
     }
     public int getItemIndexOnSlot() {
         int itemIndex = slotCol + (slotRow*5);

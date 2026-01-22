@@ -44,7 +44,7 @@ public class eventHandler {
 
         if(canTouchEvent == true) {
             if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
-            if(hit(21,30, "up") == true) {healingPool1(21,30,gp.dialogueState);}
+            if(hit(21,33, "up") == true) {healingPool1(21,30,gp.dialogueState);}
             // if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
             if(hit(46, 42, "down") == true) {transport(gp.dialogueState);}
         }
@@ -146,7 +146,7 @@ public class eventHandler {
                 gp.playSE(9); // Assuming 9 is transport sound
                 
             } else {
-                gp.ui.currentDialogue = "The door is locked!\nYou need a key to enter.";
+                gp.ui.currentDialogue = "The ship is locked!\nYou need a key to enter.";
                 // Play locked door sound
                 gp.playSE(10); // Assuming 10 is locked sound
             }

@@ -34,6 +34,8 @@ public class UI {
     public int slotCol = 0;
     public int slotRow = 0;
     int subState = 0;
+    public int loadingProgress = 0;
+    private int loadingDirection = 1;
 
     double playTime;
     DecimalFormat dFormat = new DecimalFormat("0.00");
@@ -568,6 +570,7 @@ public class UI {
         textX = frameX + gp.TileSize;
         textY = frameY + gp.TileSize * 9;
         g2.drawString("Back", textX, textY);
+        
         if (commandNum == 0) {
             g2.drawString(">", textX-25, textY);
             if(gp.keyH.enterPressed == true) {
@@ -614,6 +617,56 @@ public class UI {
             }
         }
     }
+    public void drawLoadingScreen(Graphics2D g2) {
+
+    // Background
+    g2.setColor(Color.black);
+    g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+
+    // Title
+    g2.setFont(new Font("Arial", Font.BOLD, 40));
+    g2.setColor(Color.white);
+
+    String title = "The Hunt: Lost Tomb of Cleopatra";
+    int titleX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(title) / 2;
+    int titleY = gp.ScreenHeight / 2 - 40;
+
+    g2.drawString(title, titleX, titleY);
+
+    // ------------------------
+    // LOADING BAR
+    // ------------------------
+    int barWidth = gp.ScreenWidth - 200;
+    int barHeight = 20;
+    int barX = (gp.ScreenWidth - barWidth) / 2;
+    int barY = gp.ScreenHeight - 120;
+
+    // Border
+    g2.setColor(Color.white);
+    g2.drawRect(barX, barY, barWidth, barHeight);
+
+    // Animate loading progress
+    loadingProgress += loadingDirection;
+
+    if (loadingProgress >= 100) {
+        loadingProgress = 100;
+    }
+
+    int fillWidth = (int)(barWidth * loadingProgress / 100.0);
+
+    g2.setColor(new Color(0, 200, 0));
+    g2.fillRect(barX + 1, barY + 1, fillWidth - 2, barHeight - 2);
+
+    // Percentage Text
+    g2.setFont(new Font("Arial", Font.PLAIN, 18));
+    String percentText = loadingProgress + "%";
+    int percentX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(percentText) / 2;
+    int percentY = barY + 45;
+
+    g2.drawString(percentText, percentX, percentY);
+}
+
+
     public int getItemIndexOnSlot() {
         int itemIndex = slotCol + (slotRow*5);
         return itemIndex;

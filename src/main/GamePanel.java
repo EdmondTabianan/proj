@@ -58,6 +58,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int dialogueState = 3;
     public final int characterState = 4;
     public final int optionsState = 5;
+    public final int loadingState = 6;
 
     public int monsterRespawnCounter = 0;
 
@@ -72,12 +73,29 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void setupGame() {
 
+        gameState = loadingState;
         aSetter.setObject();
         aSetter.setNPC();
         aSetter.setMonster();
         aSetter.setInteractiveTile();
         //playMusic(0);
         //stopMusic();
+        // gameState = titleState;
+    }
+    public void loadGame() {
+
+    // Simulate loading time (2 seconds)
+    try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        aSetter.setObject();
+        aSetter.setNPC();
+        aSetter.setMonster();
+        aSetter.setInteractiveTile();
+
         gameState = titleState;
     }
 
@@ -88,6 +106,9 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     
     public void run() {
+        if (gameState == loadingState) {
+            loadGame();
+        }
         double drawInterval = 1000000000 / FPS;
         double delta = 0;
         long lastTime = System.nanoTime();
@@ -172,8 +193,11 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         // Title Screen
-        if (gameState == titleState) {
-             ui.draw(g2);
+        if (gameState == loadingState) {
+            ui.drawLoadingScreen(g2);
+        }
+        else if (gameState == titleState) {
+            ui.draw(g2);
         }
         // Others
         else {

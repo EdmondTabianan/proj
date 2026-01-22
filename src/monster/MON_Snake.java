@@ -1,6 +1,12 @@
 package monster;
 
 import main.GamePanel;
+import object.OBJ_Coin_Bronze;
+import object.OBJ_Heart;
+import object.OBJ_ManaCrystal;
+import object.OBJ_Potion_Blue;
+import object.OBJ_Potion_Red;
+
 import java.util.Random;
 
 import entity.Entity;
@@ -15,12 +21,12 @@ public class MON_Snake extends Entity{
         this.gp = gp;
         
         type = 2;
-        name = "snik";
+        name = "snake";
         speed = 1;
-        maxLife = 10;
+        maxLife = 15;
         life = maxLife;
         attack = 1;
-        defense = 0;
+        defense = 2;
         exp = 2;
 
         solidArea.x = 3;
@@ -66,6 +72,30 @@ public class MON_Snake extends Entity{
             actionLockCounter = 0;
         }
     }
+    public void checkDrop() {
+
+        //cast a die/dice
+        int i = new Random().nextInt(100)+1;
+        //set the monster drop
+        if (i<60) {
+            // nothing
+        }
+        if (i >=60 && i < 75) {
+            dropItem(new OBJ_Coin_Bronze(gp));
+        }
+        if (i >=75 && i < 85) {
+            dropItem(new OBJ_Heart(gp));
+        }
+        if (i >= 85 && i < 99) {
+            dropItem(new OBJ_ManaCrystal(gp));
+        }
+        if (i == 99) {
+            dropItem(new OBJ_Potion_Blue(gp));
+        }
+        if (i == 100) {
+            dropItem(new OBJ_Potion_Red(gp));
+        }
+    }
     public void damageReaction() {
         actionLockCounter = 0;
         switch (gp.player.Direction) {
@@ -75,7 +105,6 @@ public class MON_Snake extends Entity{
             case "right": Direction = "left";  break;
         }
         int knockBackDistance = 40; // Adjust this value for "strength"
-    
         switch (gp.player.Direction) {
             case "up":    worldY -= knockBackDistance; break;
             case "down":  worldY += knockBackDistance; break;

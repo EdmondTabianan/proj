@@ -8,6 +8,7 @@ import object.OBJ_Bato;
 import object.OBJ_Coin_Bronze;
 import object.OBJ_Heart;
 import object.OBJ_ManaCrystal;
+import object.OBJ_Potion_Blue;
 import object.OBJ_Potion_Red;
 
 public class MON_GreenSlime extends Entity {
@@ -22,9 +23,9 @@ public class MON_GreenSlime extends Entity {
         type = type_monster;
         name = "Green Slime";
         speed = 1;
-        maxLife = 5;
+        maxLife = 10;
         life = maxLife;
-        attack = 2;
+        attack = 1;
         defense = 0;
         exp = 2;
         projectiles = new OBJ_Bato(gp);
@@ -70,8 +71,6 @@ public class MON_GreenSlime extends Entity {
                 Direction = "right";
             }
             actionLockCounter = 0;
-
-            
         }
         int i = new Random().nextInt(100)+1;
         //if (i > 99 && projectile.alive == false && shotAvailableCounter == 30) {
@@ -107,7 +106,7 @@ public class MON_GreenSlime extends Entity {
         int i = new Random().nextInt(100)+1;
         //set the monster drop
         if (i<60) {
-            // nothing
+           // nothing
         }
         if (i >=60 && i < 75) {
             dropItem(new OBJ_Coin_Bronze(gp));
@@ -115,8 +114,11 @@ public class MON_GreenSlime extends Entity {
         if (i >=75 && i < 85) {
             dropItem(new OBJ_Heart(gp));
         }
-        if (i >= 85 && i < 100) {
+        if (i >= 85 && i < 99) {
             dropItem(new OBJ_ManaCrystal(gp));
+        }
+        if (i == 99) {
+            dropItem(new OBJ_Potion_Blue(gp));
         }
         if (i == 100) {
             dropItem(new OBJ_Potion_Red(gp));

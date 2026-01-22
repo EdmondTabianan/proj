@@ -12,7 +12,7 @@ public class OBJ_Bato extends Projectile{
         this.gp = gp;
 
         name = "Bato";
-        speed = 2;
+        speed = 4;
         maxLife = 80;
         life = maxLife;
         attack = 3;

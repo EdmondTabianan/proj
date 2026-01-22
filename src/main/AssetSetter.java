@@ -111,6 +111,14 @@ public class AssetSetter {
         gp.monster[i] = new MON_GreenSlime(gp);
         gp.monster[i].worldX = gp.TileSize*6;
         gp.monster[i].worldY = gp.TileSize*9;
+        i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*30;
+        gp.monster[i].worldY = gp.TileSize*31;
+         i++;
+        gp.monster[i] = new MON_GreenSlime(gp);
+        gp.monster[i].worldX = gp.TileSize*30;
+        gp.monster[i].worldY = gp.TileSize*34;
     }
     public void setInteractiveTile() {
         

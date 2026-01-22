@@ -18,7 +18,7 @@ public class NPC_blueboy extends Entity {
 
         solidArea.x = 0;
         solidArea.y = 16;
-        solidArea.width = 32;
+        solidArea.width = 48;
         solidArea.height = 32;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
@@ -35,8 +35,10 @@ public class NPC_blueboy extends Entity {
     }
     public void setDialogue() {
 
-        dialogues[0] = "Hello";
-        dialogues[1] = "You have to find the key \n to ride the ship";
+        int i = 0;
+
+        dialogues[i] = "You have to find the key \n to ride the ship";i++;
+        dialogues[i] = "Goodluck!";i++;
     }
     public void setAction(){
 

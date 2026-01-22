@@ -53,8 +53,8 @@ public class Player extends Entity {
         setItems();
     }
     public void setDefaultValues() {
-        worldX = gp.TileSize * 23;
-        worldY = gp.TileSize * 21;
+        worldX = gp.TileSize * 45;
+        worldY = gp.TileSize * 40;
         speed = 5;
         Direction = "down";
 
@@ -306,11 +306,6 @@ public class Player extends Entity {
     }
     public void pickUpObject(int i) {
         if (i != 999) {
-            // Debug: Print object info
-            System.out.println("Object name: " + gp.obj[i].name);
-            System.out.println("Object type: " + gp.obj[i].type);
-            System.out.println("type_key constant: " + type_key);
-            
             // Check for key
             if (gp.obj[i].type == type_key) {
                 gp.playSE(2);

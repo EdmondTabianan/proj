@@ -35,10 +35,8 @@ public class NPC_blueboy extends Entity {
     }
     public void setDialogue() {
 
-        dialogues[0] = "Hello, Vhong!";
-        dialogues[1] = "Some systems split “packages” \n from “orders” — but in a courier \n ";
-        dialogues[2] = "tracking context, shipment is \n the unit that needs tracking.";
-        dialogues[3] = "..................................";
+        dialogues[0] = "Hello";
+        dialogues[1] = "You have to find the key \n to ride the ship";
     }
     public void setAction(){
 

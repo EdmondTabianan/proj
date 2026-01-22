@@ -57,11 +57,11 @@ public class AssetSetter {
         gp.obj[i].worldY = gp.TileSize*15;    
     }
     public void setNPC() {
-        // int i = 0;
-        // gp.npc[i] = new NPC_blueboy(gp);
-        // gp.npc[i].worldX = gp.TileSize*21;
-        // gp.npc[i].worldY = gp.TileSize*21;
-        // i++;
+        int i = 0;
+        gp.npc[i] = new NPC_blueboy(gp);
+        gp.npc[i].worldX = gp.TileSize*38;
+        gp.npc[i].worldY = gp.TileSize*30;
+        i++;
         // gp.npc[i] = new NPC_blueboy(gp);
         // gp.npc[i].worldX = gp.TileSize*24;
         // gp.npc[i].worldY = gp.TileSize*21;
@@ -87,6 +87,14 @@ public class AssetSetter {
         gp.monster[i] = new MON_Snake(gp);
         gp.monster[i].worldX = gp.TileSize*21;
         gp.monster[i].worldY = gp.TileSize*6;
+         i++;
+        gp.monster[i] = new MON_Snake(gp);
+        gp.monster[i].worldX = gp.TileSize*4;
+        gp.monster[i].worldY = gp.TileSize*14;
+         i++;
+        gp.monster[i] = new MON_Snake(gp);
+        gp.monster[i].worldX = gp.TileSize*4;
+        gp.monster[i].worldY = gp.TileSize*16;
         i++;
         gp.monster[i] = new MON_GreenSlime(gp);
         gp.monster[i].worldX = gp.TileSize*33;

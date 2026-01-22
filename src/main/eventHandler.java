@@ -44,8 +44,8 @@ public class eventHandler {
 
         if(canTouchEvent == true) {
             if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
-            if(hit(26,35, "down") == true) {healingPool1(26,35,gp.dialogueState);}
-            if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
+            if(hit(21,30, "up") == true) {healingPool1(21,30,gp.dialogueState);}
+            // if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
             if(hit(46, 42, "down") == true) {transport(gp.dialogueState);}
         }
     }

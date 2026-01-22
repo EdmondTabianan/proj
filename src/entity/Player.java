@@ -55,7 +55,7 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = gp.TileSize * 23;
         worldY = gp.TileSize * 21;
-        speed = 10;
+        speed = 5;
         Direction = "down";
 
         // Player status
@@ -70,7 +70,7 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        hasKey = 0;
+        hasKey = 0; 
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         arrows = new OBJ_Arrows(gp);
@@ -79,7 +79,6 @@ public class Player extends Entity {
         defense = getDefense(); // total defense 
     }
     public void setItems() {
-
         inventory.add(currentweapon);
         inventory.add(currentShield);
     }

@@ -62,7 +62,7 @@ public class TileManager {
         setup(i, "029", false); i++;
         setup(i, "030", false); i++;
         setup(i, "031", false); i++;
-        setup(i, "032", false); i++;
+        setup(i, "032", true); i++;
         setup(i, "033", true); i++;
         setup(i, "034", false); i++;
         setup(i, "035", false); i++;

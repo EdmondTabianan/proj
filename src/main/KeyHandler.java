@@ -134,7 +134,6 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_ESCAPE) {
             gp.gameState = gp.optionsState;
          }
-
          if (code == KeyEvent.VK_Q) {
             arrowKeyPressed = true;
          }
@@ -285,5 +284,7 @@ public class KeyHandler implements KeyListener {
         //     }
         // }
     }
+
+
     
 }

@@ -68,6 +68,19 @@ public class MON_Snake extends Entity{
     }
     public void damageReaction() {
         actionLockCounter = 0;
-        Direction = gp.player.Direction;
+        switch (gp.player.Direction) {
+            case "up":    Direction = "down";  break;
+            case "down":  Direction = "up";    break;
+            case "left":  Direction = "right"; break;
+            case "right": Direction = "left";  break;
+        }
+        int knockBackDistance = 40; // Adjust this value for "strength"
+    
+        switch (gp.player.Direction) {
+            case "up":    worldY -= knockBackDistance; break;
+            case "down":  worldY += knockBackDistance; break;
+            case "left":  worldX -= knockBackDistance; break;
+            case "right": worldX += knockBackDistance; break;
+        }
     }
 }

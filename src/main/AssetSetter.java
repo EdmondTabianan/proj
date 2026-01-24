@@ -16,6 +16,7 @@ import object.OBJ_Potion_Red;
 import object.OBJ_Shield_Blue;
 import object.OBJ_boat;
 import object.OBJ_piramid;
+import object.OBJ_tablet;
 import tile_interactive.IT_Drytree;
 
 public class AssetSetter {
@@ -54,7 +55,11 @@ public class AssetSetter {
         i++;
         gp.obj[i] = new OBJ_Door2(gp);
         gp.obj[i].worldX = gp.TileSize*29;
-        gp.obj[i].worldY = gp.TileSize*15;    
+        gp.obj[i].worldY = gp.TileSize*15; 
+        i++;
+        gp.obj[i] = new OBJ_tablet(gp);
+        gp.obj[i].worldX = gp.TileSize*10;
+        gp.obj[i].worldY = gp.TileSize*24;      
     }
     public void setNPC() {
         int i = 0;
@@ -130,5 +135,7 @@ public class AssetSetter {
         gp.iTile[i] = new IT_Drytree(gp, 7, 24);i++;
         gp.iTile[i] = new IT_Drytree(gp, 8, 24);i++;
         gp.iTile[i] = new IT_Drytree(gp, 9, 24);i++;
+        gp.iTile[i] = new IT_Drytree(gp, 17, 12);i++;
+        gp.iTile[i] = new IT_Drytree(gp, 17, 13);i++;
     }
 }

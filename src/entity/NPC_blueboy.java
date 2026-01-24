@@ -37,7 +37,10 @@ public class NPC_blueboy extends Entity {
 
         int i = 0;
 
-        dialogues[i] = "You have to find the key \n to ride the ship";i++;
+        dialogues[i] = "A vessel rests at dock,\n" + //
+                        "locked from your journey—\n" + //
+                        "the key decides who sails\n" + //
+                        "";i++;
         dialogues[i] = "Goodluck!";i++;
     }
     public void setAction(){

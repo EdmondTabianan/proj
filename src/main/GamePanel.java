@@ -38,6 +38,7 @@ public class GamePanel extends JPanel implements Runnable {
     public AssetSetter aSetter = new AssetSetter(this);
     public UI ui = new UI(this);
     public eventHandler eHandler = new eventHandler(this);
+    public LoadingManager loadingManager;
     Thread gameThread;
 
     // Entity and Object
@@ -69,6 +70,8 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);
         this.requestFocusInWindow();
+
+        loadingManager = new LoadingManager(this); 
     }
 
     public void setupGame() {
@@ -83,22 +86,52 @@ public class GamePanel extends JPanel implements Runnable {
         // gameState = titleState;
     }
     public void loadGame() {
-
-    // Simulate loading time (2 seconds)
-    try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Simulate loading steps
+        int totalSteps = 5; // Number of loading steps
+        int currentStep = 0;
+        // playSE(11);
+        
+        for (int i = 0; i < totalSteps; i++) {
+            currentStep++;
+            
+            // Update loading progress in UI
+            float progress = (currentStep * 100f) / totalSteps;
+            ui.setLoadingProgress(progress);
+            
+            // Repaint to show updated progress
+            repaint();
+            
+            // Simulate loading time for each step
+            try {
+                Thread.sleep(400); // 400ms per step
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+            // Perform actual loading tasks
+            switch (currentStep) {
+                case 1:
+                    // Load assets
+                    aSetter.setObject();
+                    break;
+                case 2:
+                    aSetter.setNPC();
+                    break;
+                case 3:
+                    aSetter.setMonster();
+                    break;
+                case 4:
+                    aSetter.setInteractiveTile();
+                    break;
+                case 5:
+                    // Final setup
+                    break;
+            }
         }
-
-        aSetter.setObject();
-        aSetter.setNPC();
-        aSetter.setMonster();
-        aSetter.setInteractiveTile();
-
+        // Reset progress after loading
+        ui.setLoadingProgress(0);
         gameState = titleState;
     }
-
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
@@ -117,6 +150,9 @@ public class GamePanel extends JPanel implements Runnable {
         long drawCount = 0;
 
         while (gameThread != null) {
+            if (gameState == loadingState) {
+                loadingManager.startLoading();
+            }
             currentTime = System.nanoTime();
 
             delta += (currentTime - lastTime) / drawInterval;
@@ -192,9 +228,8 @@ public class GamePanel extends JPanel implements Runnable {
             drawStart = System.nanoTime();
         }
 
-        // Title Screen
         if (gameState == loadingState) {
-            ui.drawLoadingScreen(g2);
+            ui.drawLoadingScreen(g2); // This will now show the image
         }
         else if (gameState == titleState) {
             ui.draw(g2);

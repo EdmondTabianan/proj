@@ -101,19 +101,56 @@ public class MON_Snake extends Entity{
         }
     }
     public void damageReaction() {
-        actionLockCounter = 0;
-        switch (gp.player.Direction) {
-            case "up":    Direction = "down";  break;
-            case "down":  Direction = "up";    break;
-            case "left":  Direction = "right"; break;
-            case "right": Direction = "left";  break;
+        
+        
+
+        int knockBackDistance = 40; 
+
+        // Calculate how far we can actually move without hitting solid tile
+        int actualDistance = knockBackDistance;
+
+        // Test each possible distance from smallest to largest
+        for (int testDistance = 5; testDistance <= knockBackDistance; testDistance += 5) {
+            // Temporarily move to test position
+            int tempX = worldX;
+            int tempY = worldY;
+            
+            switch (gp.player.Direction) {
+                case "up":    tempY -= testDistance; break;
+                case "down":  tempY += testDistance; break;
+                case "left":  tempX -= testDistance; break;
+                case "right": tempX += testDistance; break;
+            }
+            
+            // Store original position
+            int originalX = worldX;
+            int originalY = worldY;
+            
+            // Test collision at this distance
+            worldX = tempX;
+            worldY = tempY;
+            collisionOn = false;
+            gp.cChecker.checkTile(this);
+            
+            // Restore position
+            worldX = originalX;
+            worldY = originalY;
+            
+            if (collisionOn) {
+                // Can't move this far, use previous valid distance
+                actualDistance = testDistance - 5;
+                break;
+            } else {
+                actualDistance = testDistance;
+            }
         }
-        int knockBackDistance = 40; // Adjust this value for "strength"
+
+        // Apply the actual possible knockback distance
         switch (gp.player.Direction) {
-            case "up":    worldY -= knockBackDistance; break;
-            case "down":  worldY += knockBackDistance; break;
-            case "left":  worldX -= knockBackDistance; break;
-            case "right": worldX += knockBackDistance; break;
+            case "up":    worldY -= actualDistance; break;
+            case "down":  worldY += actualDistance; break;
+            case "left":  worldX -= actualDistance; break;
+            case "right": worldX += actualDistance; break;
         }
     }
 }

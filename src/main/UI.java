@@ -1,11 +1,14 @@
 package main;
 
+import java.awt.Image;
+import javax.imageio.ImageIO;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -34,6 +37,7 @@ public class UI {
     public int slotCol = 0;
     public int slotRow = 0;
     int subState = 0;
+    private Image logoImage;
     public int loadingProgress = 0;
     private int loadingDirection = 1;
 
@@ -42,7 +46,7 @@ public class UI {
 
     public UI(GamePanel gp) {
         this.gp = gp;
-
+        loadLogoImage();
         arial_40 = new Font("Times New Roman", Font.PLAIN, 40);
         arial_80B = new Font("Arial", Font.BOLD, 80);
         
@@ -55,6 +59,137 @@ public class UI {
         heart_blank = heart.image3;
         crystal_full = crystal.image;
         crystal_blank = crystal.image2;
+    }
+
+    private void loadLogoImage() {
+        try {
+            logoImage = ImageIO.read(getClass().getResourceAsStream("/loading/logo.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void drawLoadingScreen(Graphics2D g2) {
+        // Set background
+        g2.setColor(Color.black);
+        g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+        
+        // Draw logo in the center
+        if (logoImage != null) {
+            int logoWidth = 200; // Adjust as needed
+            int logoHeight = 200; // Adjust as needed
+            
+            // finding the center position
+            int logoX = gp.ScreenWidth / 2 - logoWidth / 2;
+            int logoY = gp.ScreenHeight / 2 - logoHeight - 60; // 60 pixels above center
+            
+            // Draw the image
+            g2.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight, null);
+        }
+        
+        // Draw game title
+        g2.setFont(new Font("Arial", Font.BOLD, 40));
+        g2.setColor(new Color(255, 215, 0));
+        
+        String title = "The Hunt: Lost Tomb of Cleopatra";
+        int titleX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(title) / 2;
+        int titleY = gp.ScreenHeight / 2; // Adjusted position
+        
+        g2.drawString(title, titleX, titleY);
+        
+        // Draw a random gameplay tip above the progress bar
+        String randomTip = getRandomGameplayTip();
+        g2.setFont(new Font("Arial", Font.ITALIC, 20));
+        g2.setColor(new Color(180, 220, 255)); // Light blue color
+        
+        int tipTextX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(randomTip) / 2;
+        int tipTextY = gp.ScreenHeight - 150; // Position above progress bar
+        
+        g2.drawString(randomTip, tipTextX, tipTextY);
+        
+        // Progress bar
+        int barWidth = gp.ScreenWidth - 200;
+        int barHeight = 20;
+        int barX = (gp.ScreenWidth - barWidth) / 2;
+        int barY = gp.ScreenHeight - 100;
+        
+        // Border
+        g2.setColor(Color.white);
+        g2.drawRect(barX, barY, barWidth, barHeight);
+        
+        // Animate loading progress
+        loadingProgress += loadingDirection;
+        
+        if (loadingProgress >= 100) {
+            loadingProgress = 100;
+        }
+        
+        int fillWidth = (int)(barWidth * loadingProgress / 100.0);
+        
+        g2.setColor(new Color(212, 175, 55));
+        g2.fillRect(barX + 1, barY + 1, fillWidth - 2, barHeight - 2);
+        
+        // Percentage Text
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        String percentText = (int)loadingProgress + "%";
+        int percentX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(percentText) / 2;
+        int percentY = barY + 45;
+        
+        g2.drawString(percentText, percentX, percentY);
+    }
+    
+    // Helper method to get a random gameplay tip
+    private String getRandomGameplayTip() {
+        String[] tips = {
+            "Explore every corner for hidden treasures!",
+            "Different enemies have different weaknesses.",
+            "Use ranged attacks against tough melee enemies.",
+            "Conserve magic for challenging encounters.",
+            "Some doors require special keys to open.",
+            "Watch your health and use potions wisely.",
+            "Environmental objects can be used against enemies.",
+            "Combine items for more powerful effects.",
+            "Patience is key when facing powerful bosses.",
+            "Read ancient tablets and notes for valuable clues.",
+            // Control tips added here
+            "Move: W/A/S/D keys",
+            "Attack/Confirm: ENTER key",
+            "F key: Cast spells with wand, Shoot with bow",
+            "Open character screen: C key",
+            "Pause game: P key",
+            "Open options: ESC key",
+            "Use W/A/S/D to move around",
+            "Press ENTER to attack or confirm actions",
+            "Press F to cast spells when wielding a wand",
+            "Press F to shoot arrows when wielding a bow",
+            "Press C to check your character stats",
+            "Press P to pause the game",
+            "Press ESC to open options menu",
+            "F casts spells with wand, shoots with bow",
+            "Equip a wand and press F to cast magic",
+            "Equip a bow and press F to shoot arrows",
+            "The F key adapts to your equipped weapon",
+            "With wand equipped: F = Cast spell",
+            "With bow equipped: F = Shoot arrow",
+            "Switch between wand and bow for different F actions",
+            "Wand + F = Magic, Bow + F = Arrows",
+            "F key's function depends on your weapon choice",
+            "Use wand for magic, bow for ranged - both use F key"
+        };
+        
+        // Select random tip
+        int randomIndex = (int)(Math.random() * tips.length);
+        return "Tip: " + tips[randomIndex];
+    }
+
+    // Add a method to update loading progress
+    public void setLoadingProgress(float progress) {
+        this.loadingProgress = (int) progress;
+    }
+    
+    // Add a method to get loading progress (optional)
+    public float getLoadingProgress() {
+        return loadingProgress;
     }
 
     public void showMessage(String text) {
@@ -618,55 +753,6 @@ public class UI {
             }
         }
     }
-    public void drawLoadingScreen(Graphics2D g2) {
-
-    // Background
-    g2.setColor(Color.black);
-    g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-
-    // Title
-    g2.setFont(new Font("Arial", Font.BOLD, 40));
-    g2.setColor(Color.white);
-
-    String title = "The Hunt: Lost Tomb of Cleopatra";
-    int titleX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(title) / 2;
-    int titleY = gp.ScreenHeight / 2 - 40;
-
-    g2.drawString(title, titleX, titleY);
-
-    // ------------------------
-    // LOADING BAR
-    // ------------------------
-    int barWidth = gp.ScreenWidth - 200;
-    int barHeight = 20;
-    int barX = (gp.ScreenWidth - barWidth) / 2;
-    int barY = gp.ScreenHeight - 120;
-
-    // Border
-    g2.setColor(Color.white);
-    g2.drawRect(barX, barY, barWidth, barHeight);
-
-    // Animate loading progress
-    loadingProgress += loadingDirection;
-
-    if (loadingProgress >= 100) {
-        loadingProgress = 100;
-    }
-
-    int fillWidth = (int)(barWidth * loadingProgress / 100.0);
-
-    g2.setColor(new Color(0, 200, 0));
-    g2.fillRect(barX + 1, barY + 1, fillWidth - 2, barHeight - 2);
-
-    // Percentage Text
-    g2.setFont(new Font("Arial", Font.PLAIN, 18));
-    String percentText = loadingProgress + "%";
-    int percentX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(percentText) / 2;
-    int percentY = barY + 45;
-
-    g2.drawString(percentText, percentX, percentY);
-}
-
 
     public int getItemIndexOnSlot() {
         int itemIndex = slotCol + (slotRow*5);

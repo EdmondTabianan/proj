@@ -44,7 +44,7 @@ public class eventHandler {
 
         if(canTouchEvent == true) {
             if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
-            if(hit(21,33, "up") == true) {healingPool1(21,30,gp.dialogueState);}
+            if(hit(21,33, "up") == true) {healingPool(21,30,gp.dialogueState);}
             // if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
             if(hit(46, 42, "down") == true) {transport(gp.dialogueState);}
         }
@@ -74,12 +74,6 @@ public class eventHandler {
         return hit;
     }
     
-    public void teleport1(int gameState) {
-        gp.gameState = gameState;
-        gp.player.worldX = gp.TileSize*24;
-        gp.player.worldY = gp.TileSize*14;
-    } 
-    
     public void teleport(int gameState) {
         gp.gameState = gameState;
         gp.ui.currentDialogue ="Teleport";
@@ -98,16 +92,6 @@ public class eventHandler {
         }
     }
     
-    public void healingPool1(int col, int row, int gameState) {
-        if(gp.keyH.enterPressed == true) {
-            gp.gameState = gameState;
-            gp.player.attackCanceled = true;
-            gp.ui.currentDialogue = "You drink water.\nyour life been recovered";
-            gp.player.life = gp.player.maxLife;
-            gp.player.mana = gp.player.maxMana;
-            gp.aSetter.setMonster();
-       }
-    }
     public void transport(int gameState) {
         if(gp.keyH.enterPressed == true) {
             gp.gameState = gameState;

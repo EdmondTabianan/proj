@@ -14,7 +14,7 @@ public class OBJ_bow_normal extends Entity {
         type = type_bow;
         name = "Normal bow";
         down1 = setup("/objects/bow_normal", gp.TileSize, gp.TileSize);
-        attackvalue = 1;
+        attackvalue = 2;
         description = "[" + name + "]\n normal sword\n" + "attack: " + attackvalue;
         attackArea.width = 36;
         attackArea.height = 36;

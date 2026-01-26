@@ -15,6 +15,7 @@ public class OBJ_Potion_Red extends Entity{
         
         type = type_consumable;
         name = "Red potion";
+        value = 4;
         down1 = setup("/objects/potion_red", gp.TileSize, gp.TileSize);
         description = "[Red Potion]\n your life by " + value + ".";
 

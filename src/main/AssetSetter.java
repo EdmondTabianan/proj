@@ -34,12 +34,12 @@ public class AssetSetter {
         gp.obj[i].worldX = gp.TileSize*7;
         gp.obj[i].worldY = gp.TileSize*10;
         i++;
-        // if (gp.player.hasTablet) {
-        //     gp.obj[i] = new OBJ_Axe(gp);
-        //     gp.obj[i].worldX = gp.TileSize*18;
-        //     gp.obj[i].worldY = gp.TileSize*6;
-        //     i++; 
-        // } 
+        if (gp.player.hasTablet == true) {
+            gp.obj[i] = new OBJ_Axe(gp);
+            gp.obj[i].worldX = gp.TileSize*18;
+            gp.obj[i].worldY = gp.TileSize*6;
+            i++; 
+        } 
         gp.obj[i] = new OBJ_boat(gp);
         gp.obj[i].worldX = gp.TileSize*46;
         gp.obj[i].worldY = gp.TileSize*43;
@@ -65,8 +65,8 @@ public class AssetSetter {
         gp.obj[i].worldY = gp.TileSize*24;  
         i++;
         gp.obj[i] = new OBJ_bow_normal(gp);
-        gp.obj[i].worldX = gp.TileSize*15;
-        gp.obj[i].worldY = gp.TileSize*24;      
+        gp.obj[i].worldX = gp.TileSize*12;
+        gp.obj[i].worldY = gp.TileSize*17;      
     }
     public void setNPC() {
         int i = 0;
@@ -78,60 +78,128 @@ public class AssetSetter {
         // gp.npc[i].worldX = gp.TileSize*24;
         // gp.npc[i].worldY = gp.TileSize*21;
     }
+    // public void setMonster() {
+    //     int i = 0;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*40;
+    //     gp.monster[i].worldY = gp.TileSize*6; //ok
+    //     i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*26;
+    //     gp.monster[i].worldY = gp.TileSize*5; // ok
+    //     i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*24;
+    //     gp.monster[i].worldY = gp.TileSize*20;
+    //     i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*25;
+    //     gp.monster[i].worldY = gp.TileSize*25;
+    //     i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*21;
+    //     gp.monster[i].worldY = gp.TileSize*6;
+    //      i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*4;
+    //     gp.monster[i].worldY = gp.TileSize*14;
+    //      i++;
+    //     gp.monster[i] = new MON_Snake(gp);
+    //     gp.monster[i].worldX = gp.TileSize*4;
+    //     gp.monster[i].worldY = gp.TileSize*16;
+    //     i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*33;
+    //     gp.monster[i].worldY = gp.TileSize*25;
+    //     i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*35;
+    //     gp.monster[i].worldY = gp.TileSize*18;
+    //     i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*17;
+    //     gp.monster[i].worldY = gp.TileSize*9;
+    //     i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*6;
+    //     gp.monster[i].worldY = gp.TileSize*9;
+    //     i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*30;
+    //     gp.monster[i].worldY = gp.TileSize*31;
+    //      i++;
+    //     gp.monster[i] = new MON_GreenSlime(gp);
+    //     gp.monster[i].worldX = gp.TileSize*30;
+    //     gp.monster[i].worldY = gp.TileSize*34;
+    // }
     public void setMonster() {
+
         int i = 0;
+    
         gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*40;
-        gp.monster[i].worldY = gp.TileSize*6; //ok
+        gp.monster[i].worldX = gp.TileSize * 40;
+        gp.monster[i].worldY = gp.TileSize * 6;
         i++;
+    
         gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*26;
-        gp.monster[i].worldY = gp.TileSize*5; // ok
+        gp.monster[i].worldX = gp.TileSize * 26;
+        gp.monster[i].worldY = gp.TileSize * 5;
         i++;
+    
         gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*24;
-        gp.monster[i].worldY = gp.TileSize*20;
+        gp.monster[i].worldX = gp.TileSize * 24;
+        gp.monster[i].worldY = gp.TileSize * 20;
         i++;
+    
         gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*25;
-        gp.monster[i].worldY = gp.TileSize*25;
+        gp.monster[i].worldX = gp.TileSize * 25;
+        gp.monster[i].worldY = gp.TileSize * 25;
         i++;
+    
         gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*21;
-        gp.monster[i].worldY = gp.TileSize*6;
-         i++;
-        gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*4;
-        gp.monster[i].worldY = gp.TileSize*14;
-         i++;
-        gp.monster[i] = new MON_Snake(gp);
-        gp.monster[i].worldX = gp.TileSize*4;
-        gp.monster[i].worldY = gp.TileSize*16;
+        gp.monster[i].worldX = gp.TileSize * 21;
+        gp.monster[i].worldY = gp.TileSize * 6;
         i++;
+    
+        gp.monster[i] = new MON_Snake(gp);
+        gp.monster[i].worldX = gp.TileSize * 4;
+        gp.monster[i].worldY = gp.TileSize * 14;
+        i++;
+    
+        gp.monster[i] = new MON_Snake(gp);
+        gp.monster[i].worldX = gp.TileSize * 4;
+        gp.monster[i].worldY = gp.TileSize * 16;
+        i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*33;
-        gp.monster[i].worldY = gp.TileSize*25;
+        gp.monster[i].worldX = gp.TileSize * 33;
+        gp.monster[i].worldY = gp.TileSize * 25;
         i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*35;
-        gp.monster[i].worldY = gp.TileSize*18;
+        gp.monster[i].worldX = gp.TileSize * 35;
+        gp.monster[i].worldY = gp.TileSize * 18;
         i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*17;
-        gp.monster[i].worldY = gp.TileSize*9;
+        gp.monster[i].worldX = gp.TileSize * 17;
+        gp.monster[i].worldY = gp.TileSize * 9;
         i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*6;
-        gp.monster[i].worldY = gp.TileSize*9;
+        gp.monster[i].worldX = gp.TileSize * 6;
+        gp.monster[i].worldY = gp.TileSize * 9;
         i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*30;
-        gp.monster[i].worldY = gp.TileSize*31;
-         i++;
+        gp.monster[i].worldX = gp.TileSize * 30;
+        gp.monster[i].worldY = gp.TileSize * 31;
+        i++;
+    
         gp.monster[i] = new MON_GreenSlime(gp);
-        gp.monster[i].worldX = gp.TileSize*30;
-        gp.monster[i].worldY = gp.TileSize*34;
-    }
+        gp.monster[i].worldX = gp.TileSize * 30;
+        gp.monster[i].worldY = gp.TileSize * 34;
+    }    
     public void setInteractiveTile() {
         
         int i = 0;
@@ -144,5 +212,6 @@ public class AssetSetter {
         gp.iTile[i] = new IT_Drytree(gp, 9, 24);i++;
         gp.iTile[i] = new IT_Drytree(gp, 17, 12);i++;
         gp.iTile[i] = new IT_Drytree(gp, 17, 13);i++;
+        gp.iTile[i] = new IT_Drytree(gp, 18, 17);i++;
     }
 }

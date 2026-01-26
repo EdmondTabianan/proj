@@ -18,7 +18,6 @@ public class OBJ_ice_wand extends Entity {
         description = "[" + name + "]\n normal sword\n" + "attack: " + attackvalue;
         attackArea.width = 36;
         attackArea.height = 36;
-
     }
 
 }

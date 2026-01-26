@@ -13,7 +13,7 @@ public class OBJ_Potion_Blue extends Entity {
         
         type = type_consumable;
         name = "Blue potion";
-        value = 3;
+        value = 2;
         down1 = setup("/objects/potion_blue", gp.TileSize, gp.TileSize);
         description = "[Blue Potion]\n your mana by " + value + ".";
 

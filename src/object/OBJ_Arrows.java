@@ -19,7 +19,7 @@ public class OBJ_Arrows extends Projectile {
         speed = 6;
         maxLife = 80;
         life = maxLife;
-        attack = 3;
+        attack = 2;
         useCost = 1;
         alive = false;
         value = 1;

@@ -24,11 +24,12 @@ public class MON_GreenSlime extends Entity {
         type = type_monster;
         name = "Green Slime";
         speed = 1;
-        maxLife = 10;
+        maxLife = 8 + gp.player.level * 2;
         life = maxLife;
-        attack = 1;
-        defense = 0;
-        exp = 2;
+        attack = 1 + gp.player.level / 3;
+        defense = gp.player.level / 4;
+        exp = 3 + gp.player.level;
+
         projectiles = new OBJ_Bato(gp);
 
         solidArea.x = 3;
@@ -142,31 +143,30 @@ public class MON_GreenSlime extends Entity {
     }
     public void checkDrop() {
 
-        //cast a die/dice
-        int dropRate = new Random().nextInt(100)+1;
-        //set the monster drop
-        if (dropRate<50) {
-            dropItem(new OBJ_Arrows(gp));
-        } 
-        if (dropRate >= 50 && dropRate < 60 ) {
-            dropItem(new OBJ_Arrows(gp));
-        }
-        if (dropRate >=60 && dropRate < 75) {
-            dropItem(new OBJ_Coin_Bronze(gp));
-        }
-        if (dropRate >=75 && dropRate < 85) {
-            dropItem(new OBJ_Heart(gp));
-        }
-        if (dropRate >= 85 && dropRate < 99) {
-            dropItem(new OBJ_ManaCrystal(gp));
-        }
-        if (dropRate == 99) {
-            dropItem(new OBJ_Potion_Blue(gp));
-        }
-        if (dropRate == 100) {
-            dropItem(new OBJ_Potion_Red(gp));
-        }
-    }
+        int roll = new Random().nextInt(100)+1; // 0–99
 
+        if (roll < 40) {
+            // no drop (40%)
+        }
+        else if (roll < 60) {
+            dropItem(new OBJ_Coin_Bronze(gp));     // 20%
+        }
+        else if (roll < 75) {
+            dropItem(new OBJ_Arrows(gp));      // 15%
+        }
+        else if (roll < 85) {
+            dropItem(new OBJ_Heart(gp));         // 10%
+        }
+        else if (roll < 93) {
+            dropItem(new OBJ_ManaCrystal(gp));   // 8%
+        }
+        else if (roll < 98) {
+            dropItem(new OBJ_Potion_Blue(gp));   // 5%
+        }
+        else if (roll < 100) {
+            dropItem(new OBJ_Potion_Red(gp));    // 2%
+        }
+
+    }
 }
 

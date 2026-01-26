@@ -321,7 +321,7 @@ public class UI {
             g2.setColor(Color.GRAY);
             g2.drawString(text, x+3, y+3);
             // Main Color
-            g2.setColor(Color.white);
+            g2.setColor(new Color(255, 215, 0));
             g2.drawString(text, x, y);
 
             // Logo 
@@ -790,8 +790,5 @@ public class UI {
         int x = tailX - length;
         return x;
     }
-    public void currentDialogue() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'currentDialogue'");
-    }
+    public void currentDialogue() {}
 }

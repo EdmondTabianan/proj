@@ -34,6 +34,7 @@ public class Entity {
     public boolean alive = true;
     public boolean dying = false;
     boolean hpBarOn = false;
+    public boolean hasTablet = false;
 
     // counter 
     public int spriteCounter = 0;
@@ -73,7 +74,7 @@ public class Entity {
     public int defenseValue;
     public String description = "";
     public int useCost;
-    public int hasKey = 0;
+    public int hasKey;
 
     // type
     public int type;

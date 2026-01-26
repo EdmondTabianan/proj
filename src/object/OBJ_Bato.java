@@ -15,7 +15,7 @@ public class OBJ_Bato extends Projectile{
         speed = 4;
         maxLife = 80;
         life = maxLife;
-        attack = 3;
+        attack = 2;
         useCost = 1;
         alive = false;
         getImage();

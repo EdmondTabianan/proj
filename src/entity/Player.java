@@ -2,12 +2,14 @@ package entity;
 
 import main.KeyHandler;
 import object.OBJ_Arrows;
+import object.OBJ_Axe;
 import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
 import object.OBJ_bow_normal;
 import object.OBJ_ice;
 import object.OBJ_ice_wand;
+import object.OBJ_tablet;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -73,6 +75,7 @@ public class Player extends Entity {
         nextLevelExp = 5;
         coin = 0;
         hasKey = 0; 
+        hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         currentRange = new OBJ_ice_wand(gp);
@@ -320,6 +323,25 @@ public class Player extends Entity {
                 gp.obj[i] = null;
                 return;
             }
+
+            // In player.pickup method
+            if (gp.obj[i].type == type_tablet) {
+                gp.playSE(2);
+                gp.ui.showMessage("You got the clue \n" + new OBJ_tablet(gp).name);
+                hasTablet = true;
+                gp.obj[i] = null;
+                
+                // Add axe to game world
+                for (int j = 0; j < gp.obj.length; j++) {
+                    if (gp.obj[j] == null) {
+                        gp.obj[j] = new OBJ_Axe(gp);
+                        gp.obj[j].worldX = gp.TileSize * 18;
+                        gp.obj[j].worldY = gp.TileSize * 6;
+                        break;
+                    }
+                }
+                return;
+            }
             
             // For other pickup-only items
             if(gp.obj[i].type == type_pickupOnly) {
@@ -405,25 +427,25 @@ public class Player extends Entity {
     }
 
     public void checkLevelUp() {
-
         if (exp >= nextLevelExp) {
             level++;
-            nextLevelExp = nextLevelExp*2;
+            exp -= nextLevelExp;
+            nextLevelExp += level * 5;
+    
             maxLife += 2;
             life += 2;
-            maxMana += 4;
+    
+            maxMana += 1;
             mana += 1;
-            strength++;
-            dexterity++;
+    
+            if (level % 2 == 0) strength++;
+            if (level % 3 == 0) dexterity++;
+    
             attack = getAttack();
             defense = getDefense();
-
-            gp.playSE(8);
-            gp.gameState = gp.dialogueState;
-            gp.ui.currentDialogue = "you are level " + level + " now!\n"
-                + "You fell stronger!";
         }
-    }
+    }    
+
     public void selectItem() {
 
         int itemIndex = gp.ui.getItemIndexOnSlot();

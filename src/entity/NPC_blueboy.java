@@ -3,6 +3,7 @@ package entity;
 import java.util.Random;
 
 import main.GamePanel;
+import object.OBJ_Potion_Red;
 
 public class NPC_blueboy extends Entity {
 
@@ -42,6 +43,7 @@ public class NPC_blueboy extends Entity {
                         "the key decides who sails\n" + //
                         "";i++;
         dialogues[i] = "Goodluck!";i++;
+        //gp.player.inventory.add(new OBJ_Potion_Red(gp));
     }
     public void setAction(){
 

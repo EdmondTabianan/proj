@@ -5,7 +5,9 @@ import object.OBJ_Arrows;
 import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
+import object.OBJ_bow_normal;
 import object.OBJ_ice;
+import object.OBJ_ice_wand;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -73,7 +75,7 @@ public class Player extends Entity {
         hasKey = 0; 
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
-        arrows = new OBJ_Arrows(gp);
+        currentRange = new OBJ_ice_wand(gp);
         projectiles = new OBJ_ice(gp);
         attack = getAttack(); // total damage of weapon
         defense = getDefense(); // total defense 
@@ -81,6 +83,7 @@ public class Player extends Entity {
     public void setItems() {
         inventory.add(currentweapon);
         inventory.add(currentShield);
+        inventory.add(currentRange);
     }
     public int getAttack(){
         attackArea = currentweapon.attackArea;
@@ -120,8 +123,26 @@ public class Player extends Entity {
             attackRight1 = setup("/player/boy_axe_right_1", gp.TileSize*2, gp.TileSize);
             attackRight2 = setup("/player/boy_axe_right_2", gp.TileSize*2, gp.TileSize);
         }
-
-        
+        if (currentweapon.type == type_wand) {
+            attackUp1 = setup("/player/boy_axe_up_1", gp.TileSize, gp.TileSize*2);
+            attackUp2 = setup("/player/boy_axe_up_2", gp.TileSize, gp.TileSize*2);
+            attackDown1 = setup("/player/boy_axe_down_1", gp.TileSize, gp.TileSize*2);
+            attackDown2 = setup("/player/boy_axe_down_2", gp.TileSize, gp.TileSize*2);
+            attackLeft1 = setup("/player/boy_axe_left_1", gp.TileSize*2, gp.TileSize);
+            attackLeft2 = setup("/player/boy_axe_left_2", gp.TileSize*2, gp.TileSize);
+            attackRight1 = setup("/player/boy_axe_right_1", gp.TileSize*2, gp.TileSize);
+            attackRight2 = setup("/player/boy_axe_right_2", gp.TileSize*2, gp.TileSize);
+        }
+        if (currentweapon.type == type_bow) {
+            attackUp1 = setup("/player/boy_attack_up_1", gp.TileSize, gp.TileSize*2);
+            attackUp2 = setup("/player/boy_attack_up_2", gp.TileSize, gp.TileSize*2);
+            attackDown1 = setup("/player/boy_attack_down_1", gp.TileSize, gp.TileSize*2);
+            attackDown2 = setup("/player/boy_attack_down_2", gp.TileSize, gp.TileSize*2);
+            attackLeft1 = setup("/player/boy_attack_left_1", gp.TileSize*2, gp.TileSize);
+            attackLeft2 = setup("/player/boy_attack_left_2", gp.TileSize*2, gp.TileSize);
+            attackRight1 = setup("/player/boy_attack_right_1", gp.TileSize*2, gp.TileSize);
+            attackRight2 = setup("/player/boy_attack_right_2", gp.TileSize*2, gp.TileSize);
+        }   
     }
     public void update() {
 
@@ -205,40 +226,24 @@ public class Player extends Entity {
             spriteNum = 1;
         }
 
-        // ice shoot
-        if (gp.keyH.shotKeyPressed == true && projectiles.alive == false && 
-            shotAvailableCounter == 30 && projectiles.haveResource(this) == true
-        ) {
-
-            // set default coordination, direction and user
+        if (gp.keyH.shotKeyPressed && projectiles.alive == false && 
+            shotAvailableCounter == 30 && projectiles.haveResource(this)) {
+        
+            // Set projectile position, direction, and owner
             projectiles.set(worldX, worldY, Direction, true, this);
-
-            // subtract the cost (mana, arrows, etc)
+        
+            // Subtract resource (arrow or mana)
             projectiles.SubtractResource(this);
-
-            // add it to the list
+        
+            // Add projectile to the game
             gp.projectileList.add(projectiles);
-
+        
+            // Reset cooldown
             shotAvailableCounter = 0;
+        
+            gp.playSE(7);  // sound effect
         }
-        // arrow shoot
-        if (gp.keyH.arrowKeyPressed == true && projectiles.alive == false && 
-            shotAvailableCounter == 30 && projectiles.haveResource(this) == true
-        ) {
-
-            // set default coordination, direction and user
-            arrows.set(worldX, worldY, Direction, true, this);
-
-            // subtract the cost (mana, arrows, etc)
-            arrows.SubtractResource(this);
-
-            // add it to the list
-            gp.projectileList.add(arrows);
-
-            shotAvailableCounter = 0;
-
-            gp.playSE(7);
-        }
+        
 
         // Invincibility Logic
         if (Invincible == true) {
@@ -433,6 +438,18 @@ public class Player extends Entity {
                 attack = getAttack();
                 getPlayerAttackImage();
             }
+            if (selectedItem.type == type_bow) {
+                currentRange = selectedItem;
+                projectiles = new OBJ_Arrows(gp);  
+                getPlayerAttackImage();
+            }
+            
+            if (selectedItem.type == type_wand) {
+                currentRange = selectedItem;
+                projectiles = new OBJ_ice(gp);     
+                getPlayerAttackImage();
+            }
+            
             if (selectedItem.type == type_shield) {
 
                 currentShield = selectedItem;

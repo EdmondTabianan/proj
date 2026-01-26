@@ -10,11 +10,12 @@ public class OBJ_tablet extends Entity {
     public OBJ_tablet(GamePanel gp) {
         super(gp);
         this.gp = gp;
+        type = type_tablet;
         name = "Ancient Tablet";
         down1 = setup("/objects/tablet", gp.TileSize, gp.TileSize);
-        defenseValue = 1;
+        //defenseValue = 0;
         // description = "You have to find something can cut it.";
         
         description = "The path is sealed \n by wood. Seek what \nbites deeper than bark.";
-    }
+    }  
 }

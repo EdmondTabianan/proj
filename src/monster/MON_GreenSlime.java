@@ -4,6 +4,7 @@ import java.util.Random;
 
 import entity.Entity;
 import main.GamePanel;
+import object.OBJ_Arrows;
 import object.OBJ_Bato;
 import object.OBJ_Coin_Bronze;
 import object.OBJ_Heart;
@@ -81,8 +82,7 @@ public class MON_GreenSlime extends Entity {
         }
     }
     public void damageReaction() {
-        // actionLockCounter = 0;
-        // Direction = gp.player.Direction;
+    
         actionLockCounter = 0;
         switch (gp.player.Direction) {
             case "up":    Direction = "down";  break;
@@ -103,24 +103,27 @@ public class MON_GreenSlime extends Entity {
     public void checkDrop() {
 
         //cast a die/dice
-        int i = new Random().nextInt(100)+1;
+        int dropRate = new Random().nextInt(100)+1;
         //set the monster drop
-        if (i<60) {
-           // nothing
+        if (dropRate<50) {
+            dropItem(new OBJ_Arrows(gp));
+        } 
+        if (dropRate >= 50 && dropRate < 60 ) {
+            dropItem(new OBJ_Arrows(gp));
         }
-        if (i >=60 && i < 75) {
+        if (dropRate >=60 && dropRate < 75) {
             dropItem(new OBJ_Coin_Bronze(gp));
         }
-        if (i >=75 && i < 85) {
+        if (dropRate >=75 && dropRate < 85) {
             dropItem(new OBJ_Heart(gp));
         }
-        if (i >= 85 && i < 99) {
+        if (dropRate >= 85 && dropRate < 99) {
             dropItem(new OBJ_ManaCrystal(gp));
         }
-        if (i == 99) {
+        if (dropRate == 99) {
             dropItem(new OBJ_Potion_Blue(gp));
         }
-        if (i == 100) {
+        if (dropRate == 100) {
             dropItem(new OBJ_Potion_Red(gp));
         }
     }

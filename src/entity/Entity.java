@@ -63,6 +63,7 @@ public class Entity {
     public int coin;
     public Entity currentweapon;
     public Entity currentShield;
+    public Entity currentRange;
     public Projectile arrows;
     public Projectile projectiles;
 
@@ -86,6 +87,9 @@ public class Entity {
     public final int type_pickupOnly = 7;
     public final int type_transport = 8;
     public final int type_key = 9;
+    public final int type_tablet = 10;
+    public final int type_bow = 11;
+    public final int type_wand = 12;
 
     public Entity(GamePanel gp) {
         this.gp = gp;

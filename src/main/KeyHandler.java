@@ -134,9 +134,6 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_ESCAPE) {
             gp.gameState = gp.optionsState;
          }
-         if (code == KeyEvent.VK_Q) {
-            arrowKeyPressed = true;
-         }
         // f is long press
         //  if (code == KeyEvent.VK_F) {
         //     if (arrowpressed == false) {
@@ -271,20 +268,5 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_F) {
             shotKeyPressed = false;
         }
-        if (code == KeyEvent.VK_Q) {
-            arrowKeyPressed = false;
-        }
-        // if (code == KeyEvent.VK_F) {
-        //     if (arrowpressed == true) {
-        //         shotKeyPressed = true;
-        //         arrowpressed = false;
-        //     }
-        //     else {
-        //         shotKeyPressed = false;
-        //     }
-        // }
     }
-
-
-    
 }

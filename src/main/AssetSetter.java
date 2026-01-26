@@ -15,6 +15,7 @@ import object.OBJ_ManaCrystal;
 import object.OBJ_Potion_Red;
 import object.OBJ_Shield_Blue;
 import object.OBJ_boat;
+import object.OBJ_bow_normal;
 import object.OBJ_piramid;
 import object.OBJ_tablet;
 import tile_interactive.IT_Drytree;
@@ -33,10 +34,12 @@ public class AssetSetter {
         gp.obj[i].worldX = gp.TileSize*7;
         gp.obj[i].worldY = gp.TileSize*10;
         i++;
-        gp.obj[i] = new OBJ_Axe(gp);
-        gp.obj[i].worldX = gp.TileSize*18;
-        gp.obj[i].worldY = gp.TileSize*6;
-        i++;
+        // if (gp.player.hasTablet) {
+        //     gp.obj[i] = new OBJ_Axe(gp);
+        //     gp.obj[i].worldX = gp.TileSize*18;
+        //     gp.obj[i].worldY = gp.TileSize*6;
+        //     i++; 
+        // } 
         gp.obj[i] = new OBJ_boat(gp);
         gp.obj[i].worldX = gp.TileSize*46;
         gp.obj[i].worldY = gp.TileSize*43;
@@ -59,6 +62,10 @@ public class AssetSetter {
         i++;
         gp.obj[i] = new OBJ_tablet(gp);
         gp.obj[i].worldX = gp.TileSize*10;
+        gp.obj[i].worldY = gp.TileSize*24;  
+        i++;
+        gp.obj[i] = new OBJ_bow_normal(gp);
+        gp.obj[i].worldX = gp.TileSize*15;
         gp.obj[i].worldY = gp.TileSize*24;      
     }
     public void setNPC() {

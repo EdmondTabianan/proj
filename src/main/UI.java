@@ -389,7 +389,8 @@ public class UI {
 
             // equip cursor
             if(gp.player.inventory.get(i) == gp.player.currentweapon ||
-                    gp.player.inventory.get(i) == gp.player.currentShield) {
+                gp.player.inventory.get(i) == gp.player.currentShield || 
+                gp.player.inventory.get(i) == gp.player.currentRange) {
                 g2.setColor(new Color(240, 190, 90));
                 g2.fillRoundRect(slotX, slotY, gp.TileSize, gp.TileSize, 10, 10);
             }

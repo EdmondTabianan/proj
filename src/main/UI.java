@@ -6,10 +6,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -137,10 +135,9 @@ public class UI {
         
         g2.drawString(percentText, percentX, percentY);
     }
-    
-    // Helper method to get a random gameplay tip
     private String getRandomGameplayTip() {
         String[] tips = {
+            // Original tips kept
             "Explore every corner for hidden treasures!",
             "Different enemies have different weaknesses.",
             "Use ranged attacks against tough melee enemies.",
@@ -150,44 +147,40 @@ public class UI {
             "Environmental objects can be used against enemies.",
             "Combine items for more powerful effects.",
             "Patience is key when facing powerful bosses.",
-            "Read ancient tablets and notes for valuable clues.",
-            // Control tips added here
-            "Move: W/A/S/D keys",
-            "Attack/Confirm: ENTER key",
-            "F key: Cast spells with wand, Shoot with bow",
-            "Open character screen: C key",
-            "Pause game: P key",
-            "Open options: ESC key",
-            "Use W/A/S/D to move around",
-            "Press ENTER to attack or confirm actions",
-            "Press F to cast spells when wielding a wand",
-            "Press F to shoot arrows when wielding a bow",
-            "Press C to check your character stats",
-            "Press P to pause the game",
-            "Press ESC to open options menu",
-            "F casts spells with wand, shoots with bow",
-            "Equip a wand and press F to cast magic",
-            "Equip a bow and press F to shoot arrows",
-            "The F key adapts to your equipped weapon",
-            "With wand equipped: F = Cast spell",
-            "With bow equipped: F = Shoot arrow",
-            "Switch between wand and bow for different F actions",
-            "Wand + F = Magic, Bow + F = Arrows",
-            "F key's function depends on your weapon choice",
-            "Use wand for magic, bow for ranged - both use F key"
+            "Read ancient tombs for valuable clues.",
+            
+            // Added longer, more detailed tips
+            "TIP: Save your game frequently at statues to avoid losing progress.",
+            "TIP: Different weapons work better against different enemy types.",
+            "TIP: Upgrade your equipment at blacksmiths when you find them.",
+            "TIP: Listen for audio cues - they can warn you of nearby danger.",
+            "TIP: Some secrets require solving environmental puzzles.",
+            "TIP: Your character's stamina affects how many attacks you can perform.",
+            "TIP: Use stealth to avoid unnecessary combat when low on health.",
+            "TIP: Collect all coins and gems to buy better equipment.",
+            "TIP: The mini-map shows unexplored areas - try to fill it completely.",
+            "TIP: Some enemies are immune to certain types of damage.",
+            
+            // Control tips made more descriptive
+            "CONTROLS: Use W, A, S, D keys to move your character around.",
+            "CONTROLS: Press ENTER to attack enemies or confirm menu selections.",
+            "CONTROLS: Press F to cast spells with wand or shoot arrows with bow.",
+            "CONTROLS: Press C to open character screen and check your stats.",
+            "CONTROLS: Press P to pause the game at any time.",
+            "CONTROLS: Press ESC to open options and adjust settings.",
+            "CONTROLS: The F key adapts to your equipped weapon - wand or bow.",
+            "CONTROLS: With wand equipped, F casts magical spells.",
+            "CONTROLS: With bow equipped, F shoots ranged arrows.",
+            "CONTROLS: Switch weapons using inventory to change F key function."
         };
         
         // Select random tip
         int randomIndex = (int)(Math.random() * tips.length);
-        return "Tip: " + tips[randomIndex];
+        return tips[randomIndex];
     }
-
-    // Add a method to update loading progress
     public void setLoadingProgress(float progress) {
         this.loadingProgress = (int) progress;
     }
-    
-    // Add a method to get loading progress (optional)
     public float getLoadingProgress() {
         return loadingProgress;
     }
@@ -227,6 +220,14 @@ public class UI {
             drawInventory();
         }
         // OPTIONS STATE
+        if (gp.gameState == gp.optionsState) {
+            drawOptionsScreen();
+        }
+        // Game over STATE
+        if (gp.gameState == gp.gameOverState) {
+            drawGameOverScreen();
+        }
+
         if (gp.gameState == gp.optionsState) {
             drawOptionsScreen();
         }
@@ -574,186 +575,334 @@ public class UI {
         }
 
     }
+    public void drawGameOverScreen() {
+        
+        g2.setColor(new Color(0,0,0,150));
+        g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+
+        int x;
+        int y;
+        String text;g2.setFont(g2.getFont().deriveFont(Font.BOLD, 110));
+
+        text = "Game Over";
+        // Shadow
+        g2.setColor(Color.BLACK);
+        x = getXforCenteredText(text);
+        y = gp.TileSize*4;
+        // Main
+        g2.setColor(Color.WHITE);
+        g2.drawString(text, x-4, y-4);
+
+        // Retry
+        g2.setFont(g2.getFont().deriveFont(50f));
+        text = "Retry";
+        x = getXforCenteredText(text);
+        y += gp.TileSize*4;
+        g2.drawString(text, x, y);
+        if (commandNum == 0) {
+            g2.drawString(">", x-40, y);
+        }
+
+        // Back to title screen
+        text = "Quit";
+        x = getXforCenteredText(text);
+        y += 55;
+        g2.drawString(text, x, y);
+        if (commandNum == 1) {
+            g2.drawString(">", x-40, y);
+        }
+    }
     public void drawOptionsScreen() {
         g2.setColor(Color.white);
         g2.setFont(g2.getFont().deriveFont(32f));
-
-        // Sub window
-        int frameX = gp.TileSize*5;
+        
+        // Just half a tile wider than original
+        int frameWidth = (int)(gp.TileSize * 8.5); // 8.5 tiles wide
+        int frameHeight = gp.TileSize * 10;
+        int frameX = gp.TileSize * 4; // Adjusted slightly for centering
         int frameY = gp.TileSize;
-        int frameWidth = gp.TileSize*8;
-        int frameHeight = gp.TileSize*10;
+        
         drawSubWindow(frameX, frameY, frameWidth, frameHeight);
-
+        
         switch (subState) {
             case 0: options_top(frameX, frameY); break;
-            case 1: break; //save????????
-            case 2: option_control(frameX, frameY);break;
+            case 1: option_save(frameX, frameY); break;
+            case 2: option_control(frameX, frameY); break;
             case 3: option_endGameConfirmation(frameX, frameY); break;
         }
     }
     public void options_top(int frameX, int frameY) {
-
         int textX;
         int textY;
-
+        
         // Title
         String text = "Options";    
         textX = getXforCenteredText(text);
         textY = frameY + gp.TileSize;
         g2.drawString(text, textX, textY);
-
+        
+        // Menu items
         textX = frameX + gp.TileSize;
-        textY += gp.TileSize*2;
-        g2.drawString("save", textX, textY);
+        textY += gp.TileSize * 2;
+        
+        // Save
+        g2.drawString("Save", textX, textY);
         if (commandNum == 0) {
-            g2.drawString(">", textX-25, textY);
+            g2.drawString(">", textX - 25, textY);
+            if (gp.keyH.enterPressed) {
+                subState = 1;
+                commandNum = 0;
+                gp.keyH.enterPressed = false;
+            }
         }
-
-        // music
+        
+        // Music
         textY += gp.TileSize;
         g2.drawString("Music", textX, textY);
         if (commandNum == 1) {
-            g2.drawString(">", textX-25, textY);
+            g2.drawString(">", textX - 25, textY);
+            // Volume control with arrow keys
+            if (gp.keyH.leftPressed) {
+                gp.music.volumeScale--;
+                gp.music.volumeScale = Math.max(gp.music.volumeScale, 0);
+                gp.music.checkVolume();
+                gp.keyH.leftPressed = false;
+            }
+            if (gp.keyH.rightPressed) {
+                gp.music.volumeScale++;
+                gp.music.volumeScale = Math.min(gp.music.volumeScale, 5);
+                gp.music.checkVolume();
+                gp.keyH.rightPressed = false;
+            }
         }
-
-        // sound effect
+        
+        // Sound Effect
         textY += gp.TileSize;
         g2.drawString("SE", textX, textY);
         if (commandNum == 2) {
-            g2.drawString(">", textX-25, textY);
+            g2.drawString(">", textX - 25, textY);
+            // Volume control with arrow keys
+            if (gp.keyH.leftPressed) {
+                gp.se.volumeScale--;
+                gp.se.volumeScale = Math.max(gp.se.volumeScale, 0);
+                gp.keyH.leftPressed = false;
+            }
+            if (gp.keyH.rightPressed) {
+                gp.se.volumeScale++;
+                gp.se.volumeScale = Math.min(gp.se.volumeScale, 5);
+                gp.keyH.rightPressed = false;
+            }
         }
-
+        
         // Control 
         textY += gp.TileSize;
         g2.drawString("Control", textX, textY);
         if (commandNum == 3) {
-            g2.drawString(">", textX-25, textY);
-            if (gp.keyH.enterPressed == true) {
+            g2.drawString(">", textX - 25, textY);
+            if (gp.keyH.enterPressed) {
                 subState = 2;
                 commandNum = 0;
                 gp.keyH.enterPressed = false;
             }
         }
-        // quit game
+        
+        // Quit Game
         textY += gp.TileSize;
-        g2.drawString("Quit game", textX, textY);
+        g2.drawString("Quit Game", textX, textY);
         if (commandNum == 4) {
-            g2.drawString(">", textX-25, textY);
-            if (gp.keyH.enterPressed == true) {
+            g2.drawString(">", textX - 25, textY);
+            if (gp.keyH.enterPressed) {
                 subState = 3;
                 commandNum = 0;
+                gp.keyH.enterPressed = false;
             }
         }
-
-        //back
-        textY += gp.TileSize*8;
+        
+        // Back
+        textY += gp.TileSize * 2;
         g2.drawString("Back", textX, textY);
         if (commandNum == 5) {
-            g2.drawString(">", textX-25, textY);
+            g2.drawString(">", textX - 25, textY);
+            if (gp.keyH.enterPressed) {
+                gp.gameState = gp.playState; // Or gp.titleState if from title
+                commandNum = 0;
+                gp.keyH.enterPressed = false;
+            }
         }
-
-        // save box???
-        textX = frameX + gp.TileSize*5;
-        textY = frameY + gp.TileSize*2 + 24;
+        
+        // Draw volume bars
+        int volumeBarX = frameX + gp.TileSize * 5;
+        int volumeBarY = frameY + gp.TileSize * 3 + 24;
+        
+        // Music volume bar
         g2.setStroke(new BasicStroke(3));
-        g2.drawRect(textX, textY, 23, 24);
-
-        // music
-        textY += gp.TileSize;
-        g2.drawRect(textX, textY, 120, 24); //120/5
-        int volumeWidth = 24 * gp.music.volumeScale;
-        g2.fillRect(textX, textY, volumeWidth, 24);
-
-        // Sound Effect
-        textY += gp.TileSize;
-        g2.drawRect(textX, textY, 120, 24);
-        volumeWidth = 24 * gp.se.volumeScale;
-        g2.fillRect(textX, textY, volumeWidth, 24);
+        g2.drawRect(volumeBarX, volumeBarY, 100, 20);
+        if (gp.music != null) {
+            int musicFillWidth = 20 * gp.music.volumeScale; // 0-5 scale * 20px
+            g2.fillRect(volumeBarX, volumeBarY, musicFillWidth, 20);
+        }
+        
+        // SE volume bar
+        volumeBarY += gp.TileSize;
+        g2.drawRect(volumeBarX, volumeBarY, 100, 20);
+        if (gp.se != null) {
+            int seFillWidth = 20 * gp.se.volumeScale; // 0-5 scale * 20px
+            g2.fillRect(volumeBarX, volumeBarY, seFillWidth, 20);
+        }
+        
+        // Save config
+        if (gp.config != null) {
+            gp.config.saveConfig();
+        }
     }
-    public void option_control(int frameX, int frameY) {
-
+    public void option_save(int frameX, int frameY) {
         int textX;
         int textY;
-
-        //Title
-        String text = "Control";
+        
+        // Title
+        String text = "SAVE";
         textX = getXforCenteredText(text);
+        textY = frameY + gp.TileSize + 20;
+        g2.drawString(text, textX, textY);
+        
+        // Save slots
+        textY = frameY + gp.TileSize * 3;
+        
+        String[] slotNames = {"SAVE 1", "SAVE 2", "SAVE 3", "BACK"};
+        
+        for (int i = 0; i < slotNames.length; i++) {
+            textX = getXforCenteredText(slotNames[i]);
+            
+            // Add save status indicator
+            if (i < 3) {
+                String status = ""; // Add your save status check here
+                g2.setFont(g2.getFont().deriveFont(20f)); // Smaller font for status
+                g2.drawString(status, textX, textY + 15);
+                g2.setFont(g2.getFont().deriveFont(32f)); // Reset to normal font
+            }
+            
+            g2.drawString(slotNames[i], textX, textY);
+            
+            if (commandNum == i) {
+                g2.drawString(">", textX - 25, textY);
+                if (gp.keyH.enterPressed == true) {
+                    if (i < 3) {
+                        // Save to slot i
+                        //saveGame(i);
+                        showMessage("SAVED!");
+                    } else {
+                        // Back
+                        subState = 0;
+                        commandNum = 0;
+                    }
+                    gp.keyH.enterPressed = false;
+                }
+            }
+            textY += gp.TileSize * 1.5;
+        }
+    }
+    public void option_control(int frameX, int frameY) {
+        int textX;
+        int textY;
+        
+        // Calculate frameWidth here (same as in drawOptionsScreen)
+        int frameWidth = (int)(gp.TileSize * 8.5);
+        
+        // Title - centered within the window
+        String text = "Control";
+        textX = frameX + (frameWidth / 2) - (int)(g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2);
         textY = frameY + gp.TileSize;
         g2.drawString(text, textX, textY);
-
+        
+        // Controls list - left column
         textX = frameX + gp.TileSize;
+        textY = frameY + gp.TileSize * 2;
+        
+        // Left column actions
+        g2.drawString("Move", textX, textY);
         textY += gp.TileSize;
-        g2.drawString("Move", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Confirm/Attack", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Shoot", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Cast", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Character SCreen", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Pause", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Option", textX, textY);textY+=gp.TileSize;
-
-        textX = frameX + gp.TileSize*6;
-        textY = frameY + gp.TileSize*2;
-        g2.drawString("W/A/S/D", textX, textY);textY+=gp.TileSize;
-        g2.drawString("ENTER", textX, textY);textY+=gp.TileSize;
-        g2.drawString("Q", textX, textY);textY+=gp.TileSize;
-        g2.drawString("F", textX, textY);textY+=gp.TileSize;
-        g2.drawString("C", textX, textY);textY+=gp.TileSize;
-        g2.drawString("P", textX, textY);textY+=gp.TileSize;
-        g2.drawString("ESC", textX, textY);textY+=gp.TileSize;
-
-        // Back
-        textX = frameX + gp.TileSize;
+        g2.drawString("Attack", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Shoot", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Cast", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Character", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Pause", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Options", textX, textY);
+        
+        // Key bindings - right column
+        textX = frameX + gp.TileSize * 5;
+        textY = frameY + gp.TileSize * 2;
+        
+        // Right column keys
+        g2.drawString("W/A/S/D", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("ENTER", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("Q", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("F", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("C", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("P", textX, textY);
+        textY += gp.TileSize;
+        g2.drawString("ESC", textX, textY);
+        
+        // Back option - centered within window
         textY = frameY + gp.TileSize * 9;
+        text = "Back";
+        textX = frameX + (frameWidth / 2) - (int)(g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2);
         g2.drawString("Back", textX, textY);
         
         if (commandNum == 0) {
-            g2.drawString(">", textX-25, textY);
-            if(gp.keyH.enterPressed == true) {
+            g2.drawString(">", textX - 25, textY);
+            if (gp.keyH.enterPressed) {
                 subState = 0;
-                commandNum = 0;
+                commandNum = 3; // Go back to Control option
                 gp.keyH.enterPressed = false;
             }
         }
     }
     public void option_endGameConfirmation(int frameX, int frameY) {
-
-        int textX = frameX + gp.TileSize;
-        int textY = frameY + gp.TileSize;
+        int textX;
+        int textY;
         
-        currentDialogue = "Quit the game and \nreturn to the title screen?";
-
-        for (String line: currentDialogue.split("\n")) {
-            g2.drawString(line, textX, textY);
-            textY += 40;
-        }
-
-        // YES
-        String text = "Yes";
-        textX = getXforCenteredText(text);
-        textY += gp.TileSize*3;
-        if (commandNum==0) {
-            g2.drawString(">", textX, textY);
-            if(gp.keyH.enterPressed == true) {
-                subState = 0;
-                commandNum = 0;
-                gp.gameState = gp.titleState;
-                gp.keyH.enterPressed = false;
+        // Shorter question to fit better
+        textX = getXforCenteredText("Quit to Title?");
+        textY = frameY + gp.TileSize * 3;
+        g2.drawString("Quit to Title?", textX, textY);
+        
+        // Yes/No options
+        String[] options = {"YES", "NO"};
+        textY += gp.TileSize * 2;
+        
+        for (int i = 0; i < options.length; i++) {
+            textX = getXforCenteredText(options[i]);
+            g2.drawString(options[i], textX, textY);
+            
+            if (commandNum == i) {
+                g2.drawString(">", textX - 25, textY);
+                if (gp.keyH.enterPressed == true) {
+                    if (i == 0) {
+                        // Yes - quit to title
+                        gp.gameState = gp.titleState;
+                        gp.restart();
+                        gp.music.stop();
+                    } else {
+                        // No - back to options
+                        subState = 0;
+                        commandNum = 4; // Select Quit Game item
+                    }
+                    gp.keyH.enterPressed = false;
+                }
             }
-        }
-        // NO
-        text = "No";
-        textX = getXforCenteredText(text);
-        textY += gp.TileSize;
-        if (commandNum==1) {
-            g2.drawString(">", textX, textY);
-            if(gp.keyH.enterPressed == true) {
-                subState = 0;
-                commandNum = 4;
-            }
+            textY += gp.TileSize;
         }
     }
-
     public int getItemIndexOnSlot() {
         int itemIndex = slotCol + (slotRow*5);
         return itemIndex;

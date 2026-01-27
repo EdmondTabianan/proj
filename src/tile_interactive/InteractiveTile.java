@@ -8,7 +8,7 @@ public class InteractiveTile extends Entity {
     GamePanel gp;
     public boolean destructible = false;
 
-    public InteractiveTile(GamePanel gp, int col, int row) {
+    public InteractiveTile(GamePanel gp,int map, int col, int row) {
         super(gp);   
         this.gp = gp;
     }

@@ -22,13 +22,14 @@ public class Sound {
         soundURL[i] = getClass().getResource("/sound/powerup.wav");i++; // 2
         soundURL[i] = getClass().getResource("/sound/unlock.wav");i++; //3
         soundURL[i] = getClass().getResource("/sound/fanfare.wav");i++; //4
-        soundURL[i] = getClass().getResource("/sound/hitmonster.wav");i++;
-        soundURL[i] = getClass().getResource("/sound/receivedamage.wav");i++;
-        soundURL[i] = getClass().getResource("/sound/0110.wav");i++;
-        soundURL[i] = getClass().getResource("/sound/levelup.wav");i++;
+        soundURL[i] = getClass().getResource("/sound/hitmonster.wav");i++; // 5
+        soundURL[i] = getClass().getResource("/sound/receivedamage.wav");i++; //6
+        soundURL[i] = getClass().getResource("/sound/0110.wav");i++; //7
+        soundURL[i] = getClass().getResource("/sound/levelup.wav");i++; //8
         soundURL[i] = getClass().getResource("/sound/cursor.wav");i++; // 9
-        soundURL[i] = getClass().getResource("/sound/cuttree.wav");i++;
-        soundURL[i] = getClass().getResource("/sound/loading.wav");//11
+        soundURL[i] = getClass().getResource("/sound/cuttree.wav");i++; //10
+        soundURL[i] = getClass().getResource("/sound/loading.wav");i++;//11
+        soundURL[i] = getClass().getResource("/sound/gameover.wav");i++; //12
     } 
     public void setFile(int i) {
         try {

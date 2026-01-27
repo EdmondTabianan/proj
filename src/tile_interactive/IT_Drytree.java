@@ -13,8 +13,8 @@ public class IT_Drytree extends InteractiveTile {
 
     GamePanel gp;
 
-    public IT_Drytree(GamePanel gp, int col, int row) {
-        super(gp, col, row);
+    public IT_Drytree(GamePanel gp,int map, int col, int row) {
+        super(gp,map, col, row);
         this.gp = gp;
 
         this.worldX = gp.TileSize * col;
@@ -37,7 +37,7 @@ public class IT_Drytree extends InteractiveTile {
         gp.playSE(10);
     }
     public InteractiveTile getDestroyedForm() {
-        InteractiveTile tile = new IT_Trunk(gp, worldX/gp.TileSize, worldY/gp.TileSize);
+        InteractiveTile tile = new IT_Trunk(gp, 0, worldX/gp.TileSize, worldY/gp.TileSize);
         return tile;
     }
     public void checkDrop() {

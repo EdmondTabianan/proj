@@ -13,6 +13,10 @@ public class Main {
         GamePanel gamePanel = new GamePanel();
         window.add(gamePanel);
 
+        gamePanel.config.loadConfig();
+        // if(gamePanel)
+
+
         window.pack();
 
         window.setLocationRelativeTo(null);

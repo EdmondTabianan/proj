@@ -1,10 +1,8 @@
 package main;
 
-import entity.Entity;
-
 public class eventHandler {
     GamePanel gp;
-    EventRect eventRect[][];
+    EventRect eventRect[][][];
 
     int previouseEventX, previouseEventY;
     boolean canTouchEvent = true;
@@ -12,23 +10,29 @@ public class eventHandler {
     public eventHandler(GamePanel gp) {
         this.gp = gp;
 
-        eventRect = new EventRect[gp.maxWorldCol][gp.maxWorldRow];
+        eventRect = new EventRect[gp.maxMap][gp.maxWorldCol][gp.maxWorldRow];
 
+        int map = 0;
         int col = 0;
         int row = 0;
-        while (col < gp.maxWorldCol && row < gp.maxWorldRow ) {
-            eventRect[col][row] = new EventRect();
-            eventRect[col][row].x = 23;
-            eventRect[col][row].y = 23;
-            eventRect[col][row].width = 2;
-            eventRect[col][row].height = 2;
-            eventRect[col][row].eventRectDefaultX = eventRect[col][row].x;
-            eventRect[col][row].eventRectDefaultY = eventRect[col][row].y;
+        while (map < gp.maxMap && col < gp.maxWorldCol && row < gp.maxWorldRow ) {
+            eventRect[map][col][row] = new EventRect();
+            eventRect[map][col][row].x = 23;
+            eventRect[map][col][row].y = 23;
+            eventRect[map][col][row].width = 2;
+            eventRect[map][col][row].height = 2;
+            eventRect[map][col][row].eventRectDefaultX = eventRect[map][col][row].x;
+            eventRect[map][col][row].eventRectDefaultY = eventRect[map][col][row].y;
 
             col++;
             if (col == gp.maxWorldCol) {
                 col = 0;
                 row++;
+
+                if (row == gp.maxWorldRow) {
+                    row = 0;
+                    map++;
+                }
             }
         }
     }
@@ -43,34 +47,36 @@ public class eventHandler {
         }
 
         if(canTouchEvent == true) {
-            if(hit(25,35, "down") == true) {healingPool(25,35,gp.dialogueState);}
-            if(hit(21,33, "up") == true) {healingPool(21,30,gp.dialogueState);}
-            // if(hit(29, 24, "up") == true ) {teleport(gp.dialogueState);}
-            if(hit(46, 42, "down") == true) {transport(gp.dialogueState);}
+            if(hit(0,25,35, "down") == true) {healingPool(gp.dialogueState);}
+            else if(hit(0,21,33, "up") == true) {healingPool(gp.dialogueState);}
+            else if(hit(0, 46, 42, "down") == true) {transport(1, 24 , 42,gp.dialogueState);}
+            else if(hit(1, 24, 42, "down") == true) {transport(0, 46 , 42,gp.dialogueState);}
         }
     }
     
-    public boolean hit (int col, int row, String regDirection) {
+    public boolean hit (int map, int col, int row, String regDirection) {
         boolean hit = false;
 
-        gp.player.solidArea.x = gp.player.worldX + gp.player.solidArea.x;
-        gp.player.solidArea.y = gp.player.worldY + gp.player.solidArea.y;
-        eventRect[col][row].x = col*gp.TileSize + eventRect[col][row].x;
-        eventRect[col][row].y = row*gp.TileSize + eventRect[col][row].y;
+        if (map == gp.currentMap) {
+            gp.player.solidArea.x = gp.player.worldX + gp.player.solidArea.x;
+            gp.player.solidArea.y = gp.player.worldY + gp.player.solidArea.y;
+            eventRect[map][col][row].x = col*gp.TileSize + eventRect[map][col][row].x;
+            eventRect[map][col][row].y = row*gp.TileSize + eventRect[map][col][row].y;
 
-        if (gp.player.solidArea.intersects(eventRect[col][row]) && eventRect[col][row].eventDone == false) {
-            if (gp.player.Direction.contentEquals(regDirection) || regDirection.contentEquals("any")){
-                hit = true;
-                previouseEventX = gp.player.worldX;
-                previouseEventY = gp.player.worldY;
+            if (gp.player.solidArea.intersects(eventRect[map][col][row]) && eventRect[map][col][row].eventDone == false) {
+                if (gp.player.Direction.contentEquals(regDirection) || regDirection.contentEquals("any")){
+                    hit = true;
+                    previouseEventX = gp.player.worldX;
+                    previouseEventY = gp.player.worldY;
+                }
             }
-        }
 
-        gp.player.solidArea.x = gp.player.solidAreaDefaultX;
-        gp.player.solidArea.y = gp.player.solidAreaDefaultY;
-        eventRect[col][row].x = eventRect[col][row].eventRectDefaultX;
-        eventRect[col][row].y = eventRect[col][row].eventRectDefaultY;
+            gp.player.solidArea.x = gp.player.solidAreaDefaultX;
+            gp.player.solidArea.y = gp.player.solidAreaDefaultY;
+            eventRect[map][col][row].x = eventRect[map][col][row].eventRectDefaultX;
+            eventRect[map][col][row].y = eventRect[map][col][row].eventRectDefaultY;
 
+            }
         return hit;
     }
     
@@ -81,7 +87,7 @@ public class eventHandler {
         gp.player.worldY = gp.TileSize*20;
     } 
     
-    public void healingPool(int col, int row, int gameState) {
+    public void healingPool(int gameState) {
          if(gp.keyH.enterPressed == true) {
              gp.gameState = gameState;
              gp.player.attackCanceled = true;
@@ -92,39 +98,36 @@ public class eventHandler {
         }
     }
     
-    public void transport(int gameState) {
+    public void transport(int map, int col,int row, int gameState) {
+        
+        gp.player.attackCanceled = true;
         if(gp.keyH.enterPressed == true) {
-            gp.gameState = gameState;
-            gp.player.attackCanceled = true;
             
-            // Check if player has a key
             if(gp.player.hasKey > 0) {
-                gp.player.hasKey--; // Use one key
                 
-                // Play sound effect for using key
-                gp.playSE(2); // Assuming 2 is key use sound
+                gp.playSE(2); 
                 
-                gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
+                if (gp.currentMap == 0) {
+                    gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
+                }
+                if (gp.currentMap == 1) {
+                    gp.ui.currentDialogue = "You used a key!\nTransporting to the first map...";
+                }
                 
                 // Small delay for effect
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 
                 // Load the second map
-                gp.tileM.loadMap("/map/secondmap.txt");
-                
-                // Set new player position for the second map
-                gp.player.worldX = gp.TileSize * 24;
-                gp.player.worldY = gp.TileSize * 42;
-                
-                // Reset event handler for new map
-                gp.eHandler = new eventHandler(gp);
-                
-                // Reset monsters for new map
-                gp.aSetter.setMonster();
+                gp.currentMap = map;
+                gp.player.worldX = gp.TileSize * col;
+                gp.player.worldY = gp.TileSize * row;
+                previouseEventX = gp.player.worldX;
+                previouseEventY = gp.player.worldY;
+                canTouchEvent = false;
                 
                 // Play map change sound
                 gp.playSE(9); // Assuming 9 is transport sound
@@ -134,6 +137,7 @@ public class eventHandler {
                 // Play locked door sound
                 gp.playSE(10); // Assuming 10 is locked sound
             }
+            gp.gameState = gameState;
         }
     }
 }

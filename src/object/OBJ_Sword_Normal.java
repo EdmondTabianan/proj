@@ -2,7 +2,6 @@ package object;
 
 import entity.Entity;
 import main.GamePanel;
-import java.util.Random;
 
 public class OBJ_Sword_Normal extends Entity {
 

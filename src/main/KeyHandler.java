@@ -50,6 +50,10 @@ public class KeyHandler implements KeyListener {
         else if (gp.gameState == gp.optionsState) {
             optionsState(code);
         }
+        // game overstate 
+        else if (gp.gameState == gp.gameOverState) {
+            gameOverState(code);
+        }
     }   
 
     public void titleState(int code) {
@@ -134,12 +138,6 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_ESCAPE) {
             gp.gameState = gp.optionsState;
          }
-        // f is long press
-        //  if (code == KeyEvent.VK_F) {
-        //     if (arrowpressed == false) {
-        //         arrowpressed = true;
-        //     } 
-        //  }
  
          // Debug
          if (code == KeyEvent.VK_T) {
@@ -150,7 +148,11 @@ public class KeyHandler implements KeyListener {
              }
          }
          if (code == KeyEvent.VK_R) {
-            gp.tileM.loadMap("/map/pyramid.txt");
+            switch (gp.currentMap) {
+                case 0: gp.tileM.loadMap("/map/main.txt", 0);break;
+                case 1: gp.tileM.loadMap("/map/secndmap.txt", 1);break;
+            }
+            
             gp.aSetter.setInteractiveTile();
          } 
     }
@@ -198,16 +200,36 @@ public class KeyHandler implements KeyListener {
     }
     public void optionsState(int code) {
         if (code == KeyEvent.VK_ESCAPE) {
-            gp.gameState = gp.playState;
+            if (gp.ui.subState == 0) {
+                gp.gameState = gp.playState;
+            } else {
+                gp.ui.subState = 0; // Go back to main options
+            }
             enterPressed = false;
         }
+        
         if(code == KeyEvent.VK_ENTER) {
             enterPressed = true;
         }
-        int maxCommandNum = 5;
+        
+        // Set max command number based on substate
+        int maxCommandNum = 0;
         switch (gp.ui.subState) {
-            case 0: maxCommandNum = 6; break;
+            case 0: // Main options - 6 items (0-5)
+                maxCommandNum = 5; 
+                break;
+            case 1: // Save menu - 4 items (0-3)
+                maxCommandNum = 3;
+                break;
+            case 2: // Controls - 1 item (0)
+                maxCommandNum = 0;
+                break;
+            case 3: // Quit confirmation - 2 items (0-1)
+                maxCommandNum = 1;
+                break;
         }
+        
+        // Navigation with W/S keys
         if(code == KeyEvent.VK_W) {
             gp.ui.commandNum--;
             gp.playSE(9);
@@ -215,15 +237,18 @@ public class KeyHandler implements KeyListener {
                 gp.ui.commandNum = maxCommandNum;
             }
         }
+        
         if(code == KeyEvent.VK_S) {
             gp.ui.commandNum++;
             gp.playSE(9);
-            if (gp.ui.commandNum == maxCommandNum) {
+            if (gp.ui.commandNum > maxCommandNum) {  // FIXED: > instead of ==
                 gp.ui.commandNum = 0;
             }
         }
-        if (code == KeyEvent.VK_A) {
-            if (gp.ui.subState == 0) {
+        
+        // Volume adjustment with A/D keys (only in main options)
+        if (gp.ui.subState == 0) {
+            if (code == KeyEvent.VK_A) {
                 if (gp.ui.commandNum == 1 && gp.music.volumeScale > 0) {
                     gp.music.volumeScale--;
                     gp.music.checkVolume();
@@ -234,9 +259,7 @@ public class KeyHandler implements KeyListener {
                     gp.playSE(9);
                 }
             }
-        }
-        if (code == KeyEvent.VK_D) {
-            if (gp.ui.subState == 0) {
+            if (code == KeyEvent.VK_D) {
                 if (gp.ui.commandNum == 1 && gp.music.volumeScale < 5) {
                     gp.music.volumeScale++;
                     gp.music.checkVolume();
@@ -246,6 +269,35 @@ public class KeyHandler implements KeyListener {
                     gp.se.volumeScale++;
                     gp.playSE(9);
                 }
+            }
+        }
+    }
+    public void gameOverState(int code) {
+        if (code == KeyEvent.VK_W) {
+            gp.ui.commandNum--;
+            if (gp.ui.commandNum < 0) {
+                gp.ui.commandNum = 1;
+            }
+            gp.playSE(9);
+        }
+    
+        if (code == KeyEvent.VK_S) {
+            gp.ui.commandNum++;
+        }
+        if (gp.ui.commandNum > 1) {
+            gp.ui.commandNum = 0;
+        }
+            gp.playSE(9);
+            
+        if (code == KeyEvent.VK_ENTER) {
+            if(gp.ui.commandNum == 0) {
+                gp.gameState = gp.playState;
+                gp.retry();
+                gp.playMusic(0);
+            }
+            else if (gp.ui.commandNum == 1) {
+                gp.gameState = gp.titleState;
+                gp.restart();
             }
         }
     }

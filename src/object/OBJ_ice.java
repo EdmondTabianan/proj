@@ -17,7 +17,7 @@ public class OBJ_ice extends Projectile {
         speed = 5;
         maxLife = 80;
         life = maxLife;
-        attack = 1;
+        attack = 100;
         useCost = 1;
         alive = false;
         getImage();

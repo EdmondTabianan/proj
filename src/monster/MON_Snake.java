@@ -54,25 +54,50 @@ public class MON_Snake extends Entity{
     public void setAction() {
         actionLockCounter++;
 
-        if(actionLockCounter == 120) {
+        // Calculate distance to player
+        int playerDistanceX = Math.abs(worldX - gp.player.worldX);
+        int playerDistanceY = Math.abs(worldY - gp.player.worldY);
+
+        // Check if player is within 1 TILESIZE distance (Manhattan distance)
+        boolean isPlayerNear = (playerDistanceX <= gp.TileSize*5 && playerDistanceY == 0) || 
+                            (playerDistanceY <= gp.TileSize*5 && playerDistanceX == 0);
+
+        if (isPlayerNear) {
+            // Move toward player (no diagonal)
+            if (playerDistanceX > playerDistanceY) {
+                // Horizontal movement
+                if (gp.player.worldX > worldX) {
+                    Direction = "right";
+                } else if (gp.player.worldX < worldX) {
+                    Direction = "left";
+                }
+            } else {
+                // Vertical movement
+                if (gp.player.worldY > worldY) {
+                    Direction = "down";
+                } else if (gp.player.worldY < worldY) {
+                    Direction = "up";
+                }
+            }
+        } else if (actionLockCounter >= 120) {
+            // Only do random movement when player is not near
             Random random = new Random();
-            int i = random.nextInt(100)+1; //pick up numbner from 1 - 100
+            int i = random.nextInt(100) + 1;
             
-            if (i <=25) {
+            if (i <= 25) {
                 Direction = "up";
-            }
-            if (i >=25 && i <= 50) {
+            } else if (i <= 50) {
                 Direction = "down";
-            } 
-            if (i >=50  && i <= 75) {
+            } else if (i <= 75) {
                 Direction = "left";
-            }
-            if (i >= 75 && i <= 100) {
+            } else {
                 Direction = "right";
             }
+            
             actionLockCounter = 0;
         }
     }
+    
     public void checkDrop() {
 
         int roll = new Random().nextInt(100)+1; // 0–99
@@ -110,53 +135,64 @@ public class MON_Snake extends Entity{
             case "right": Direction = "left";  break;
         }
         
-        int knockBackDistance = 40; 
+        int knockBackDistance = 40;
 
-        // Calculate how far we can actually move without hitting solid tile
-        int actualDistance = knockBackDistance;
+// Calculate how far we can actually move without hitting solid tile OR other entities
+int actualDistance = knockBackDistance;
 
-        // Test each possible distance from smallest to largest
-        for (int testDistance = 5; testDistance <= knockBackDistance; testDistance += 5) {
-            // Temporarily move to test position
-            int tempX = worldX;
-            int tempY = worldY;
-            
-            switch (gp.player.Direction) {
-                case "up":    tempY -= testDistance; break;
-                case "down":  tempY += testDistance; break;
-                case "left":  tempX -= testDistance; break;
-                case "right": tempX += testDistance; break;
-            }
-            
-            // Store original position
-            int originalX = worldX;
-            int originalY = worldY;
-            
-            // Test collision at this distance
-            worldX = tempX;
-            worldY = tempY;
-            collisionOn = false;
-            gp.cChecker.checkTile(this);
-            
-            // Restore position
-            worldX = originalX;
-            worldY = originalY;
-            
-            if (collisionOn) {
-                // Can't move this far, use previous valid distance
-                actualDistance = testDistance - 5;
-                break;
-            } else {
-                actualDistance = testDistance;
-            }
+// Test each possible distance from smallest to largest
+for (int testDistance = 5; testDistance <= knockBackDistance; testDistance += 5) {
+    // Temporarily move to test position
+    int tempX = worldX;
+    int tempY = worldY;
+    
+    switch (gp.player.Direction) {
+        case "up":    tempY -= testDistance; break;
+        case "down":  tempY += testDistance; break;
+        case "left":  tempX -= testDistance; break;
+        case "right": tempX += testDistance; break;
+    }
+    
+    // Store original position
+    int originalX = worldX;
+    int originalY = worldY;
+    
+    // Test collision at this distance
+    worldX = tempX;
+    worldY = tempY;
+    collisionOn = false;
+    
+    // Check for tile collisions
+    gp.cChecker.checkTile(this);
+    
+    // Check for entity collisions (with other monsters)
+    if (!collisionOn) {
+        int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+        if (monsterIndex != 999) {
+            // Found collision with another monster
+            collisionOn = true;
         }
+    }
+    
+    // Restore position
+    worldX = originalX;
+    worldY = originalY;
+    
+    if (collisionOn) {
+        // Can't move this far, use previous valid distance
+        actualDistance = testDistance - 5;
+        break;
+    } else {
+        actualDistance = testDistance;
+    }
+}
 
-        // Apply the actual possible knockback distance
-        switch (gp.player.Direction) {
-            case "up":    worldY -= actualDistance; break;
-            case "down":  worldY += actualDistance; break;
-            case "left":  worldX -= actualDistance; break;
-            case "right": worldX += actualDistance; break;
-        }
+// Apply the actual possible knockback distance
+switch (gp.player.Direction) {
+    case "up":    worldY -= actualDistance; break;
+    case "down":  worldY += actualDistance; break;
+    case "left":  worldX -= actualDistance; break;
+    case "right": worldX += actualDistance; break;
+}
     }
 }

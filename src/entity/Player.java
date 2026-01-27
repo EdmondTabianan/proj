@@ -3,20 +3,18 @@ package entity;
 import main.KeyHandler;
 import object.OBJ_Arrows;
 import object.OBJ_Axe;
-import object.OBJ_Key;
 import object.OBJ_Shield_Wood;
 import object.OBJ_Sword_Normal;
-import object.OBJ_bow_normal;
 import object.OBJ_ice;
 import object.OBJ_ice_wand;
 import object.OBJ_tablet;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Random;
 
 import main.GamePanel;
 
@@ -69,7 +67,7 @@ public class Player extends Entity {
         maxMana = 4;
         mana = maxMana;
         arrow = 10;
-        strength = 1; // the higher the strength, damage is higher.
+        strength = 1; // the higher the strength, higher the damage.
         dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
@@ -83,14 +81,38 @@ public class Player extends Entity {
         attack = getAttack(); // total damage of weapon
         defense = getDefense(); // total defense 
     }
+    public void setDeaultPosition() {
+        worldX = gp.TileSize * 45;
+        worldY = gp.TileSize * 40;
+        Direction = "down";
+    }
+    public void resotreLifeAndMana() {
+        life = maxLife;
+        mana = maxMana;
+        Invincible = false;
+    }
     public void setItems() {
+        inventory.clear();
         inventory.add(currentweapon);
         inventory.add(currentShield);
         inventory.add(currentRange);
     }
     public int getAttack(){
-        attackArea = currentweapon.attackArea;
-        return attack = strength * currentweapon.attackvalue;
+        Random random = new Random();
+        int critChance = random.nextInt(100)+1;
+        if (critChance < 70) {
+            attackArea = currentweapon.attackArea;
+            return attack = strength * currentweapon.attackvalue;
+        }
+        if (critChance >= 70 && critChance <= 90) {
+            attackArea = currentweapon.attackArea;
+            return attack = strength * (currentweapon.attackvalue * 5);
+        }
+        if (critChance >= 90 && critChance <= 100) {
+            attackArea = currentweapon.attackArea;
+            return attack = strength * (currentweapon.attackvalue * 5);
+        }
+        return critChance;
     }
     public int getDefense(){
         return defense = dexterity * currentShield.defenseValue;
@@ -184,8 +206,8 @@ public class Player extends Entity {
             contactMonster(monsterIndex);    
             
             // check interactive tile collision
-            int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
-            //gp.iTile[iTileIndex].interactve();
+            //int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
+            // gp.iTile[iTileIndex].interactve();
 
             // Check Event
             gp.eHandler.checkEvent();
@@ -267,7 +289,13 @@ public class Player extends Entity {
         if (mana > maxMana) {
             mana = maxMana;
         }
-        
+        if (life <= 0) {
+            gp.gameState = gp.gameOverState;
+            gp.ui.commandNum = -1;
+            Invincible = false;
+            gp.stopMusic();
+            gp.playSE(12);
+        }
     }
     public void attacking() {
         spriteCounter++;
@@ -315,51 +343,53 @@ public class Player extends Entity {
     public void pickUpObject(int i) {
         if (i != 999) {
             // Check for key
-            if (gp.obj[i].type == type_key) {
+            if (gp.obj[gp.currentMap][i].type == type_key) {
                 gp.playSE(2);
                 hasKey++;
-                System.out.println("Keys: " + hasKey);
                 gp.ui.showMessage("You got a key!");
-                gp.obj[i] = null;
+                gp.obj[gp.currentMap][i] = null;
                 return;
             }
-
-            // In player.pickup method
-            if (gp.obj[i].type == type_tablet) {
+            if (gp.obj[gp.currentMap][i].type == type_tablet) {
                 gp.playSE(2);
-                gp.ui.showMessage("You got the clue \n" + new OBJ_tablet(gp).name);
-                hasTablet = true;
-                gp.obj[i] = null;
                 
-                // Add axe to game world
-                for (int j = 0; j < gp.obj.length; j++) {
-                    if (gp.obj[j] == null) {
-                        gp.obj[j] = new OBJ_Axe(gp);
-                        gp.obj[j].worldX = gp.TileSize * 18;
-                        gp.obj[j].worldY = gp.TileSize * 6;
-                        break;
+                if (inventory.size() < maxInventorySize ) {
+                    inventory.add(gp.obj[gp.currentMap][i]);
+                    hasTablet = true;
+                    gp.ui.showMessage("you pick " + new OBJ_tablet(gp).name);
+                    gp.obj[gp.currentMap][i] = null;
+
+                    if (hasTablet == true) {
+                        for (int j = 0; j < gp.obj.length; j++) {
+                            if (gp.obj[gp.currentMap][j] == null) {
+                                gp.obj[gp.currentMap][j] = new OBJ_Axe(gp);
+                                gp.obj[gp.currentMap][j].worldX = gp.TileSize * 18;
+                                gp.obj[gp.currentMap][j].worldY = gp.TileSize * 6;
+                                break;
+                            }
+                        }
+                        return;
                     }
                 }
-                return;
             }
             
             // For other pickup-only items
-            if(gp.obj[i].type == type_pickupOnly) {
-                gp.obj[i].use(this);
-                gp.obj[i] = null;
+            if(gp.obj[gp.currentMap][i].type == type_pickupOnly) {
+                gp.obj[gp.currentMap][i].use(this);
+                gp.obj[gp.currentMap][i] = null;
                 return; // Exit after handling pickup-only
             }
             
             // For regular inventory items
             if(inventory.size() != maxInventorySize) {
-                inventory.add(gp.obj[i]);
+                inventory.add(gp.obj[gp.currentMap][i]);
                 gp.playSE(1);
-                gp.ui.showMessage("Got a " + gp.obj[i].name + "!");
+                gp.ui.showMessage("Got a " + gp.obj[gp.currentMap][i].name + "!");
             }
             else {
                 gp.ui.showMessage("You cannot carry any more!");
             }
-            gp.obj[i] = null;
+            gp.obj[gp.currentMap][i] = null;
         }
     }
     public void interactNPC(int i) {
@@ -367,7 +397,7 @@ public class Player extends Entity {
             if (i != 999) {
                     attackCanceled = true;
                     gp.gameState = gp.dialogueState;
-                    gp.npc[i].speak();
+                    gp.npc[gp.currentMap][i].speak();
             }   
         }
     }
@@ -375,10 +405,10 @@ public class Player extends Entity {
     public void contactMonster(int i) {
 
         if(i != 999) {
-            if (Invincible == false && gp.monster[i].dying == false) {
+            if (Invincible == false && gp.monster[gp.currentMap][i].dying == false) {
                 gp.playSE(6);
 
-                int damage = attack - (gp.monster[i].attack - defense);
+                int damage = attack - (gp.monster[gp.currentMap][i].attack - defense);
                 if(damage <= 0) {
                     damage = 0;
                 }
@@ -389,23 +419,23 @@ public class Player extends Entity {
     }
     public void damageMonster(int i, int attack) {
         if (i != 999) {
-            if (gp.monster[i].Invincible == false) {
+            if (gp.monster[gp.currentMap][i].Invincible == false) {
                 gp.playSE(5);
 
-                int damage = attack - gp.monster[i].defense;
+                int damage = attack - gp.monster[gp.currentMap][i].defense;
                 if(damage < 0) {
                     damage = 0;
                 }
-                gp.monster[i].life -= damage;
+                gp.monster[gp.currentMap][i].life -= damage;
                 gp.ui.showMessage(damage + "damage!");
-                gp.monster[i].Invincible = true;
-                gp.monster[i].damageReaction();
+                gp.monster[gp.currentMap][i].Invincible = true;
+                gp.monster[gp.currentMap][i].damageReaction();
 
-                if (gp.monster[i].life <= 0) {
-                    gp.monster[i].dying = true;
-                    gp.ui.showMessage("Killed the " + gp.monster[i].name + "!");
-                    gp.ui.showMessage("exp + " + gp.monster[i].exp);
-                    exp += gp.monster[i].exp;
+                if (gp.monster[gp.currentMap][i].life <= 0) {
+                    gp.monster[gp.currentMap][i].dying = true;
+                    gp.ui.showMessage("Killed the " + gp.monster[gp.currentMap][i].name + "!");
+                    gp.ui.showMessage("exp + " + gp.monster[gp.currentMap][i].exp);
+                    exp += gp.monster[gp.currentMap][i].exp;
                     checkLevelUp();
                 }
             }
@@ -413,15 +443,15 @@ public class Player extends Entity {
     }
     public void damageInteractiveTile(int i) {
 
-        if (i != 999 && gp.iTile[i].destructible == true 
-            && gp.iTile[i].isCorrectItem(this)== true && gp.iTile[i].Invincible == false) { 
+        if (i != 999 && gp.iTile[gp.currentMap][i].destructible == true 
+            && gp.iTile[gp.currentMap][i].isCorrectItem(this)== true && gp.iTile[gp.currentMap][i].Invincible == false) { 
             
-            gp.iTile[i].playSE();
-            gp.iTile[i].life--;
-            gp.iTile[i].Invincible = true;
+            gp.iTile[gp.currentMap][i].playSE();
+            gp.iTile[gp.currentMap][i].life--;
+            gp.iTile[gp.currentMap][i].Invincible = true;
 
-            if (gp.iTile[i].life <= 0) {
-                gp.iTile[i] = gp.iTile[i].getDestroyedForm();
+            if (gp.iTile[gp.currentMap][i].life <= 0) {
+                gp.iTile[gp.currentMap][i] = gp.iTile[gp.currentMap][i].getDestroyedForm();
             }
         }
     }
@@ -438,8 +468,8 @@ public class Player extends Entity {
             maxMana += 1;
             mana += 1;
     
-            if (level % 2 == 0) strength++;
-            if (level % 3 == 0) dexterity++;
+            if (level % 3 == 0) strength++;
+            if (level % 5 == 0) dexterity++;
     
             attack = getAttack();
             defense = getDefense();

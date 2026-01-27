@@ -2,8 +2,8 @@ package tile_interactive;
 
 public class IT_Trunk extends InteractiveTile {
 
-    public IT_Trunk(main.GamePanel gp, int col, int row) {
-        super(gp, col, row);
+    public IT_Trunk(main.GamePanel gp,int map, int col, int row) {
+        super(gp,map, col, row);
         
         this.worldX = gp.TileSize * col;
         this.worldY = gp.TileSize * row;

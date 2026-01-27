@@ -3,7 +3,6 @@ package entity;
 import java.util.Random;
 
 import main.GamePanel;
-import object.OBJ_Potion_Red;
 
 public class NPC_blueboy extends Entity {
 
@@ -49,20 +48,20 @@ public class NPC_blueboy extends Entity {
 
         actionLockCounter ++;
 
-        // if (collisionOn == true) {
-        //     Random random = new Random();
-        //     int i = random.nextInt(4);
+        if (collisionOn == true) {
+            Random random = new Random();
+            int i = random.nextInt(4);
 
-        //     switch (i) {
-        //         case 0: Direction = "up"; break;
-        //         case 1: Direction = "down"; break;
-        //         case 2: Direction = "left"; break;
-        //         case 3: Direction = "right"; break;
-        //     }
-        //     collisionOn = false;
-        //     actionLockCounter = 0;
-        //     return;
-        // }
+            switch (i) {
+                case 0: Direction = "up"; break;
+                case 1: Direction = "down"; break;
+                case 2: Direction = "left"; break;
+                case 3: Direction = "right"; break;
+            }
+            collisionOn = false;
+            actionLockCounter = 0;
+            return;
+        }
 
         if(actionLockCounter == 120) {
             Random random = new Random();

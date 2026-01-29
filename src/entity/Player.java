@@ -55,8 +55,10 @@ public class Player extends Entity {
         setItems();
     }
     public void setDefaultValues() {
-        worldX = gp.TileSize * 45;
-        worldY = gp.TileSize * 40;
+        // worldX = gp.TileSize * 45;
+        // worldY = gp.TileSize * 40;
+        worldX = gp.TileSize * 25;
+        worldY = gp.TileSize * 34;
         speed = 5;
         Direction = "down";
 
@@ -72,7 +74,7 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        hasKey = 0; 
+        hasKey = 3; 
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
@@ -92,7 +94,7 @@ public class Player extends Entity {
         Invincible = false;
     }
     public void setItems() {
-        inventory.clear();
+        //inventory.clear();
         inventory.add(currentweapon);
         inventory.add(currentShield);
         inventory.add(currentRange);
@@ -478,7 +480,7 @@ public class Player extends Entity {
 
     public void selectItem() {
 
-        int itemIndex = gp.ui.getItemIndexOnSlot();
+        int itemIndex = gp.ui.getItemIndexOnSlot(gp.ui.playerSlotCol, gp.ui.playerSlotRow);
 
         if (itemIndex < inventory.size()) {
 

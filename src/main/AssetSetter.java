@@ -1,6 +1,7 @@
 package main;
 
 import entity.NPC_blueboy;
+import entity.NPC_merchant;
 import monster.MON_GreenSlime;
 import monster.MON_Snake;
 import object.OBJ_Axe;
@@ -75,9 +76,9 @@ public class AssetSetter {
         gp.npc[mapnum][i].worldX = gp.TileSize*38;
         gp.npc[mapnum][i].worldY = gp.TileSize*30;
         i++;
-        // gp.npc[mapnum][i] = new NPC_blueboy(gp);
-        // gp.npc[mapnum][i].worldX = gp.TileSize*24;
-        // gp.npc[mapnum][i].worldY = gp.TileSize*21;
+        gp.npc[mapnum][i] = new NPC_merchant(gp);
+        gp.npc[mapnum][i].worldX = gp.TileSize*25;
+        gp.npc[mapnum][i].worldY = gp.TileSize*32;
     }
     // public void setMonster() {
     //     int i = 0;

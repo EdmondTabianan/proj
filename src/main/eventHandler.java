@@ -1,11 +1,14 @@
 package main;
 
+import entity.Entity;
+
 public class eventHandler {
     GamePanel gp;
     EventRect eventRect[][][];
 
     int previouseEventX, previouseEventY;
     boolean canTouchEvent = true;
+    int tempMap, tempCol, tempRow;
 
     public eventHandler(GamePanel gp) {
         this.gp = gp;
@@ -51,6 +54,11 @@ public class eventHandler {
             else if(hit(0,21,33, "up") == true) {healingPool(gp.dialogueState);}
             else if(hit(0, 46, 42, "down") == true) {transport(1, 24 , 42,gp.dialogueState);}
             else if(hit(1, 24, 42, "down") == true) {transport(0, 46 , 42,gp.dialogueState);}
+            else if(hit(0, 28, 16, "up") == true) {teleport(2, 24 , 48);}
+            else if(hit(0, 29, 16, "up") == true) {teleport(2, 25 , 48);}
+            else if(hit(2, 24, 48, "down") == true) {teleport(0, 28 , 17);}
+            else if(hit(2, 25, 48, "down") == true) {teleport(0, 29 , 17);}
+            else if(hit(0, 25, 34, "up") == true) {speak(gp.npc[0][1]);}
         }
     }
     
@@ -80,11 +88,20 @@ public class eventHandler {
         return hit;
     }
     
-    public void teleport(int gameState) {
-        gp.gameState = gameState;
-        gp.ui.currentDialogue ="Teleport";
-        gp.player.worldX = gp.TileSize*29;
-        gp.player.worldY = gp.TileSize*20;
+    public void teleport(int map, int col,int row) {
+        gp.gameState = gp.transitionState;
+
+        tempMap = map;
+        tempCol = col;
+        tempRow = row;
+        canTouchEvent = false;
+        gp.playSE(13);
+        // gp.currentMap = map;
+        // gp.player.worldX = gp.TileSize * col;
+        // gp.player.worldY = gp.TileSize * row;
+        // previouseEventX = gp.player.worldX;
+        // previouseEventY = gp.player.worldY;
+        // canTouchEvent = false;
     } 
     
     public void healingPool(int gameState) {
@@ -104,13 +121,49 @@ public class eventHandler {
         if(gp.keyH.enterPressed == true) {
             
             if(gp.player.hasKey > 0) {
-                
+                gp.gameState = gp.gameState;
                 gp.playSE(2); 
                 
                 if (gp.currentMap == 0) {
                     gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
                 }
                 if (gp.currentMap == 1) {
+                    gp.ui.currentDialogue = "You used a key!\nTransporting to the first map...";
+                }
+                
+                
+                // Load the second map
+                tempMap = map;
+                tempCol = col;
+                tempRow = row;
+                canTouchEvent = false;
+                gp.gameState = gp.transitionState;
+
+                // Play map change sound
+                gp.playSE(9); 
+                
+            } else {
+                gp.ui.currentDialogue = "The ship is locked!\nYou need a key to enter.";
+                // Play locked door sound
+                gp.playSE(10);
+            }
+            
+        }
+    }
+
+    public void teleportToFinalStage(int map, int col,int row, int gameState) {
+        
+        gp.player.attackCanceled = true;
+        if(gp.keyH.enterPressed == true) {
+            
+            if(gp.player.hasKey > 2) {
+                
+                gp.playSE(2); 
+                
+                if (gp.currentMap == 0) {
+                    gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
+                }
+                if (gp.currentMap == 2) {
                     gp.ui.currentDialogue = "You used a key!\nTransporting to the first map...";
                 }
                 
@@ -133,11 +186,17 @@ public class eventHandler {
                 gp.playSE(9); // Assuming 9 is transport sound
                 
             } else {
-                gp.ui.currentDialogue = "The ship is locked!\nYou need a key to enter.";
+                gp.ui.currentDialogue = "the door is lock find the all keys.";
                 // Play locked door sound
                 gp.playSE(10); // Assuming 10 is locked sound
             }
             gp.gameState = gameState;
+        }
+    }
+    public void speak(Entity entity) {
+        if(gp.keyH.enterPressed == true) {
+            gp.player.attackCanceled = true;
+            entity.speak();
         }
     }
 }

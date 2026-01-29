@@ -23,13 +23,14 @@ public class TileManager {
         getTileImage();
         loadMap("/map/main.txt", 0);
         loadMap("/map/secondmap.txt", 1);
+        loadMap("/map/lastmap.txt", 2);
     }
 
     public void getTileImage() {
         int i = 0;
         
         // Fill in all missing numbers from 000 to 176
-        setup(i, "000", false); i++;
+        setup(i, "000", true); i++;
         setup(i, "001", false); i++;
         setup(i, "002", true); i++;
         setup(i, "003", false); i++;
@@ -66,7 +67,7 @@ public class TileManager {
         setup(i, "032", true); i++;
         setup(i, "033", true); i++;
         setup(i, "034", false); i++;
-        setup(i, "035", false); i++;
+        setup(i, "035", true); i++;
         setup(i, "036", false); i++;
         setup(i, "037", false); i++;
         setup(i, "038", false); i++;
@@ -174,8 +175,8 @@ public class TileManager {
         setup(i, "138", true); i++;
         setup(i, "139", true); i++;
         setup(i, "140", true); i++;
-        setup(i, "141", true); i++;
-        setup(i, "142", true); i++;
+        setup(i, "141", false); i++;
+        setup(i, "142", false); i++;
         setup(i, "143", true); i++;
         setup(i, "144", true); i++;
         setup(i, "145", true); i++;
@@ -185,8 +186,8 @@ public class TileManager {
         setup(i, "149", true); i++;
         setup(i, "150", true); i++;
         setup(i, "151", true); i++;
-        setup(i, "152", true); i++;
-        setup(i, "153", true); i++;
+        setup(i, "152", false); i++;
+        setup(i, "153", false); i++;
         setup(i, "154", true); i++;
         setup(i, "155", true); i++;
         setup(i, "156", true); i++;

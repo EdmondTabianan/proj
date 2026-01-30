@@ -330,7 +330,7 @@ public class KeyHandler implements KeyListener {
             }
         } 
         if (code == KeyEvent.VK_S) {
-            if (gp.ui.playerSlotCol != 3) {
+            if (gp.ui.playerSlotRow != 3) {
             gp.ui.playerSlotRow++;
             gp.playSE(9);
             }
@@ -356,7 +356,7 @@ public class KeyHandler implements KeyListener {
             }
         } 
         if (code == KeyEvent.VK_S) {
-            if (gp.ui.npcSlotCol != 3) {
+            if (gp.ui.npcSlotRow != 3) {
             gp.ui.npcSlotRow++;
             gp.playSE(9);
             }

@@ -537,8 +537,6 @@ public class UI {
             frameHeight = gp.TileSize*5;
             slotCol = playerSlotCol;
             slotRow = playerSlotRow;
-            // System.out.println("Inventory size: " + gp.player.inventory.size());
-
         }
         else {
             frameX = gp.TileSize*2;
@@ -608,7 +606,7 @@ public class UI {
             if (itemIndex < entity.inventory.size()) {
 
                 for(String line: entity.inventory.get(itemIndex).description.split("\n")){
-                    g2.drawString(gp.player.inventory.get(itemIndex).description, textX, textY);
+                    //g2.drawString(gp.player.inventory.get(itemIndex).description, textX, textY);
                     g2.drawString(line, textX, textY);
                     textY += 32;
                 } 

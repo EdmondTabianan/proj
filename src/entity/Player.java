@@ -26,8 +26,8 @@ public class Player extends Entity {
     public final int screenY;
     int standCounter = 0;
     public boolean attackCanceled = false;
-    public ArrayList<Entity> inventory = new ArrayList<>();
-    public final int maxInventorySize = 20;
+    // public ArrayList<Entity> inventory = new ArrayList<>();
+    // public final int maxInventorySize = 20;
 
     public Player (GamePanel gp, KeyHandler keyH) {
         super(gp);
@@ -55,10 +55,10 @@ public class Player extends Entity {
         setItems();
     }
     public void setDefaultValues() {
-        // worldX = gp.TileSize * 45;
-        // worldY = gp.TileSize * 40;
-        worldX = gp.TileSize * 25;
-        worldY = gp.TileSize * 34;
+        worldX = gp.TileSize * 45;
+        worldY = gp.TileSize * 40;
+        // worldX = gp.TileSize * 25;
+        // worldY = gp.TileSize * 34;
         speed = 5;
         Direction = "down";
 
@@ -94,7 +94,7 @@ public class Player extends Entity {
         Invincible = false;
     }
     public void setItems() {
-        //inventory.clear();
+        inventory.clear();
         inventory.add(currentweapon);
         inventory.add(currentShield);
         inventory.add(currentRange);
@@ -208,8 +208,8 @@ public class Player extends Entity {
             contactMonster(monsterIndex);    
             
             // check interactive tile collision
-            //int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
-            // gp.iTile[iTileIndex].interactve();
+            int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
+            //gp.iTile[iTileIndex].interactve(); why this error
 
             // Check Event
             gp.eHandler.checkEvent();
@@ -517,8 +517,6 @@ public class Player extends Entity {
         }
     }
     public void draw(Graphics2D g2) {
-    //    g2.setColor(Color.white);
-    //    g2.fillRect(x, y, gp.TileSize, gp.TileSize);
 
         BufferedImage image = null;
         int tempScreenX = screenX;
@@ -576,9 +574,7 @@ public class Player extends Entity {
             g2.drawImage(image, tempScreenX, tempScreenY,null);
 
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-            // g2.setFont(new Font("arial", Font.PLAIN, 24));
-            // g2.setColor(Color.white);
-            // g2.drawString("Invible" + InvincibleCounter, 10, 400);
+        
             if (type == 0) {
                 double oneScale = (double)gp.TileSize / maxLife;
                 double hpBarValue = oneScale * life;

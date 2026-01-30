@@ -97,6 +97,7 @@ public class Entity {
 
     public Entity(GamePanel gp) {
         this.gp = gp;
+        inventory = new ArrayList<>();
     }
     public void setAction() {}
     public void damageReaction() {}

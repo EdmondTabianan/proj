@@ -125,12 +125,13 @@ public class eventHandler {
                 gp.playSE(2); 
                 
                 if (gp.currentMap == 0) {
-                    gp.ui.currentDialogue = "You used a key!\nTransporting to the second map...";
+                    gp.ui.currentDialogue = "arrived in second map...";
+                    gp.ui.showMessage("Arrived in second map...");
                 }
                 if (gp.currentMap == 1) {
-                    gp.ui.currentDialogue = "You used a key!\nTransporting to the first map...";
+                    gp.ui.currentDialogue = "arrived in first map...";
+                    gp.ui.showMessage("arrived in first map...");
                 }
-                
                 
                 // Load the second map
                 tempMap = map;
@@ -140,10 +141,12 @@ public class eventHandler {
                 gp.gameState = gp.transitionState;
 
                 // Play map change sound
-                gp.playSE(9); 
+                gp.playSE(13); 
                 
-            } else {
+            } 
+            else if (gp.player.hasKey == 0) {
                 gp.ui.currentDialogue = "The ship is locked!\nYou need a key to enter.";
+                gp.ui.showMessage("The ship is locked!");
                 // Play locked door sound
                 gp.playSE(10);
             }

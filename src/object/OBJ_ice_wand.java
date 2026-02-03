@@ -15,9 +15,10 @@ public class OBJ_ice_wand extends Entity {
         name = "Normal wand";
         down1 = setup("/objects/ice_wand", gp.TileSize, gp.TileSize);
         attackvalue = 1;
-        description = "[" + name + "]\n normal sword\n" + "attack: " + attackvalue;
+        description = "[" + name + "]\n normal wand\n" + "attack: " + attackvalue;
         attackArea.width = 36;
         attackArea.height = 36;
+        amount = 100;
     }
 
 }

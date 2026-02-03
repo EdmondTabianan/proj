@@ -173,6 +173,7 @@ public class KeyHandler implements KeyListener {
     public void characterState(int code) {
         if(code == KeyEvent.VK_C) {
             gp.gameState = gp.playState;
+            playerInventory(code);
         }
         if (code == KeyEvent.VK_ENTER) {
             gp.player.selectItem();
@@ -284,44 +285,60 @@ public class KeyHandler implements KeyListener {
     }
 
     public void tradeState(int code) {
+        // Handle Escape key
         if (code == KeyEvent.VK_ESCAPE) {
             if (gp.ui.subState == 0) {
                 gp.gameState = gp.playState;
             } else {
                 gp.ui.subState = 0;
             }
-            enterPressed = false;
+            enterPressed = false; // Reset when escaping
         }
         
+        // Only set enterPressed to true if Enter is pressed
+        // Don't reset it here - let it be handled in the UI
         if(code == KeyEvent.VK_ENTER) {
             enterPressed = true;
         }
         
+        // Handle navigation in main trade menu
         if (gp.ui.subState == 0) {
-            // Navigation with W/S keys
             if(code == KeyEvent.VK_W) {
                 gp.ui.commandNum--;
                 gp.playSE(9);
                 if (gp.ui.commandNum < 0) {
                     gp.ui.commandNum = 2;
                 }
+                enterPressed = false; // Reset when navigating
             }
-            
             if(code == KeyEvent.VK_S) {
                 gp.ui.commandNum++;
                 gp.playSE(9);
                 if (gp.ui.commandNum > 2) { 
                     gp.ui.commandNum = 0;
                 }
+                enterPressed = false; // Reset when navigating
             }
         }   
+        
+        // Handle navigation in buy menu (npc inventory)
         if (gp.ui.subState == 1) {
             npcInventory(code);
-            if (code == KeyEvent.VK_ENTER) {
-                gp.ui.subState = 0;
+            // If user navigates with arrow keys, reset enterPressed
+            if (code == KeyEvent.VK_W || code == KeyEvent.VK_S || 
+                code == KeyEvent.VK_A || code == KeyEvent.VK_D) {
+                enterPressed = false;
             }
-        }     
-    }
+        }
+        if (gp.ui.subState == 2) {
+            playerInventory(code);
+            // If user navigates with arrow keys, reset enterPressed
+            if (code == KeyEvent.VK_W || code == KeyEvent.VK_S || 
+                code == KeyEvent.VK_A || code == KeyEvent.VK_D) {
+                enterPressed = false;
+            }
+        }        
+    }   
     public void playerInventory(int code) {
         if (code == KeyEvent.VK_W) {
             if (gp.ui.playerSlotRow != 0) {
@@ -378,6 +395,9 @@ public class KeyHandler implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
+        if (code == KeyEvent.VK_ENTER) {
+            enterPressed = false;
+        }
         if (code == KeyEvent.VK_W) {
            upPressed = false;
         }

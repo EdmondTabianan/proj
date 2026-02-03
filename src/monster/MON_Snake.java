@@ -26,7 +26,8 @@ public class MON_Snake extends Entity{
         speed = 1;
         maxLife = 12 + gp.player.level * 3;
         life = maxLife;
-        attack = 2 + gp.player.level / 2;
+        // attack = 2 + gp.player.level / 2;
+        attack = 2;
         defense = 1 + gp.player.level / 3;
         exp = 5 + gp.player.level * 2;
 

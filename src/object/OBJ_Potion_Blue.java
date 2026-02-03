@@ -16,7 +16,7 @@ public class OBJ_Potion_Blue extends Entity {
         value = 2;
         down1 = setup("/objects/potion_blue", gp.TileSize, gp.TileSize);
         description = "[Blue Potion]\n your mana by " + value + ".";
-
+        amount = 30;
     }
     public void use(Entity entity) {
         gp.gameState = gp.dialogueState;

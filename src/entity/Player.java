@@ -73,8 +73,8 @@ public class Player extends Entity {
         dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
-        coin = 0;
-        hasKey = 3; 
+        coin = 200;
+        hasKey = 0; 
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
@@ -461,6 +461,8 @@ public class Player extends Entity {
     public void checkLevelUp() {
         if (exp >= nextLevelExp) {
             level++;
+            gp.ui.showMessage("You leveled up! You are\nlevel " + level + " now!");
+            gp.playSE(8);
             exp -= nextLevelExp;
             nextLevelExp += level * 5;
     
@@ -469,7 +471,7 @@ public class Player extends Entity {
     
             maxMana += 1;
             mana += 1;
-    
+            
             if (level % 3 == 0) strength++;
             if (level % 5 == 0) dexterity++;
     

@@ -78,6 +78,7 @@ public class Entity {
     public String description = "";
     public int useCost;
     public int hasKey;
+    public int amount;
 
     // type
     public int type;
@@ -109,20 +110,12 @@ public class Entity {
         gp.ui.currentDialogue = dialogues[dialoguesIndex];
         dialoguesIndex++;
 
-        switch (gp.player.Direction) {
-            case "up":
-                Direction = "down";
-                break;
-            case "down":
-                Direction = "up";
-                break;
-            case "left":
-                Direction = "right";
-                break;
-            case "right":
-                Direction = "left";
-                break;
-        }
+        // switch (gp.player.Direction) {
+        //     case "up": Direction = "down"; break;
+        //     case "down": Direction = "up"; break;
+        //     case "left": Direction = "right"; break;
+        //     case "right": Direction = "left"; break;
+        // }
     }
     public void use(Entity entity) {}
     public void checkDrop() {}

@@ -18,10 +18,12 @@ public class OBJ_Arrows extends Projectile {
         speed = 6;
         maxLife = 80;
         life = maxLife;
-        attack = 2;
+        attack = 4;
         useCost = 1;
         alive = false;
         value = 1;
+        amount = 10;
+        description = "[" + name + "]\nA sharp arrow to shoot.\nYou can pick up more";
         getImage();
     }
     // edmond tabianan

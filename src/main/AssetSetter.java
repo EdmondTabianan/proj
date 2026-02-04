@@ -75,10 +75,17 @@ public class AssetSetter {
         gp.npc[mapnum][i] = new NPC_blueboy(gp);
         gp.npc[mapnum][i].worldX = gp.TileSize*38;
         gp.npc[mapnum][i].worldY = gp.TileSize*30;
+        // Merchant
         i++;
         gp.npc[mapnum][i] = new NPC_merchant(gp);
         gp.npc[mapnum][i].worldX = gp.TileSize*25;
         gp.npc[mapnum][i].worldY = gp.TileSize*32;
+
+        mapnum = 3;
+        i++;
+        gp.npc[mapnum][i] = new NPC_merchant(gp);
+        gp.npc[mapnum][i].worldX = gp.TileSize*20;
+        gp.npc[mapnum][i].worldY = gp.TileSize*20;
     }
     // public void setMonster() {
     //     int i = 0;

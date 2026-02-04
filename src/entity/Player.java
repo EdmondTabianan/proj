@@ -73,7 +73,7 @@ public class Player extends Entity {
         dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
-        coin = 200;
+        coin = 0;
         hasKey = 0; 
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
@@ -267,7 +267,7 @@ public class Player extends Entity {
         
             // Reset cooldown
             shotAvailableCounter = 0;
-        
+            getPlayerAttackImage();
             gp.playSE(7);  // sound effect
         }
         
@@ -469,9 +469,11 @@ public class Player extends Entity {
             maxLife += 2;
             life += 2;
     
-            maxMana += 1;
-            mana += 1;
-            
+            if (level % 3 == 0) {
+                maxMana += 1;
+                mana += 1;
+            }
+             
             if (level % 3 == 0) strength++;
             if (level % 5 == 0) dexterity++;
     

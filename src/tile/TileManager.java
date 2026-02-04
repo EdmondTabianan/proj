@@ -24,6 +24,7 @@ public class TileManager {
         loadMap("/map/main.txt", 0);
         loadMap("/map/secondmap.txt", 1);
         loadMap("/map/lastmap.txt", 2);
+        loadMap("/map/shop.txt", 3);
     }
 
     public void getTileImage() {
@@ -38,12 +39,10 @@ public class TileManager {
         setup(i, "005", false); i++;
         setup(i, "006", false); i++;
         setup(i, "007", false); i++;
-        setup(i, "008", false); i++;
-        
-        // Missing numbers 009-061
-        setup(i, "009", false); i++;
-        setup(i, "010", false); i++;
-        setup(i, "011", false); i++;
+        setup(i, "008", true); i++;
+        setup(i, "009", true); i++;
+        setup(i, "010", true); i++;
+        setup(i, "011", true); i++;
         setup(i, "012", false); i++;
         setup(i, "013", false); i++;
         setup(i, "014", false); i++;
@@ -72,9 +71,9 @@ public class TileManager {
         setup(i, "037", false); i++;
         setup(i, "038", false); i++;
         setup(i, "039", false); i++;
-        setup(i, "040", false); i++;
+        setup(i, "040", true); i++;
         setup(i, "041", true); i++;
-        setup(i, "042", false); i++;
+        setup(i, "042", true); i++;
         setup(i, "043", false); i++;
         setup(i, "044", false); i++;
         setup(i, "045", false); i++;
@@ -89,13 +88,11 @@ public class TileManager {
         setup(i, "054", false); i++;
         setup(i, "055", false); i++;
         setup(i, "056", false); i++;
-        setup(i, "057", false); i++;
+        setup(i, "057", true); i++;
         setup(i, "058", false); i++;
-        setup(i, "059", false); i++;
+        setup(i, "059", true); i++;
         setup(i, "060", false); i++;
-        setup(i, "061", false); i++;
-        
-        // Continue with your existing numbers
+        setup(i, "061", true); i++;
         setup(i, "062", true); i++;
         setup(i, "063", true); i++;
         setup(i, "064", true); i++;

@@ -59,6 +59,9 @@ public class eventHandler {
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28 , 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29 , 17);}
             else if(hit(0, 25, 34, "up") == true) {speak(gp.npc[0][1]);}
+            else if(hit(1, 7, 29, "up") == true) {teleport(3, 24 , 35);}
+            else if(hit(3, 24, 36, "down") == true) {teleport(1, 7 , 29);}
+            else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][2]);}
         }
     }
     

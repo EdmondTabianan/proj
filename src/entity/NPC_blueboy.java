@@ -3,6 +3,7 @@ package entity;
 import java.util.Random;
 
 import main.GamePanel;
+import object.OBJ_tablet;
 
 public class NPC_blueboy extends Entity {
 
@@ -93,9 +94,22 @@ public class NPC_blueboy extends Entity {
         }
     }
     public void speak(){
-        // Do this specfic stuff
-        super.speak();
-
+        // Do this specific stuff
+        super.speak(); // Call parent speak method if needed
+        
+        // Spawn tablet on current map
+        int currentMap = gp.currentMap;
+        
+        // Find an empty slot in the object array
+        for (int i = 0; i < gp.obj[1].length; i++) {
+            if (gp.obj[currentMap][i] == null) {
+                gp.obj[currentMap][i] = new OBJ_tablet(gp);
+                gp.obj[currentMap][i].worldX = gp.TileSize * 10;
+                gp.obj[currentMap][i].worldY = gp.TileSize * 24;
+                break; // Exit after placing one tablet
+            }
+        }
+        
         onPath = true;
     }
 }

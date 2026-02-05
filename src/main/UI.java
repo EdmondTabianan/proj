@@ -342,7 +342,7 @@ public class UI {
         }
         // TRANSITION STATE
         if (gp.gameState == gp.transitionState) {
-            drawtransitionScreen();
+            drawTransitionScreen();
         }
         // Trade STATE
         if (gp.gameState == gp.tradeState) {
@@ -1069,21 +1069,24 @@ public class UI {
             textY += gp.TileSize;
         }
     }
-    public void drawtransitionScreen() {
+    public void drawTransitionScreen() {
         counter++;
         g2.setColor(new Color(0,0,0,counter*5));
         g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-
+    
         if (counter == 50) {
             counter = 0;
             gp.gameState = gp.playState;
             gp.currentMap = gp.eHandler.tempMap;
-            gp.player.worldX = gp.eHandler.tempCol * gp.TileSize;
+            
+            // FIX: Use tempColFloat instead of tempCol (which doesn't exist)
+            gp.player.worldX = (int)(gp.eHandler.tempColFloat * gp.TileSize);
             gp.player.worldY = gp.eHandler.tempRow * gp.TileSize;
+            
             gp.eHandler.previouseEventX = gp.player.worldX;
-            gp.eHandler.previouseEventY = gp.player.worldY; 
+            gp.eHandler.previouseEventY = gp.player.worldY;
         }
-    }
+    }   
     public void TradeScreen() {
         switch (subState) {
            

@@ -56,8 +56,8 @@ public class Player extends Entity {
     public void setDefaultValues() {
         worldX = gp.TileSize * 46;
         worldY = gp.TileSize * 39;
-        // worldX = gp.TileSize * 25;
-        // worldY = gp.TileSize * 34;
+        // worldX = gp.TileSize * 28;
+        // worldY = gp.TileSize * 19;
         defaultSpeed = 4;
         speed = defaultSpeed;
         Direction = "down";
@@ -504,8 +504,6 @@ public class Player extends Entity {
                 knockBackPower = 0;
                 if (currentweapon != null) {
                     knockBackPower = currentweapon.knockBackPower;
-                    System.out.println("DEBUG: Using " + currentweapon.name + 
-                                     " with knockBackPower: " + knockBackPower); // Debug
                 }
     
                 // Apply knockback if power > 0

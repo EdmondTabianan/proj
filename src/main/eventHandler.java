@@ -8,7 +8,8 @@ public class eventHandler {
 
     int previouseEventX, previouseEventY;
     boolean canTouchEvent = true;
-    int tempMap, tempCol, tempRow;
+    int tempMap, tempRow;
+    float tempColFloat; 
 
     public eventHandler(GamePanel gp) {
         this.gp = gp;
@@ -54,17 +55,38 @@ public class eventHandler {
             else if(hit(0,21,33, "up") == true) {healingPool(gp.dialogueState);}
             else if(hit(0, 46, 42, "down") == true) {transport(1, 24 , 42,gp.dialogueState);}
             else if(hit(1, 24, 42, "down") == true) {transport(0, 46 , 42,gp.dialogueState);}
-            else if(hit(0, 28, 16, "up") == true) {teleport(2, 24 , 48);}
-            else if(hit(0, 28, 16, "up") == true) {teleport(2,(int)(24.5) , 48);}
-            else if(hit(0, 29, 16, "up") == true) {teleport(2, 25 , 48);}
-            else if(hit(2, 24, 48, "down") == true) {teleport(0, 28 , 17);}
-            else if(hit(2, 25, 48, "down") == true) {teleport(0, 29 , 17);}
-            // else if(hit(0, 25, 34, "up") == true) {speak(gp.npc[0][1]);}
-            else if(hit(1, 7, 29, "up") == true) {teleport(3, 24 , 35);}
-            else if(hit(3, 24, 36, "down") == true) {teleport(1, 7 , 29);}
+            
+            // DOOR TELEPORT: Map 0 (28-29,16) → Map 2 (24-25,48)
+            else if(hit(0, 28, 16, "up") == true || hit(0, 29, 16, "up") == true) {
+                float playerPos = (gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width/2) / (float)gp.TileSize;
+                
+                if(playerPos < 28.33f) {
+                    teleport(2, 24.0f, 48); // Left third
+                } else if(playerPos < 28.67f) {
+                    teleport(2, 24.5f, 48); // Middle third
+                } else {
+                    teleport(2, 25.0f, 48); // Right third
+                }
+            }
+            
+            // DOOR EXIT: Map 2 (24-25,48) → Map 0 (28-29,17)
+            else if(hit(2, 24, 48, "down") == true || hit(2, 25, 48, "down") == true) {
+                float playerPos = (gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width/2) / (float)gp.TileSize;
+                
+                if(playerPos < 24.33f) {
+                    teleport(0, 28.0f, 17); // Left third exit
+                } else if(playerPos < 24.67f) {
+                    teleport(0, 28.5f, 17); // Middle third exit
+                } else {
+                    teleport(0, 29.0f, 17); // Right third exit
+                }
+            }
+            
+            else if(hit(1, 7, 29, "up") == true) {teleport(3, 24.0f, 35);}
+            else if(hit(3, 24, 36, "down") == true) {teleport(1, 7.0f, 29);}
             else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][1]);}
-            else if(hit(2, 4, 3, "any") == true) {teleport(4, 4 , 3);}
-            else if(hit(4, 4, 3, "any") == true) {teleport(2, 4 , 3);}
+            else if(hit(2, 4, 3, "any") == true) {teleport(4, 4.0f, 3);}
+            else if(hit(4, 4, 3, "any") == true) {teleport(2, 4.0f, 3);}
         }
     }
     
@@ -94,15 +116,14 @@ public class eventHandler {
         return hit;
     }
     
-    public void teleport(int map, int col,int row) {
+    public void teleport(int map, float col, int row) {
         gp.gameState = gp.transitionState;
-
         tempMap = map;
-        tempCol = col;
+        tempColFloat = col;
         tempRow = row;
         canTouchEvent = false;
         gp.playSE(13);
-    } 
+    }
     
     public void healingPool(int gameState) {
          if(gp.keyH.enterPressed == true) {
@@ -135,7 +156,7 @@ public class eventHandler {
                 
                 // Load the second map
                 tempMap = map;
-                tempCol = col;
+                tempColFloat = col;
                 tempRow = row;
                 canTouchEvent = false;
                 gp.gameState = gp.transitionState;
@@ -196,6 +217,7 @@ public class eventHandler {
             gp.gameState = gameState;
         }
     }
+    
     public void speak(Entity entity) {
         if(gp.keyH.enterPressed == true) {
             gp.player.attackCanceled = true;

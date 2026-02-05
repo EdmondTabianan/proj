@@ -3,12 +3,12 @@ package object;
 import entity.Entity;
 import main.GamePanel;
 
-public class OBJ_Door2 extends Entity {
+public class OBJ_Door_Right extends Entity {
 
-    public OBJ_Door2(GamePanel gp) {
+    public OBJ_Door_Right(GamePanel gp) {
         super(gp);
         name = "Door";
-        down1 = setup("/objects/door-1", gp.TileSize, gp.TileSize);
+        down1 = setup("/objects/door_right", gp.TileSize, gp.TileSize);
         
         collision = true;
 

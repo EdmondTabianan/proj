@@ -23,7 +23,8 @@ public class MON_GreenSlime extends Entity {
         
         type = type_monster;
         name = "Green Slime";
-        speed = 1;
+        defaultSpeed = 1;
+        speed = defaultSpeed;
         maxLife = 8 + gp.player.level * 2;
         life = maxLife;
         attack = 1 + gp.player.level / 3;
@@ -53,140 +54,105 @@ public class MON_GreenSlime extends Entity {
         right2 = setup("/monster/greenslime_down_2", gp.TileSize, gp.TileSize);
         
     }
-    public void setAction() {
-        // Calculate distance to player
-        int playerDistanceX = Math.abs(worldX - gp.player.worldX);
-        int playerDistanceY = Math.abs(worldY - gp.player.worldY);
+    public void update() {
+        super.update();
     
-        // Check if player is within 5 TILESIZE distance (Manhattan distance)
-        boolean isPlayerNear = (playerDistanceX <= gp.TileSize * 5 && playerDistanceY == 0) || 
-                            (playerDistanceY <= gp.TileSize * 5 && playerDistanceX == 0);
+        int xDistance = Math.abs(worldX - gp.player.worldX);
+        int yDistance = Math.abs(worldY - gp.player.worldY);
+        int tileDistance = (xDistance + yDistance) / gp.TileSize;
     
-        if (isPlayerNear) {
-            // Move toward player (no diagonal)
-            if (playerDistanceX > playerDistanceY) {
-                // Horizontal movement
-                if (gp.player.worldX > worldX) {
-                    Direction = "right";
-                } else if (gp.player.worldX < worldX) {
-                    Direction = "left";
-                }
-            } else {
-                // Vertical movement
-                if (gp.player.worldY > worldY) {
-                    Direction = "down";
-                } else if (gp.player.worldY < worldY) {
-                    Direction = "up";
-                }
+        if (onPath == false && tileDistance < 5) {
+            int i = new Random().nextInt(100)+1;
+            if (i > 50) {
+                onPath = true;
             }
-            
-            // IMPORTANT: Reset actionLockCounter when chasing player
-            // So random movement doesn't interfere
-            actionLockCounter = 0;
-        } 
-        
-        // Random movement timer
-        actionLockCounter++;
-        
-        // Check for random movement (exactly like your working version)
-        if (actionLockCounter == 120) {
-            Random random = new Random();
-            int i = random.nextInt(100) + 1; // pick up number from 1 - 100
-            
-            if (i <= 25) {
-                Direction = "up";
-            }
-            if (i >= 25 && i <= 50) {
-                Direction = "down";
-            } 
-            if (i >= 50 && i <= 75) {
-                Direction = "left";
-            }
-            if (i >= 75 && i <= 100) {
-                Direction = "right";
-            }
-            actionLockCounter = 0;
-        }
-        
-        // Projectile shooting logic
-        int shootChance = new Random().nextInt(100) + 1;
-        if (shootChance > 99 && projectiles.alive == false && shotAvailableCounter == 30) {
-            projectiles.set(worldX, worldY, Direction, true, this);
-            gp.projectileList.add(projectiles);
-            shotAvailableCounter = 0;
         }
     }
-    public void damageReaction() {
+
+    public void setAction() {
+        if (onPath == true) {
+            int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
+            int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
     
+            searchPath(goalCol, goalRow);
+            
+            // Increment cooldown counter
+            shotAvailableCounter++;
+            
+            // Check if cooldown is ready (2 seconds = 120 frames at 60 FPS)
+            if (shotAvailableCounter >= 120) {
+                
+                int shootChance = new Random().nextInt(100) + 1;
+                if (shootChance > 70) {
+                    projectiles.set(worldX, worldY, Direction, true, this);
+                    // check vacancy before adding
+                    for (int ii = 0; ii < gp.projectile[1].length; ii++) {
+                        if (gp.projectile[gp.currentMap][ii] == null) {
+                            gp.projectile[gp.currentMap][ii] = projectiles;
+                            break;
+                        }
+                    }
+                    shotAvailableCounter = 0; // Reset cooldown
+                } else {
+                    // If chance fails, wait a bit before next check
+                    shotAvailableCounter = 90; // Give 0.5 second pause
+                }
+            }
+        } 
+        else {
+            actionLockCounter++;
+    
+            if (collisionOn == true) {
+                Random random = new Random();
+                int i = random.nextInt(4);
+    
+                switch (i) {
+                    case 0: Direction = "up"; break;
+                    case 1: Direction = "down"; break;
+                    case 2: Direction = "left"; break;
+                    case 3: Direction = "right"; break;
+                }
+                collisionOn = false;
+                actionLockCounter = 0;
+                return;
+            }
+    
+            if(actionLockCounter == 120) {
+                Random random = new Random();
+                int i = random.nextInt(100)+1; //pick up numbner from 1 - 100
+                
+                if (i <=25) {
+                    Direction = "up";
+                }
+                if (i >=25 && i <= 50) {
+                    Direction = "down";
+                } 
+                if (i >=50  && i <= 75) {
+                    Direction = "left";
+                }
+                if (i >= 75 && i <= 100) {
+                    Direction = "right";
+                }
+                actionLockCounter = 0;
+            }
+            
+            // Also increment cooldown when not on path
+            if (shotAvailableCounter < 90) {
+                shotAvailableCounter++;
+            }
+        }
+    }   
+    
+    public void damageReaction() {
         actionLockCounter = 0;
+        onPath = true;
+        
         switch (gp.player.Direction) {
             case "up":    Direction = "down";  break;
             case "down":  Direction = "up";    break;
             case "left":  Direction = "right"; break;
             case "right": Direction = "left";  break;
         }
-
-        int knockBackDistance = 40;
-
-        // Calculate how far we can actually move without hitting solid tile OR other entities
-        int actualDistance = knockBackDistance;
-
-        // Test each possible distance from smallest to largest
-        for (int testDistance = 5; testDistance <= knockBackDistance; testDistance += 5) {
-            // Temporarily move to test position
-            int tempX = worldX;
-            int tempY = worldY;
-            
-            switch (gp.player.Direction) {
-                case "up":    tempY -= testDistance; break;
-                case "down":  tempY += testDistance; break;
-                case "left":  tempX -= testDistance; break;
-                case "right": tempX += testDistance; break;
-            }
-            
-            // Store original position
-            int originalX = worldX;
-            int originalY = worldY;
-            
-            // Test collision at this distance
-            worldX = tempX;
-            worldY = tempY;
-            collisionOn = false;
-            
-            // Check for tile collisions
-            gp.cChecker.checkTile(this);
-            
-            // Check for entity collisions (with other monsters)
-            if (!collisionOn) {
-                int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-                if (monsterIndex != 999) {
-                    // Found collision with another monster
-                    collisionOn = true;
-                }
-            }
-            
-            // Restore position
-            worldX = originalX;
-            worldY = originalY;
-            
-            if (collisionOn) {
-                // Can't move this far, use previous valid distance
-                actualDistance = testDistance - 5;
-                break;
-            } else {
-                actualDistance = testDistance;
-            }
-        }
-
-        // Apply the actual possible knockback distance
-        switch (gp.player.Direction) {
-            case "up":    worldY -= actualDistance; break;
-            case "down":  worldY += actualDistance; break;
-            case "left":  worldX -= actualDistance; break;
-            case "right": worldX += actualDistance; break;
-        }
-
-        
     }
     public void checkDrop() {
 
@@ -216,4 +182,3 @@ public class MON_GreenSlime extends Entity {
 
     }
 }
-

@@ -18,6 +18,7 @@ public class OBJ_Bato extends Projectile{
         attack = 2;
         useCost = 1;
         alive = false;
+        knockBackPower = 4;
         getImage();
         
     }

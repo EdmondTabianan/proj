@@ -55,13 +55,16 @@ public class eventHandler {
             else if(hit(0, 46, 42, "down") == true) {transport(1, 24 , 42,gp.dialogueState);}
             else if(hit(1, 24, 42, "down") == true) {transport(0, 46 , 42,gp.dialogueState);}
             else if(hit(0, 28, 16, "up") == true) {teleport(2, 24 , 48);}
+            else if(hit(0, 28, 16, "up") == true) {teleport(2,(int)(24.5) , 48);}
             else if(hit(0, 29, 16, "up") == true) {teleport(2, 25 , 48);}
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28 , 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29 , 17);}
-            else if(hit(0, 25, 34, "up") == true) {speak(gp.npc[0][1]);}
+            // else if(hit(0, 25, 34, "up") == true) {speak(gp.npc[0][1]);}
             else if(hit(1, 7, 29, "up") == true) {teleport(3, 24 , 35);}
             else if(hit(3, 24, 36, "down") == true) {teleport(1, 7 , 29);}
-            else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][2]);}
+            else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][1]);}
+            else if(hit(2, 4, 3, "any") == true) {teleport(4, 4 , 3);}
+            else if(hit(4, 4, 3, "any") == true) {teleport(2, 4 , 3);}
         }
     }
     
@@ -99,12 +102,6 @@ public class eventHandler {
         tempRow = row;
         canTouchEvent = false;
         gp.playSE(13);
-        // gp.currentMap = map;
-        // gp.player.worldX = gp.TileSize * col;
-        // gp.player.worldY = gp.TileSize * row;
-        // previouseEventX = gp.player.worldX;
-        // previouseEventY = gp.player.worldY;
-        // canTouchEvent = false;
     } 
     
     public void healingPool(int gameState) {

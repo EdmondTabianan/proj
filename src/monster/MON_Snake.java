@@ -12,7 +12,7 @@ import java.util.Random;
 
 import entity.Entity;
 
-public class MON_Snake extends Entity{
+public class MON_Snake extends Entity {
     
     GamePanel gp;
 
@@ -23,10 +23,10 @@ public class MON_Snake extends Entity{
         
         type = 2;
         name = "snake";
-        speed = 1;
+        defaultSpeed = 2;
+        speed = defaultSpeed;
         maxLife = 12 + gp.player.level * 3;
         life = maxLife;
-        // attack = 2 + gp.player.level / 2;
         attack = 2;
         defense = 1 + gp.player.level / 3;
         exp = 5 + gp.player.level * 2;
@@ -50,58 +50,80 @@ public class MON_Snake extends Entity{
         left2 = setup("/monster/snik_left_2", gp.TileSize, gp.TileSize);
         right1 = setup("/monster/snik_righ_1", gp.TileSize, gp.TileSize);
         right2 = setup("/monster/snik_righ_2", gp.TileSize, gp.TileSize);
-        
     }
+    
+    public void update() {
+        super.update();
+
+        int xDistance = Math.abs(worldX - gp.player.worldX);
+        int yDistance = Math.abs(worldY - gp.player.worldY);
+        int tileDistance = (xDistance + yDistance) / gp.TileSize;
+
+        if (onPath == false && tileDistance < 5) {
+            int i = new Random().nextInt(100)+1;
+            if (i > 50) {
+                onPath = true;
+            }
+        }
+    }
+    
     public void setAction() {
-        actionLockCounter++;
+        if (onPath == true) {
+            int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
+            int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
 
-        // Calculate distance to player
-        int playerDistanceX = Math.abs(worldX - gp.player.worldX);
-        int playerDistanceY = Math.abs(worldY - gp.player.worldY);
-
-        // Check if player is within 1 TILESIZE distance (Manhattan distance)
-        boolean isPlayerNear = (playerDistanceX <= gp.TileSize*5 && playerDistanceY == 0) || 
-                            (playerDistanceY <= gp.TileSize*5 && playerDistanceX == 0);
-
-        if (isPlayerNear) {
-            // Move toward player (no diagonal)
-            if (playerDistanceX > playerDistanceY) {
-                // Horizontal movement
-                if (gp.player.worldX > worldX) {
-                    Direction = "right";
-                } else if (gp.player.worldX < worldX) {
-                    Direction = "left";
+            searchPath(goalCol, goalRow);
+            
+            // Check if close enough to damage player
+            int playerDistance = Math.abs(worldX - gp.player.worldX) + Math.abs(worldY - gp.player.worldY);
+            if (playerDistance < gp.TileSize * 1.5) {
+                // Try to damage player if not invincible
+                if (gp.player.Invincible == false && Invincible == false) {
+                    // Damage will be handled in Player.contactMonster() method
                 }
-            } else {
-                // Vertical movement
-                if (gp.player.worldY > worldY) {
-                    Direction = "down";
-                } else if (gp.player.worldY < worldY) {
+            }
+        } 
+        else {
+            actionLockCounter++;
+
+            if (collisionOn == true) {
+                Random random = new Random();
+                int i = random.nextInt(4);
+
+                switch (i) {
+                    case 0: Direction = "up"; break;
+                    case 1: Direction = "down"; break;
+                    case 2: Direction = "left"; break;
+                    case 3: Direction = "right"; break;
+                }
+                collisionOn = false;
+                actionLockCounter = 0;
+                return;
+            }
+
+            if(actionLockCounter == 120) {
+                Random random = new Random();
+                int i = random.nextInt(100)+1;
+                
+                if (i <=25) {
                     Direction = "up";
                 }
+                if (i >=25 && i <= 50) {
+                    Direction = "down";
+                } 
+                if (i >=50  && i <= 75) {
+                    Direction = "left";
+                }
+                if (i >= 75 && i <= 100) {
+                    Direction = "right";
+                }
+                actionLockCounter = 0;
             }
-        } else if (actionLockCounter >= 120) {
-            // Only do random movement when player is not near
-            Random random = new Random();
-            int i = random.nextInt(100) + 1;
-            
-            if (i <= 25) {
-                Direction = "up";
-            } else if (i <= 50) {
-                Direction = "down";
-            } else if (i <= 75) {
-                Direction = "left";
-            } else {
-                Direction = "right";
-            }
-            
-            actionLockCounter = 0;
         }
     }
     
     public void checkDrop() {
-
-        int roll = new Random().nextInt(100)+1; // 0–99
+        int roll = new Random().nextInt(100)+1;
 
         if (roll < 40) {
             // no drop (40%)
@@ -124,11 +146,12 @@ public class MON_Snake extends Entity{
         else if (roll < 100) {
             dropItem(new OBJ_Potion_Red(gp));    // 2%
         }
-
     }
-    public void damageReaction() {
 
+    public void damageReaction() {
         actionLockCounter = 0;
+        onPath = true;
+        
         switch (gp.player.Direction) {
             case "up":    Direction = "down";  break;
             case "down":  Direction = "up";    break;
@@ -136,64 +159,5 @@ public class MON_Snake extends Entity{
             case "right": Direction = "left";  break;
         }
         
-        int knockBackDistance = 40;
-
-// Calculate how far we can actually move without hitting solid tile OR other entities
-int actualDistance = knockBackDistance;
-
-// Test each possible distance from smallest to largest
-for (int testDistance = 5; testDistance <= knockBackDistance; testDistance += 5) {
-    // Temporarily move to test position
-    int tempX = worldX;
-    int tempY = worldY;
-    
-    switch (gp.player.Direction) {
-        case "up":    tempY -= testDistance; break;
-        case "down":  tempY += testDistance; break;
-        case "left":  tempX -= testDistance; break;
-        case "right": tempX += testDistance; break;
-    }
-    
-    // Store original position
-    int originalX = worldX;
-    int originalY = worldY;
-    
-    // Test collision at this distance
-    worldX = tempX;
-    worldY = tempY;
-    collisionOn = false;
-    
-    // Check for tile collisions
-    gp.cChecker.checkTile(this);
-    
-    // Check for entity collisions (with other monsters)
-    if (!collisionOn) {
-        int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-        if (monsterIndex != 999) {
-            // Found collision with another monster
-            collisionOn = true;
-        }
-    }
-    
-    // Restore position
-    worldX = originalX;
-    worldY = originalY;
-    
-    if (collisionOn) {
-        // Can't move this far, use previous valid distance
-        actualDistance = testDistance - 5;
-        break;
-    } else {
-        actualDistance = testDistance;
-    }
-}
-
-// Apply the actual possible knockback distance
-switch (gp.player.Direction) {
-    case "up":    worldY -= actualDistance; break;
-    case "down":  worldY += actualDistance; break;
-    case "left":  worldX -= actualDistance; break;
-    case "right": worldX += actualDistance; break;
-}
     }
 }

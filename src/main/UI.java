@@ -22,14 +22,11 @@ public class UI {
     Font arial_40, arial_80B;
     BufferedImage heart_full, heart_half, heart_blank, crystal_full, crystal_blank, coin;
     public boolean messageOn = false;
-    // public String message = "";
-    // int messageCounter = 0;
     ArrayList<String> message = new ArrayList<>();
     ArrayList<Integer> messageCounter = new ArrayList<>();
 
     public boolean gameFinished = false;
     public String currentDialogue = "";
-    // String dialogues[] = new String[20];
     public int commandNum = 0;
     public int titleScreenState = 0; // 0 the first screen 1 second screen
     public int playerSlotCol = 0;
@@ -43,8 +40,24 @@ public class UI {
     public int loadingProgress = 0;
     private int loadingDirection = 1;
 
+    // Tip display variables
+    private String currentTip = "";
+    private long lastTipChangeTime = 0;
+    private final long TIP_DISPLAY_TIME = 8000; // 8 seconds per tip
+    private int tipAlpha = 0; // For fade in/out effect
+    private boolean tipFadingIn = true;
+    private long lastTipUpdateTime = 0;
+    private final long TIP_FADE_SPEED = 3000; // 3 seconds to fade in/out
+    
+    // For typing effect
+    private String displayedTip = "";
+    private int tipCharIndex = 0;
+    private long lastCharTime = 0;
+    private final long CHAR_DELAY = 30; // milliseconds between characters
+
     double playTime;
     DecimalFormat dFormat = new DecimalFormat("0.00");
+
 
     public UI(GamePanel gp) {
         this.gp = gp;
@@ -52,7 +65,10 @@ public class UI {
         arial_40 = new Font("Times New Roman", Font.PLAIN, 40);
         arial_80B = new Font("Arial", Font.BOLD, 80);
         
-
+        // Initialize with a tip - ADD THIS LINE
+        currentTip = getRandomGameplayTip();
+        lastTipChangeTime = System.currentTimeMillis(); // Initialize time
+    
         // Create HUD object
         Entity heart = new OBJ_Heart(gp);
         Entity crystal = new OBJ_ManaCrystal(gp);
@@ -80,14 +96,12 @@ public class UI {
         
         // Draw logo in the center
         if (logoImage != null) {
-            int logoWidth = 200; // Adjust as needed
-            int logoHeight = 200; // Adjust as needed
+            int logoWidth = 200;
+            int logoHeight = 200;
             
-            // finding the center position
             int logoX = gp.ScreenWidth / 2 - logoWidth / 2;
-            int logoY = gp.ScreenHeight / 2 - logoHeight - 60; // 60 pixels above center
+            int logoY = gp.ScreenHeight / 2 - logoHeight - 60;
             
-            // Draw the image
             g2.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight, null);
         }
         
@@ -97,19 +111,22 @@ public class UI {
         
         String title = "The Hunt: Lost Tomb of Cleopatra";
         int titleX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(title) / 2;
-        int titleY = gp.ScreenHeight / 2; // Adjusted position
+        int titleY = gp.ScreenHeight / 2;
         
         g2.drawString(title, titleX, titleY);
         
-        // Draw a random gameplay tip above the progress bar
-        String randomTip = getRandomGameplayTip();
+        // Update tip display BEFORE drawing
+        updateTipDisplay();
+        
+        // Draw the gameplay tip
         g2.setFont(new Font("Arial", Font.ITALIC, 20));
-        g2.setColor(new Color(180, 220, 255)); // Light blue color
+        g2.setColor(new Color(180, 220, 255, tipAlpha)); // Use tipAlpha for fade effect
         
-        int tipTextX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(randomTip) / 2;
-        int tipTextY = gp.ScreenHeight - 150; // Position above progress bar
+        // Use displayedTip which has the typewriter effect
+        int tipTextX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(displayedTip) / 2;
+        int tipTextY = gp.ScreenHeight - 150;
         
-        g2.drawString(randomTip, tipTextX, tipTextY);
+        g2.drawString(displayedTip, tipTextX, tipTextY);
         
         // Progress bar
         int barWidth = gp.ScreenWidth - 200;
@@ -121,69 +138,155 @@ public class UI {
         g2.setColor(Color.white);
         g2.drawRect(barX, barY, barWidth, barHeight);
         
-        // Animate loading progress
-        loadingProgress += loadingDirection;
+        // Get actual loading progress from LoadingManager
+        int actualProgress = (int)gp.loadingManager.getProgress();
         
-        if (loadingProgress >= 100) {
-            loadingProgress = 100;
+        int fillWidth = (int)(barWidth * actualProgress / 100.0);
+        
+        // Gradient fill effect
+        if (fillWidth > 0) {
+            for (int i = 0; i < fillWidth; i += 3) {
+                int segmentWidth = Math.min(3, fillWidth - i);
+                float brightness = 0.6f + 0.4f * ((float)i / fillWidth);
+                g2.setColor(new Color(
+                    (int)(212 * brightness),
+                    (int)(175 * brightness),
+                    (int)(55 * brightness)
+                ));
+                g2.fillRect(barX + 1 + i, barY + 1, segmentWidth, barHeight - 2);
+            }
         }
-        
-        int fillWidth = (int)(barWidth * loadingProgress / 100.0);
-        
-        g2.setColor(new Color(212, 175, 55));
-        g2.fillRect(barX + 1, barY + 1, fillWidth - 2, barHeight - 2);
         
         // Percentage Text
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        String percentText = (int)loadingProgress + "%";
+        g2.setColor(Color.white);
+        String percentText = actualProgress + "%";
         int percentX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(percentText) / 2;
         int percentY = barY + 45;
         
         g2.drawString(percentText, percentX, percentY);
+        
+        // Draw "Loading..." text
+        g2.setFont(new Font("Arial", Font.BOLD, 30));
+        String loadingText = "Loading...";
+        int loadingX = gp.ScreenWidth / 2 - g2.getFontMetrics().stringWidth(loadingText) / 2;
+        int loadingY = barY - 20;
+        
+        // Animate the dots
+        int dotCount = (actualProgress / 20) % 4;
+        String dots = "";
+        for (int i = 0; i < dotCount; i++) {
+            dots += ".";
+        }
+        
+        g2.drawString(loadingText + dots, loadingX, loadingY);
     }
+    
+    private void updateTipDisplay() {
+        long currentTime = System.currentTimeMillis();
+        
+        // Initialize if first time
+        if (currentTip.isEmpty()) {
+            currentTip = getRandomGameplayTip();
+            displayedTip = "";
+            tipCharIndex = 0;
+            tipAlpha = 0;
+            tipFadingIn = true;
+            lastTipChangeTime = currentTime;
+            lastCharTime = currentTime;
+            lastTipUpdateTime = currentTime;
+        }
+        
+        // Check if it's time to change the tip
+        if (currentTime - lastTipChangeTime > TIP_DISPLAY_TIME) {
+            currentTip = getRandomGameplayTip();
+            displayedTip = "";
+            tipCharIndex = 0;
+            tipAlpha = 0;
+            tipFadingIn = true;
+            lastTipChangeTime = currentTime;
+            lastCharTime = currentTime;
+            lastTipUpdateTime = currentTime;
+        }
+        
+        // Handle typing effect
+        if (tipCharIndex < currentTip.length()) {
+            if (currentTime - lastCharTime > CHAR_DELAY) {
+                displayedTip += currentTip.charAt(tipCharIndex);
+                tipCharIndex++;
+                lastCharTime = currentTime;
+            }
+        }
+        
+        // Handle fade in/out effect (only after typing is complete)
+        if (tipCharIndex == currentTip.length()) {
+            if (currentTime - lastTipUpdateTime > 10) { // Update every 10ms for smooth fade
+                if (tipFadingIn) {
+                    tipAlpha += 5; // Faster fade in
+                    if (tipAlpha >= 255) {
+                        tipAlpha = 255;
+                        tipFadingIn = false;
+                        lastTipUpdateTime = currentTime;
+                    }
+                } else {
+                    // Hold at full opacity for most of the time
+                    long timeSinceFullOpacity = currentTime - lastTipUpdateTime;
+                    long fadeOutStart = TIP_DISPLAY_TIME - TIP_FADE_SPEED;
+                    
+                    if (timeSinceFullOpacity > fadeOutStart) {
+                        tipAlpha -= 2; // Faster fade out
+                        if (tipAlpha <= 0) {
+                            tipAlpha = 0;
+                            // Start new tip
+                            currentTip = getRandomGameplayTip();
+                            displayedTip = "";
+                            tipCharIndex = 0;
+                            tipFadingIn = true;
+                            lastTipChangeTime = currentTime;
+                        }
+                    }
+                }
+                lastTipUpdateTime = currentTime;
+            }
+        }
+    }
+    
     private String getRandomGameplayTip() {
         String[] tips = {
-            // Original tips kept
+            // Shorter, easier-to-read tips
             "Explore every corner for hidden treasures!",
             "Different enemies have different weaknesses.",
-            "Use ranged attacks against tough melee enemies.",
-            "Conserve magic for challenging encounters.",
-            "Some doors require special keys to open.",
+            "Use ranged attacks against tough enemies.",
+            "Save your game frequently at statues.",
             "Watch your health and use potions wisely.",
-            "Environmental objects can be used against enemies.",
-            "Combine items for more powerful effects.",
-            "Patience is key when facing powerful bosses.",
+            
+            // Control tips
+            "Move: W, A, S, D",
+            "Attack: ENTER",
+            "Cast/Shoot: F",
+            "Character Screen: C",
+            "Pause: P",
+            
+            // Gameplay advice
+            "Upgrade equipment at blacksmiths.",
+            "Listen for audio cues of danger.",
+            "Collect coins to buy better gear.",
+            "The mini-map shows unexplored areas.",
+            "Some secrets require solving puzzles.",
+            
+            // Combat tips
+            "Environmental objects can help in combat.",
+            "Patience is key when facing bosses.",
             "Read ancient tombs for valuable clues.",
-            
-            // Added longer, more detailed tips
-            "TIP: Save your game frequently at statues to avoid losing progress.",
-            "TIP: Different weapons work better against different enemy types.",
-            "TIP: Upgrade your equipment at blacksmiths when you find them.",
-            "TIP: Listen for audio cues - they can warn you of nearby danger.",
-            "TIP: Some secrets require solving environmental puzzles.",
-            "TIP: Your character's stamina affects how many attacks you can perform.",
-            "TIP: Use stealth to avoid unnecessary combat when low on health.",
-            "TIP: Collect all coins and gems to buy better equipment.",
-            "TIP: The mini-map shows unexplored areas - try to fill it completely.",
-            "TIP: Some enemies are immune to certain types of damage.",
-            
-            // Control tips made more descriptive
-            "CONTROLS: Use W, A, S, D keys to move your character around.",
-            "CONTROLS: Press ENTER to attack enemies or confirm menu selections.",
-            "CONTROLS: Press F to cast spells with wand or shoot arrows with bow.",
-            "CONTROLS: Press C to open character screen and check your stats.",
-            "CONTROLS: Press P to pause the game at any time.",
-            "CONTROLS: Press ESC to open options and adjust settings.",
-            "CONTROLS: The F key adapts to your equipped weapon - wand or bow.",
-            "CONTROLS: With wand equipped, F casts magical spells.",
-            "CONTROLS: With bow equipped, F shoots ranged arrows.",
-            "CONTROLS: Switch weapons using inventory to change F key function."
+            "Conserve magic for challenging encounters.",
+            "Some doors require special keys to open."
         };
         
         // Select random tip
         int randomIndex = (int)(Math.random() * tips.length);
         return tips[randomIndex];
     }
+    
     public void setLoadingProgress(float progress) {
         this.loadingProgress = (int) progress;
     }

@@ -14,8 +14,6 @@ public class Main {
         window.add(gamePanel);
 
         gamePanel.config.loadConfig();
-        // if(gamePanel)
-
 
         window.pack();
 

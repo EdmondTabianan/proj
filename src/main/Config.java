@@ -28,8 +28,8 @@ public class Config {
             bw.newLine();
 
             // music volume
-            bw.write(String.valueOf(gp.music.volumeScale));
-            bw.newLine();
+            // bw.write(String.valueOf(gp.music.volumeScale));
+            // bw.newLine();
 
             bw.write(String.valueOf(gp.music.volumeScale));
             bw.newLine();

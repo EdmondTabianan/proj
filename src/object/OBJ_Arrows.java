@@ -23,6 +23,7 @@ public class OBJ_Arrows extends Projectile {
         alive = false;
         value = 1;
         amount = 10;
+        knockBackPower = 1;
         description = "[" + name + "]\nA sharp arrow to shoot.\nYou can pick up more";
         getImage();
     }

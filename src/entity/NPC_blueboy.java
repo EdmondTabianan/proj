@@ -16,12 +16,12 @@ public class NPC_blueboy extends Entity {
         getImage();
         setDialogue();
 
-        solidArea.x = 0;
+        solidArea.x = 8;
         solidArea.y = 16;
-        solidArea.width = 48;
-        solidArea.height = 32;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
+        solidArea.width = 32;
+        solidArea.height = 32; 
     }
     public void getImage() {
             up1 = setup("/player/boy_up_1", gp.TileSize, gp.TileSize);
@@ -46,44 +46,56 @@ public class NPC_blueboy extends Entity {
     }
     public void setAction(){
 
-        actionLockCounter ++;
+        if (onPath == true) {
+            // int goalCol = 7;
+            // int goalRow = 10;
+            int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
+            int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
 
-        if (collisionOn == true) {
-            Random random = new Random();
-            int i = random.nextInt(4);
+            searchPath(goalCol, goalRow);
+        } 
+        else {
+            actionLockCounter ++;
 
-            switch (i) {
-                case 0: Direction = "up"; break;
-                case 1: Direction = "down"; break;
-                case 2: Direction = "left"; break;
-                case 3: Direction = "right"; break;
-            }
-            collisionOn = false;
-            actionLockCounter = 0;
-            return;
-        }
+            if (collisionOn == true) {
+                Random random = new Random();
+                int i = random.nextInt(4);
 
-        if(actionLockCounter == 120) {
-            Random random = new Random();
-            int i = random.nextInt(100)+1; //pick up numbner from 1 - 100
-            
-            if (i <=25) {
-                Direction = "up";
+                switch (i) {
+                    case 0: Direction = "up"; break;
+                    case 1: Direction = "down"; break;
+                    case 2: Direction = "left"; break;
+                    case 3: Direction = "right"; break;
+                }
+                collisionOn = false;
+                actionLockCounter = 0;
+                return;
             }
-            if (i >=25 && i <= 50) {
-                Direction = "down";
-            } 
-            if (i >=50  && i <= 75) {
-                Direction = "left";
+
+            if(actionLockCounter == 120) {
+                Random random = new Random();
+                int i = random.nextInt(100)+1; //pick up numbner from 1 - 100
+                
+                if (i <=25) {
+                    Direction = "up";
+                }
+                if (i >=25 && i <= 50) {
+                    Direction = "down";
+                } 
+                if (i >=50  && i <= 75) {
+                    Direction = "left";
+                }
+                if (i >= 75 && i <= 100) {
+                    Direction = "right";
+                }
+                actionLockCounter = 0;
             }
-            if (i >= 75 && i <= 100) {
-                Direction = "right";
-            }
-            actionLockCounter = 0;
         }
     }
     public void speak(){
         // Do this specfic stuff
         super.speak();
+
+        onPath = true;
     }
 }

@@ -36,6 +36,8 @@ public class Entity {
     public boolean dying = false;
     boolean hpBarOn = false;
     public boolean hasTablet = false;
+    public boolean onPath = false;
+    public boolean knockBack = false;
 
     // counter 
     public int spriteCounter = 0;
@@ -44,11 +46,12 @@ public class Entity {
     public int shotAvailableCounter = 0;
     int dyingCounter = 0;
     int hpBarCounter = 0;
+    int knockBackCounter = 0;
 
     // characte attri
     public int characterused; // 0 = alexandria 1 = xylo
-    // public int type; // 0 = player 1 = npc 2 = mob
     public String name;
+    public int defaultSpeed;
     public int speed;
     public int maxLife;
     public int life;
@@ -79,6 +82,7 @@ public class Entity {
     public int useCost;
     public int hasKey;
     public int amount;
+    public int knockBackPower = 0; 
 
     // type
     public int type;
@@ -100,70 +104,116 @@ public class Entity {
         this.gp = gp;
         inventory = new ArrayList<>();
     }
+    
     public void setAction() {}
     public void damageReaction() {}
+    
     public void speak() {
-
         if (dialogues[dialoguesIndex] == null) {
             dialoguesIndex = 0;
         }
         gp.ui.currentDialogue = dialogues[dialoguesIndex];
         dialoguesIndex++;
-
-        // switch (gp.player.Direction) {
-        //     case "up": Direction = "down"; break;
-        //     case "down": Direction = "up"; break;
-        //     case "left": Direction = "right"; break;
-        //     case "right": Direction = "left"; break;
-        // }
     }
+    
     public void use(Entity entity) {}
     public void checkDrop() {}
+    
     public void dropItem(Entity droppedItem) {
-
         for (int i = 0; i < gp.obj[1].length; i++) {
             if (gp.obj[gp.currentMap][i] == null) {
                 gp.obj[gp.currentMap][i] = droppedItem;
-                gp.obj[gp.currentMap][i].worldX = worldX; // the dead monster's WorldX
-                gp.obj[gp.currentMap][i].worldY = worldY; // the dead monster's WorldY
+                gp.obj[gp.currentMap][i].worldX = worldX;
+                gp.obj[gp.currentMap][i].worldY = worldY;
                 break;
             }
         }
-    }    
-    public void update(){
-        setAction();
-
+    }
+    
+    public void checkCollision() {
         collisionOn = false;
         gp.cChecker.checkTile(this);
         gp.cChecker.checkObject(this, false);
-        gp.cChecker.checkEntity(this, gp.npc);
-        gp.cChecker.checkEntity(this, gp.monster);
-        gp.cChecker.checkEntity(this, gp.iTile);
-        boolean contactPlayer = gp.cChecker.checkPlayer(this);
-
-        if(this.type == type_monster && contactPlayer == true) {
-            damagaplayer(attack);
-        }
-
         
-        if (collisionOn == false) {
-            switch (Direction) {
-                case "up":
-                    worldY -= speed;
-                    break;
-                case "down":
-                    worldY += speed;
-                    break;
-                case "left":
-                    worldX -= speed;
-                    break;
-                case "right":
-                    worldX += speed;
-                    break;
-                default:
-                    break;
+        // Only check NPC collisions (monsters can pass through NPCs)
+        gp.cChecker.checkEntity(this, gp.npc);
+        
+        // MONSTERS: Only check collision with player, NOT with other monsters
+        if (this.type == type_monster) {
+            // Check collision with player
+            boolean contactPlayer = gp.cChecker.checkPlayer(this);
+            if (contactPlayer == true) {
+                damagaplayer(attack);
+            }
+            
+            // Check collision with interactive tiles
+            gp.cChecker.checkEntity(this, gp.iTile);
+        } 
+        // PLAYER: Check collision with everything
+        else if (this.type == type_player) {
+            gp.cChecker.checkEntity(this, gp.npc);
+            gp.cChecker.checkEntity(this, gp.monster);
+            gp.cChecker.checkEntity(this, gp.iTile);
+        }
+        // NPCs: Check collision with everything except other monsters
+        else if (this.type == type_npc) {
+            gp.cChecker.checkEntity(this, gp.monster);
+            gp.cChecker.checkEntity(this, gp.iTile);
+        }
+    }
+    
+    public void update(){
+        if (knockBack == true) {
+            checkCollision();
+
+            if (collisionOn == true) {
+                knockBackCounter = 0;
+                knockBack = false;
+                speed = defaultSpeed;
+            }  
+            else if (collisionOn == false) {
+                switch (gp.player.Direction) {
+                    case "up": worldY -= speed;  break;
+                    case "down":  worldY += speed;  break;
+                    case "left":  worldX -= speed;  break;
+                    case "right":  worldX += speed;  break;
+                }
+            }
+
+            knockBackCounter++;
+            if(knockBackCounter > 10) { // Knockback lasts for 20 frames
+                knockBackCounter = 0;
+                knockBack = false;
+                speed = defaultSpeed;
             }
         }
+            
+        else {
+            setAction();
+            checkCollision();
+
+            // if collision is false, entity can move
+            if (collisionOn == false) {
+                switch (Direction) {
+                    case "up": worldY -= speed;  break;
+                    case "down":  worldY += speed;  break;
+                    case "left":  worldX -= speed;  break;
+                    case "right":  worldX += speed;  break;
+                }
+            }
+        }
+            
+        
+        // Update invincibility timer FIRST
+        if (Invincible == true) {
+            InvincibleCounter++;
+            if (InvincibleCounter > 60) { // 1 second invincibility
+                Invincible = false;
+                InvincibleCounter = 0;
+            }
+        }
+        
+        
         spriteCounter++;
         if (spriteCounter > 24) {
             if (spriteNum == 1) {
@@ -174,31 +224,28 @@ public class Entity {
             spriteCounter = 0;
         }
 
-        if (Invincible == true) {
-            InvincibleCounter++;
-            if (InvincibleCounter > 40) { 
-                Invincible = false;
-                InvincibleCounter = 0;
-            }
-        }
         if (shotAvailableCounter < 30) {
             shotAvailableCounter++;
-            //System.err.println(shotAvailableCounter);
         }
     }
+    
     public void damagaplayer(int attack) {
-        if (gp.player.Invincible == false) {
+        // Only damage player if player is not invincible AND monster is not dying
+        if (gp.player.Invincible == false && this.dying == false) {
             gp.playSE(6);
             int damage = attack - gp.player.defense;
-            if(damage < 0) {
-                damage = 0;
+            if(damage < 1) {
+                damage = 1; // Minimum 1 damage
             }
             gp.player.life -= damage;
-
-            gp.player.Invincible = true; 
+            gp.player.Invincible = true;
+            gp.player.InvincibleCounter = 0; // Reset player's invincibility counter
+            
+            // Show damage message
+            gp.ui.showMessage(damage + " damage!");
         }
-        
     }
+    
     public void draw(Graphics2D g2) {
         BufferedImage image = null;
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
@@ -208,7 +255,6 @@ public class Entity {
             worldX - gp.TileSize < gp.player.worldX + gp.player.screenX &&
             worldY + gp.TileSize > gp.player.worldY - gp.player.screenY &&
             worldY - gp.TileSize < gp.player.worldY + gp.player.screenY) {
-
 
                 switch (Direction) {
                     case "up":
@@ -233,7 +279,6 @@ public class Entity {
 
                 // monster hp bar
                 if (type == 2 && hpBarOn == true) {
-
                     double oneScale = (double)gp.TileSize/maxLife;
                     double hpBarValue = oneScale*life;
 
@@ -252,18 +297,23 @@ public class Entity {
                 }
 
                 if (Invincible == true) {
-                    hpBarOn = true;
-                    hpBarCounter = 0;
-                    changeAlpha(g2, 0.4f);
+                    // Flash effect: only show entity every other frame
+                    if (InvincibleCounter % 10 < 5) { // Blink every 5 frames
+                        changeAlpha(g2, 0.5f);
+                    } else {
+                        changeAlpha(g2, 1f);
+                    }
                 }
+                
                 if (dying == true) {
                     dyingAnimation(g2);
                 }
+                
                 g2.drawImage(image, screenX, screenY, gp.TileSize, gp.TileSize, null);
-
                 changeAlpha(g2, 1f);
         }
     }
+    
     public void dyingAnimation(Graphics2D g2) {
         dyingCounter++;
 
@@ -281,11 +331,12 @@ public class Entity {
             alive=false;
         }
     }
+    
     public void changeAlpha(Graphics2D g2, float alphaValue){
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alphaValue));
     }
+    
     public BufferedImage setup(String imagePath, int width, int height) {
-        
         UtilityTool uTool = new UtilityTool();
         BufferedImage image = null;
 
@@ -297,5 +348,55 @@ public class Entity {
         }
         return image;
     }
-}
+    
+    public void searchPath(int goalCol, int goalRow) {
+        int startCol = (worldX + solidArea.x) / gp.TileSize;
+        int startRow = (worldY + solidArea.y) / gp.TileSize;
 
+        gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
+
+        if (gp.pFinder.search() == true) {
+            int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
+            int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
+
+            int enLeftX = worldX + solidArea.x;
+            int enRightX = worldX + solidArea.x + solidArea.width;
+            int enTopY = worldY + solidArea.y;
+            int enBottomY = worldY + solidArea.y + solidArea.height;
+
+            if (enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+                Direction = "up";
+            } else if (enBottomY < nextY + gp.TileSize && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+                Direction = "down";
+            } else if (enTopY >= nextY && enBottomY < nextY + gp.TileSize) {
+                if (enLeftX > nextX) {
+                    Direction = "left";
+                }
+                if (enRightX < nextX + gp.TileSize) {
+                    Direction = "right";
+                }
+            } 
+            else if (enTopY > nextY && enLeftX > nextX) {
+                Direction = "up";
+                if (collisionOn == true) {
+                    Direction = "left";
+                }
+            } else if (enTopY > nextY && enRightX < nextX + gp.TileSize) {
+                Direction = "up";
+                if (collisionOn == true) {
+                    Direction = "right";
+                }
+            } else if (enBottomY < nextY + gp.TileSize && enLeftX > nextX) {
+                Direction = "down";
+                if (collisionOn == true) {
+                    Direction = "left";
+                }
+            } else if (enBottomY < nextY + gp.TileSize && enRightX < nextX + gp.TileSize) {
+                Direction = "down";
+                if (collisionOn == true) {
+                    Direction = "right";
+                }
+            }
+        }
+    }
+}

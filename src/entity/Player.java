@@ -58,7 +58,7 @@ public class Player extends Entity {
         worldY = gp.TileSize * 39;
         // worldX = gp.TileSize * 28;
         // worldY = gp.TileSize * 19;
-        defaultSpeed = 4;
+        defaultSpeed = 8;
         speed = defaultSpeed;
         Direction = "down";
 
@@ -84,6 +84,7 @@ public class Player extends Entity {
         defense = getDefense(); // total defense 
     }
     public void setDeaultPosition() {
+        int mapnum = 0;
         worldX = gp.TileSize * 45;
         worldY = gp.TileSize * 40;
         Direction = "down";
@@ -357,8 +358,9 @@ public class Player extends Entity {
             spriteNum = 1;
             spriteCounter = 0;
             attacking = false;
-        }
+        } 
     }
+    
     public void pickUpObject(int i) {
         if (i != 999) {
             // Check for key
@@ -369,6 +371,11 @@ public class Player extends Entity {
                 gp.obj[gp.currentMap][i] = null;
                 return;
             }
+            if (gp.obj[gp.currentMap][i].type == type_door) {
+                //dont pick up door, just interact with it
+                return;
+            }
+            // Check for tablet
             if (gp.obj[gp.currentMap][i].type == type_tablet) {
                 gp.playSE(2);
                 
@@ -377,7 +384,7 @@ public class Player extends Entity {
                     hasTablet = true;
                     gp.ui.showMessage("you pick " + new OBJ_tablet(gp).name);
                     gp.obj[gp.currentMap][i] = null;
-
+    
                     if (hasTablet == true) {
                         for (int j = 0; j < gp.obj.length; j++) {
                             if (gp.obj[gp.currentMap][j] == null) {
@@ -391,7 +398,6 @@ public class Player extends Entity {
                     }
                 }
             }
-            
             // For other pickup-only items
             if(gp.obj[gp.currentMap][i].type == type_pickupOnly) {
                 gp.obj[gp.currentMap][i].use(this);
@@ -411,6 +417,7 @@ public class Player extends Entity {
             gp.obj[gp.currentMap][i] = null;
         }
     }
+
     public void interactNPC(int i) {
         if(gp.keyH.enterPressed == true) {
             if (i != 999) {

@@ -18,8 +18,8 @@ public class Entity {
     public BufferedImage up1, up2, up3, down1, down2, down3 ,left1, left2, left3, right1, right2, right3;
     public BufferedImage attackUp1, attackUp2, attackDown1, attackDown2, attackLeft1, attackLeft2, attackRight1, attackRight2;
     public Rectangle solidArea = new Rectangle(0, 0, 45, 45);
-    public Rectangle attackArea = new Rectangle(0, 0, 0, 0);
-    public int solidAreaDefaultX, solidAreaDefaultY;
+    public Rectangle attackArea = new Rectangle(0, 0, 0, 0);    
+    public int solidAreaDefaultX, solidAreaDefaultY, solidAreaDefaultWidth, solidAreaHeight;
     public boolean collision = false;
     String dialogues[] = new String[20];
     public BufferedImage image, image2, image3;
@@ -99,6 +99,7 @@ public class Entity {
     public final int type_tablet = 10;
     public final int type_bow = 11;
     public final int type_wand = 12;
+    public final int type_door = 13;
 
     public Entity(GamePanel gp) {
         this.gp = gp;

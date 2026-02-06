@@ -110,6 +110,6 @@ public class NPC_blueboy extends Entity {
             }
         }
         
-        onPath = true;
+        //onPath = true;
     }
 }

@@ -14,7 +14,7 @@ public class OBJ_Doors extends Entity {
         super(gp);
         this.gp = gp; // Store the reference
         name = "Door";
-        type = type_pickupOnly;
+        type = type_door;
         
         // Create 96x96 door image (4 tiles)
         down1 = createDoorImage();

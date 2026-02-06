@@ -175,7 +175,7 @@ public class TileManager {
         setup(i, "138", true); i++;
         setup(i, "139", true); i++;
         setup(i, "140", true); i++;
-        setup(i, "141", false); i++;
+        setup(i, "141", true); i++;
         setup(i, "142", false); i++;
         setup(i, "143", true); i++;
         setup(i, "144", true); i++;
@@ -186,7 +186,7 @@ public class TileManager {
         setup(i, "149", true); i++;
         setup(i, "150", true); i++;
         setup(i, "151", true); i++;
-        setup(i, "152", false); i++;
+        setup(i, "152", true); i++;
         setup(i, "153", false); i++;
         setup(i, "154", true); i++;
         setup(i, "155", true); i++;

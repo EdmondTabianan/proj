@@ -55,6 +55,10 @@ public class AssetSetter {
         gp.obj[mapnum][i] = new OBJ_boat(gp);
         gp.obj[mapnum][i].worldX = gp.TileSize*24;
         gp.obj[mapnum][i].worldY = gp.TileSize*43;
+        i++;
+        gp.obj[mapnum][i] = new OBJ_Key(gp);
+        gp.obj[mapnum][i].worldX = gp.TileSize*10;
+        gp.obj[mapnum][i].worldY = gp.TileSize*8;
     }
     public void setNPC() {
         int mapnum = 0;

@@ -9,7 +9,7 @@ public class eventHandler {
     int previouseEventX, previouseEventY;
     boolean canTouchEvent = true;
     int tempMap, tempRow;
-    float tempColFloat; 
+    float tempColFloat;
 
     public eventHandler(GamePanel gp) {
         this.gp = gp;
@@ -19,7 +19,7 @@ public class eventHandler {
         int map = 0;
         int col = 0;
         int row = 0;
-        while (map < gp.maxMap && col < gp.maxWorldCol && row < gp.maxWorldRow ) {
+        while (map < gp.maxMap && col < gp.maxWorldCol && row < gp.maxWorldRow) {
             eventRect[map][col][row] = new EventRect();
             eventRect[map][col][row].x = 23;
             eventRect[map][col][row].y = 23;
@@ -56,40 +56,20 @@ public class eventHandler {
             else if(hit(0, 46, 42, "down") == true) {transport(1, 24 , 42,gp.dialogueState);}
             else if(hit(1, 24, 42, "down") == true) {transport(0, 46 , 42,gp.dialogueState);}
             
-            // DOOR TELEPORT: Map 0 (28-29,16) → Map 2 (24-25,48)
-            else if(hit(0, 28, 16, "up") == true || hit(0, 29, 16, "up") == true) {
-                float playerPos = (gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width/2) / (float)gp.TileSize;
-                
-                if(playerPos < 28.33f) {
-                    teleport(2, 24.0f, 48); // Left third
-                } else if(playerPos < 28.67f) {
-                    teleport(2, 24.5f, 48); // Middle third
-                } else {
-                    teleport(2, 25.0f, 48); // Right third
-                }
-            }
-            
-            // DOOR EXIT: Map 2 (24-25,48) → Map 0 (28-29,17)
-            else if(hit(2, 24, 48, "down") == true || hit(2, 25, 48, "down") == true) {
-                float playerPos = (gp.player.worldX + gp.player.solidArea.x + gp.player.solidArea.width/2) / (float)gp.TileSize;
-                
-                if(playerPos < 24.33f) {
-                    teleport(0, 28.0f, 17); // Left third exit
-                } else if(playerPos < 24.67f) {
-                    teleport(0, 28.5f, 17); // Middle third exit
-                } else {
-                    teleport(0, 29.0f, 17); // Right third exit
-                }
-            }
-            
             else if(hit(1, 7, 29, "up") == true) {teleport(3, 24.0f, 35);}
             else if(hit(3, 24, 36, "down") == true) {teleport(1, 7.0f, 29);}
             else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][1]);}
             else if(hit(2, 4, 3, "any") == true) {teleport(4, 4.0f, 3);}
             else if(hit(4, 4, 3, "any") == true) {teleport(2, 4.0f, 3);}
+            else if(hit(4, 10, 10, "up") == true) {teleportToFinalStage(0, 25 , 35,gp.dialogueState);}            
+            else if(hit(0, 28, 17, "up") == true || hit(0, 29, 17, "up") == true) {
+                entrance(2, 24, 48, gp.dialogueState);
+            }
+            else if(hit(2, 24, 48, "down") == true) {teleport(0, 28, 17);}
+            else if(hit(2, 25, 48, "down") == true) {teleport(0, 29, 17);}
         }
     }
-    
+
     public boolean hit (int map, int col, int row, String regDirection) {
         boolean hit = false;
 
@@ -135,7 +115,64 @@ public class eventHandler {
              gp.aSetter.setMonster();
         }
     }
+    public void entrance(int map, int col, int row, int gameState) {
     
+        // First check if player presses enter
+        if(gp.keyH.enterPressed == true) {
+            gp.player.attackCanceled = true;
+            
+            if(gp.player.hasKey >= 2) {  // Changed from == to >= for flexibility
+                // Consume 2 keys for pyramid entrance
+                gp.player.hasKey -= 2;
+                
+                // Show message
+                if (gp.currentMap == 0) {
+                    gp.ui.currentDialogue = "You used 2 keys to enter the Pyramid!\nTransporting to the Pyramid...";
+                    gp.ui.showMessage("You used 2 keys to enter the Pyramid!");
+                }
+                
+                // Set transition parameters
+                tempMap = map;
+                tempColFloat = col;
+                tempRow = row;
+                canTouchEvent = false;
+                
+                // Play sounds
+                gp.playSE(2);  // Key use sound
+                gp.playSE(13); // Transport sound
+                
+                // IMPORTANT: Set game state to transition
+                gp.gameState = gp.transitionState;
+                
+            } 
+            else if (gp.player.hasKey == 1) {
+                gp.ui.currentDialogue = "The pyramid entrance is sealed!\nYou need 2 ancient keys.\nYou have only 1 key.";
+                gp.ui.showMessage("Need 2 keys! You have only 1.");
+                gp.playSE(10); // Locked sound
+                gp.gameState = gameState; // Show dialogue
+            }
+            else if (gp.player.hasKey == 0) {
+                gp.ui.currentDialogue = "The pyramid entrance is sealed!\nFind 2 ancient keys to enter.";
+                gp.ui.showMessage("The pyramid is locked! Need 2 keys.");
+                gp.playSE(10); // Locked sound
+                gp.gameState = gameState; // Show dialogue
+            }
+            else if (gp.player.hasKey > 2) {
+                gp.ui.currentDialogue = "You have " + gp.player.hasKey + " keys!\nThe pyramid requires exactly 2 ancient keys.";
+                gp.ui.showMessage("Pyramid needs exactly 2 keys!");
+                gp.playSE(10); // Locked sound
+                gp.gameState = gameState; // Show dialogue
+            }
+        }
+        else {
+            // If player is just standing on the entrance but hasn't pressed enter
+            // You might want to show a hint
+            if(gp.player.worldX/gp.TileSize == 28 && gp.player.worldY/gp.TileSize == 16) {
+                // Optional: Show "Press ENTER to use keys" hint
+                // gp.ui.showMessage("Press ENTER to use keys");
+            }
+        }
+    }
     public void transport(int map, int col,int row, int gameState) {
         
         gp.player.attackCanceled = true;
@@ -207,12 +244,12 @@ public class eventHandler {
                 canTouchEvent = false;
                 
                 // Play map change sound
-                gp.playSE(9); // Assuming 9 is transport sound
+                gp.playSE(9);
                 
             } else {
                 gp.ui.currentDialogue = "the door is lock find the all keys.";
                 // Play locked door sound
-                gp.playSE(10); // Assuming 10 is locked sound
+                gp.playSE(10);
             }
             gp.gameState = gameState;
         }

@@ -275,17 +275,17 @@ public class AssetSetter {
     }
     public void setInteractiveTile() {
         
-        int mapnum = 0;
-        int i = 0;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 22);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 23);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 24);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 6, 24);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 7, 24);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 8, 24);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 9, 24);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 17, 12);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 17, 13);i++;
-        gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 18, 17);i++;
+        // int mapnum = 0;
+        // int i = 0;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 22);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 23);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 5, 24);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 6, 24);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 7, 24);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 8, 24);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 9, 24);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 17, 12);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 17, 13);i++;
+        // gp.iTile[mapnum][i] = new IT_Drytree(gp,0, 18, 17);i++;
     }
 }

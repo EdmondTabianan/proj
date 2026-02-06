@@ -48,10 +48,10 @@ public class NPC_blueboy extends Entity {
     public void setAction(){
 
         if (onPath == true) {
-            // int goalCol = 7;
-            // int goalRow = 10;
-            int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
-            int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
+            int goalCol = 7;
+            int goalRow = 10;
+            // int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
+            // int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
 
             searchPath(goalCol, goalRow);
         } 
@@ -110,6 +110,6 @@ public class NPC_blueboy extends Entity {
             }
         }
         
-        //onPath = true;
+        onPath = true;
     }
 }

@@ -74,7 +74,7 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        hasKey = 0; 
+        hasKey = 2; 
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);

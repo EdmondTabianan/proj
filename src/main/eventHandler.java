@@ -67,6 +67,8 @@ public class eventHandler {
             }
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28, 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29, 17);}
+            else if(hit(4, 43, 44, "any") == true) {teleport(5, 43, 44);}
+            else if(hit(5, 43, 44, "any") == true) {teleport(4, 43, 44);}
         }
     }
 

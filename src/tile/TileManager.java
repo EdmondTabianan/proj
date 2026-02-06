@@ -28,6 +28,7 @@ public class TileManager {
         loadMap("/map/pyramid_first_floor.txt", 2);
         loadMap("/map/shop.txt", 3);
         loadMap("/map/pyramid_first_basement.txt", 4);
+        loadMap("/map/pyramid_second_basement.txt", 5);
     }
 
     public void getTileImage() {

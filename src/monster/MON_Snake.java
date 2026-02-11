@@ -23,6 +23,8 @@ public class MON_Snake extends Entity {
         
         type = 2;
         name = "snake";
+        action = true;
+
         defaultSpeed = (int)(1.5);
         speed = defaultSpeed;
         maxLife = 12 + gp.player.level * 3;

@@ -348,6 +348,11 @@ public class UI {
         if (gp.gameState == gp.tradeState) {
             TradeScreen();
         }
+        // Quest STATE
+        if (gp.gameState == gp.questState) {
+            drawQuestScreen();
+        }
+        
     }
     public void drawPlayerLife() {
 
@@ -667,7 +672,7 @@ public class UI {
         for(int i = 0; i < entity.inventory.size(); i++){
 
             // equip cursor
-            if(entity.inventory.get(i) == entity.currentweapon ||
+            if(entity.inventory.get(i) == entity.currentweapon  ||
                 entity.inventory.get(i) == entity.currentShield || 
                 entity.inventory.get(i) == entity.currentRange) {
                 g2.setColor(new Color(240, 190, 90));
@@ -1274,8 +1279,38 @@ public class UI {
                 }
             }
         }
-
     } 
+
+    public void drawQuestScreen() {
+
+        int frameX = gp.TileSize * 2;
+        int frameY = gp.TileSize;
+        int frameWidth = gp.ScreenWidth - (gp.TileSize * 4);
+        int frameHeight = gp.TileSize * 6;
+    
+        drawSubWindow(frameX, frameY, frameWidth, frameHeight);
+    
+        g2.setColor(Color.white);
+        g2.setFont(g2.getFont().deriveFont(36f));
+    
+        int textX = frameX + gp.TileSize;
+        int textY = frameY + gp.TileSize;
+    
+        g2.drawString("QUEST LOG", textX, textY);
+    
+        textY += gp.TileSize * 2;
+    
+        // Example slime quest
+        if (gp.player.killCount < 3) {
+            g2.drawString("Kill 3 Slimes: "
+                    + gp.player.killCount + " / 3", textX, textY);
+        } else {
+            g2.drawString("Kill 3 Slimes: COMPLETED", textX, textY);
+        }
+    
+        textY += gp.TileSize * 2;
+        g2.drawString("Release Q to close", textX, textY);
+    }    
 
     public int getItemIndexOnSlot(int slotCol, int slotRow) {
         int itemIndex = slotCol + (slotRow*5);

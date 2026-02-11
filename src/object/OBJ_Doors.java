@@ -8,11 +8,11 @@ import java.awt.Color;
 
 public class OBJ_Doors extends Entity {
     
-    GamePanel gp; // Store GamePanel reference
+    GamePanel gp; 
     
     public OBJ_Doors(GamePanel gp) {
         super(gp);
-        this.gp = gp; // Store the reference
+        this.gp = gp; 
         name = "Door";
         type = type_door;
         
@@ -28,6 +28,12 @@ public class OBJ_Doors extends Entity {
         solidArea.height = 96;  // 2 tiles high
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
+    }
+
+    public void interact() {
+
+        gp.gameState = gp.dialogueState;
+        gp.ui.currentDialogue = "you need two keys to open";
     }
     
     private BufferedImage createDoorImage() {

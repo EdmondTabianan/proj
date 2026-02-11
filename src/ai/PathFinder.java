@@ -38,7 +38,7 @@ public class PathFinder {
             }
         }
     }
-    public void reseNode() {
+    public void resetNode() {
             
             int col = 0;
             int row = 0;
@@ -63,7 +63,7 @@ public class PathFinder {
     }
     public void setNodes(int startCol, int startRow, int goalCol, int goalRow, Entity entity) {
 
-        reseNode();
+        resetNode();
 
         // set start and goal node
         startNode = node[startCol][startRow];   
@@ -102,16 +102,16 @@ public class PathFinder {
                 row++;
             }
             // check if any entity is colliding
-            // for(int i = 0; i < gp.obj[1].length; i++) {
-            //     if(gp.obj[gp.currentMap][i] != null) {
-            //         if(gp.obj[gp.currentMap][i].collision == true) {
-            //             if(gp.obj[gp.currentMap][i].worldX / gp.TileSize == col &&
-            //                 gp.obj[gp.currentMap][i].worldY / gp.TileSize == row) {
-            //                     node[col][row].solid = true;
-            //                 }
-            //         }
-            //     }
-            // }
+            for(int i = 0; i < gp.obj[1].length; i++) {
+                if(gp.obj[gp.currentMap][i] != null) {
+                    if(gp.obj[gp.currentMap][i].collision == true) {
+                        if(gp.obj[gp.currentMap][i].worldX / gp.TileSize == col &&
+                            gp.obj[gp.currentMap][i].worldY / gp.TileSize == row) {
+                                node[col][row].solid = true;
+                        }
+                    }
+                }
+            }
         }
     }
     public void getCost(Node node) {
@@ -168,7 +168,7 @@ public class PathFinder {
                 } 
                 // if fCost is equal, check hCost
                 else if (openList.get(i).fCost == bestNodeFCost) {
-                    if(openList.get(i).hCost < openList.get(bestNodeIndex).hCost) {
+                    if(openList.get(i).hCost < openList.get(bestNodeIndex).gCost) {
                         bestNodeIndex = i;
                     }
                 }

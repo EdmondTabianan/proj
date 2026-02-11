@@ -28,6 +28,7 @@ public class Entity {
     public int worldX, worldY;
     public String Direction = "down";
     public int spriteNum = 1;
+    public int mapnum = 0;
     int dialoguesIndex = 0;
     public boolean collisionOn = false;
     public boolean Invincible = false;
@@ -38,6 +39,8 @@ public class Entity {
     public boolean hasTablet = false;
     public boolean onPath = false;
     public boolean knockBack = false;
+    public boolean action = false;
+    public boolean talk = false;
 
     // counter 
     public int spriteCounter = 0;
@@ -47,6 +50,8 @@ public class Entity {
     int dyingCounter = 0;
     int hpBarCounter = 0;
     int knockBackCounter = 0;
+    public int talkcounter = 0;
+    public int killCount = 0;
 
     // characte attri
     public int characterused; // 0 = alexandria 1 = xylo
@@ -100,6 +105,8 @@ public class Entity {
     public final int type_bow = 11;
     public final int type_wand = 12;
     public final int type_door = 13;
+    public final int type_obstacle = 14;
+    public final int type_arrows = 15;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -116,7 +123,9 @@ public class Entity {
         gp.ui.currentDialogue = dialogues[dialoguesIndex];
         dialoguesIndex++;
     }
-    
+    public void interact() {
+
+    }
     public void use(Entity entity) {}
     public void checkDrop() {}
     
@@ -190,20 +199,25 @@ public class Entity {
         }
             
         else {
-            setAction();
-            checkCollision();
 
-            // if collision is false, entity can move
-            if (collisionOn == false) {
-                switch (Direction) {
-                    case "up": worldY -= speed;  break;
-                    case "down":  worldY += speed;  break;
-                    case "left":  worldX -= speed;  break;
-                    case "right":  worldX += speed;  break;
+            if (action == true) {
+                setAction();
+                checkCollision();
+
+                // if collision is false, entity can move
+                if (collisionOn == false) {
+                    switch (Direction) {
+                        case "up": worldY -= speed;  break;
+                        case "down":  worldY += speed;  break;
+                        case "left":  worldX -= speed;  break;
+                        case "right":  worldX += speed;  break;
+                    }
                 }
+            } else if (action == false) {
+                idle();
             }
-        }
             
+        }
         
         // Update invincibility timer FIRST
         if (Invincible == true) {
@@ -213,7 +227,6 @@ public class Entity {
                 InvincibleCounter = 0;
             }
         }
-        
         
         spriteCounter++;
         if (spriteCounter > 24) {
@@ -228,6 +241,11 @@ public class Entity {
         if (shotAvailableCounter < 30) {
             shotAvailableCounter++;
         }
+    }
+
+    public void idle () {
+
+        //nothing
     }
     
     public void damagaplayer(int attack) {

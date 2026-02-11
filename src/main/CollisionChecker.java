@@ -64,6 +64,11 @@ public class CollisionChecker {
 
         int index = 999;
 
+        String direction = entity.Direction;
+        if(entity.knockBack == true) {
+            direction = entity.Direction;
+        }
+
         for (int i = 0; i < gp.obj[1].length; i++){ // fixed
 
             if(gp.obj[gp.currentMap][i] != null) { // fixed

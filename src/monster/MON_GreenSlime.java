@@ -23,6 +23,7 @@ public class MON_GreenSlime extends Entity {
         
         type = type_monster;
         name = "Green Slime";
+        action = true;
         defaultSpeed = 1;
         speed = defaultSpeed;
         maxLife = 8 + gp.player.level * 2;
@@ -155,7 +156,7 @@ public class MON_GreenSlime extends Entity {
         }
     }
     public void checkDrop() {
-
+        
         int roll = new Random().nextInt(100)+1; // 0–99
 
         if (roll < 40) {

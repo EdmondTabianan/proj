@@ -19,7 +19,7 @@ public class GamePanel extends JPanel implements Runnable {
     final int Scale = 3;
 
     public final int TileSize = OriginalTileSize * Scale; // 48x48 tile
-    public final int MaxScreenCol = 20;
+    public final int MaxScreenCol = 18;
     public final int MaxScreenRow = 12;
     public final int ScreenWidth = TileSize * MaxScreenCol; // if maxscreen is 16 768 pixels if maxscreen is 18 864 pixels
     public final int ScreenHeight = TileSize * MaxScreenRow; // 576 pixels
@@ -69,6 +69,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int gameOverState = 7;
     public final int transitionState = 8;
     public final int tradeState = 9;
+    public final int questState = 10;
 
     public int monsterRespawnCounter = 0;
     private boolean loadingStarted = false;
@@ -100,10 +101,8 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void retry() {
-        player.setDeaultPosition();
+        player.respawnAtMapEntrance(currentMap);
         player.resetLifeAndMana();
-        aSetter.setNPC();
-        aSetter.setMonster();
     }
 
     public void restart() {
@@ -244,7 +243,8 @@ public class GamePanel extends JPanel implements Runnable {
         else if (gameState == playState || gameState == pauseState || 
                  gameState == dialogueState || gameState == characterState ||
                  gameState == optionsState || gameState == gameOverState ||
-                 gameState == transitionState || gameState == tradeState) {
+                 gameState == transitionState || gameState == tradeState ||
+                 gameState == questState) {
             
             // Debug timing
             long drawStart = 0;

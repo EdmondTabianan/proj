@@ -78,16 +78,63 @@ public class Player extends Entity {
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
-        currentRange = new OBJ_ice_wand(gp);
-        projectiles = new OBJ_ice(gp);
+        // currentRange = new OBJ_ice_wand(gp);
+        // projectiles = new OBJ_ice(gp);
         attack = getAttack(); // total damage of weapon
         defense = getDefense(); // total defense 
+
+        killCount = 0;
     }
-    public void setDeaultPosition() {
-        int mapnum = 0;
+    public void setDeaultPosition(int mapnum) {
+        mapnum = 0;
         worldX = gp.TileSize * 45;
         worldY = gp.TileSize * 40;
         Direction = "down";
+    }
+    // In Player class, add this method:
+    public void respawnAtMapEntrance(int mapNum) {
+        switch(mapNum) {
+            case 0: // Main map - original spawn
+                worldX = gp.TileSize * 46;
+                worldY = gp.TileSize * 39;
+                break;
+            case 1: // Second map - boat arrival point (from your transport event)
+                worldX = gp.TileSize * 24;
+                worldY = gp.TileSize * 42;
+                break;
+            case 2: // Pyramid first floor - entrance (from your entrance event)
+                worldX = gp.TileSize * 24;
+                worldY = gp.TileSize * 48;
+                break;
+            case 3: // Shop - arrival point
+                worldX = gp.TileSize * 24;
+                worldY = gp.TileSize * 35;
+                break;
+            case 4: // Pyramid first basement - stairs down
+                worldX = gp.TileSize * 4;
+                worldY = gp.TileSize * 3;
+                break;
+            case 5: // Pyramid second basement - stairs down
+                worldX = gp.TileSize * 43;
+                worldY = gp.TileSize * 44;
+                break;
+            default:
+                worldX = gp.TileSize * 10;
+                worldY = gp.TileSize * 10;
+        }
+        
+        Direction = "down";
+        life = maxLife;
+        mana = maxMana;
+        Invincible = true;
+        InvincibleCounter = 0;
+        
+        // Reset combat states
+        attacking = false;
+        knockBack = false;
+        spriteCounter = 0;
+        spriteNum = 1;
+        standCounter = 0;
     }
     public void resetLifeAndMana() {
         life = maxLife;
@@ -98,24 +145,24 @@ public class Player extends Entity {
         inventory.clear();
         inventory.add(currentweapon);
         inventory.add(currentShield);
-        inventory.add(currentRange);
+        // inventory.add(currentRange);
     }
     public int getAttack() {
         int roll = random.nextInt(100); // 0–99
         attackArea = currentweapon.attackArea;
         int baseDamage = strength * currentweapon.attackvalue;
-        if (roll < 80) {
+        if (roll < 100) {
             // Normal hit (80%)
             attack = baseDamage;
         } 
-        else if (roll < 95) {
-            // Crit hit (15%)
-            attack = baseDamage * 2;
-        } 
-        else {
-            // Super crit (5%)
-            attack = baseDamage * 4;
-        }
+        // else if (roll < 95) {
+        //     // Crit hit (15%)
+        //     attack = baseDamage * 2;
+        // } 
+        // else {
+        //     // Super crit (5%)
+        //     attack = baseDamage * 4;
+        // }
         return attack;
     }
     
@@ -261,7 +308,13 @@ public class Player extends Entity {
 
         if (gp.keyH.shotKeyPressed && projectiles.alive == false && 
             shotAvailableCounter == 30 && projectiles.haveResource(this)) {
-        
+            
+            // Check if a ranged weapon is equipped
+            if (currentRange == null) {
+                gp.ui.showMessage("No ranged weapon equipped!");
+                return;
+            }
+
             // Set projectile position, direction, and owner
             projectiles.set(worldX, worldY, Direction, true, this);
         
@@ -371,12 +424,26 @@ public class Player extends Entity {
                 gp.obj[gp.currentMap][i] = null;
                 return;
             }
+            // For other pickup-only items
+            else if(gp.obj[gp.currentMap][i].type == type_pickupOnly) {
+                gp.obj[gp.currentMap][i].use(this);
+                gp.obj[gp.currentMap][i] = null;
+                return;
+            }
+            // Handle ARROWS pickup
+            else if (gp.obj[gp.currentMap][i].type == type_arrows) {
+                gp.playSE(2);
+                arrow += 5; // Add 5 arrows (or whatever amount you want)
+                gp.ui.showMessage("You got 5 arrows! Total: " + arrow);
+                gp.obj[gp.currentMap][i] = null;
+                return;
+            }
             if (gp.obj[gp.currentMap][i].type == type_door) {
                 //dont pick up door, just interact with it
                 return;
             }
             // Check for tablet
-            if (gp.obj[gp.currentMap][i].type == type_tablet) {
+            else if (gp.obj[gp.currentMap][i].type == type_tablet) {
                 gp.playSE(2);
                 
                 if (inventory.size() < maxInventorySize ) {
@@ -398,15 +465,9 @@ public class Player extends Entity {
                     }
                 }
             }
-            // For other pickup-only items
-            if(gp.obj[gp.currentMap][i].type == type_pickupOnly) {
-                gp.obj[gp.currentMap][i].use(this);
-                gp.obj[gp.currentMap][i] = null;
-                return; // Exit after handling pickup-only
-            }
             
             // For regular inventory items
-            if(inventory.size() != maxInventorySize) {
+            else if(inventory.size() != maxInventorySize) {
                 inventory.add(gp.obj[gp.currentMap][i]);
                 gp.playSE(1);
                 gp.ui.showMessage("Got a " + gp.obj[gp.currentMap][i].name + "!");
@@ -535,6 +596,7 @@ public class Player extends Entity {
                     gp.ui.showMessage("Killed the " + gp.monster[gp.currentMap][i].name + "!");
                     gp.ui.showMessage("exp + " + gp.monster[gp.currentMap][i].exp);
                     exp += gp.monster[gp.currentMap][i].exp;
+                    killCount++;
                     checkLevelUp();
                 }
             }
@@ -566,7 +628,7 @@ public class Player extends Entity {
         if (i != 999) {
             Entity projectile = gp.projectile[gp.currentMap][i];
             projectile.alive = false;
-            gp.playSE(9);
+            gp.playSE(14);
         }
     }
     
@@ -596,34 +658,35 @@ public class Player extends Entity {
 
     public void selectItem() {
         int itemIndex = gp.ui.getItemIndexOnSlot(gp.ui.playerSlotCol, gp.ui.playerSlotRow);
-
+    
         if (itemIndex < inventory.size()) {
             Entity selectedItem = inventory.get(itemIndex);
-
+            
             if (selectedItem.type == type_sword || selectedItem.type == type_axe) {
                 currentweapon = selectedItem;
                 attack = getAttack();
                 getPlayerAttackImage();
             }
-            if (selectedItem.type == type_bow) {
+            else if (selectedItem.type == type_bow) {
                 currentRange = selectedItem;
                 projectiles = new OBJ_Arrows(gp);  
                 getPlayerAttackImage();
             }
-            
-            if (selectedItem.type == type_wand) {
+            else if (selectedItem.type == type_wand) {
                 currentRange = selectedItem;
                 projectiles = new OBJ_ice(gp);     
                 getPlayerAttackImage();
             }
-            
-            if (selectedItem.type == type_shield) {
+            else if (selectedItem.type == type_shield) {
                 currentShield = selectedItem;
                 defense = getDefense();
             }
-            if (selectedItem.type  == type_consumable) {
+            else if (selectedItem.type == type_consumable) {
                 selectedItem.use(this);
                 inventory.remove(itemIndex);
+            }
+            else if (selectedItem.type == type_pickupOnly) {
+                // Handle pickup-only items (keys, etc.)
             }
         }
     }

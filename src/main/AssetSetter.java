@@ -1,8 +1,11 @@
 package main;
 
+import entity.NPC_Beverly;
 import entity.NPC_blueboy;
 import entity.NPC_merchant;
+import entity.NPC_vhong;
 import monster.MON_GreenSlime;
+import monster.MON_MOMMY;
 import monster.MON_Snake;
 import object.OBJ_Axe;
 //import object.OBJ_Door_Left;
@@ -10,6 +13,7 @@ import object.OBJ_Doors;
 import object.OBJ_Key;
 import object.OBJ_boat;
 import object.OBJ_bow_normal;
+import object.OBJ_ice_wand;
 import object.OBJ_tablet;
 import tile_interactive.IT_Drytree;
 
@@ -46,9 +50,13 @@ public class AssetSetter {
         // gp.obj[mapnum][i].worldX = gp.TileSize*29;
         // gp.obj[mapnum][i].worldY = gp.TileSize*15; 
         // i++;
+        gp.obj[mapnum][i] = new OBJ_ice_wand(gp);
+        gp.obj[mapnum][i].worldX = gp.TileSize*46;
+        gp.obj[mapnum][i].worldY = gp.TileSize*40;
+        i++;
         gp.obj[mapnum][i] = new OBJ_bow_normal(gp);
         gp.obj[mapnum][i].worldX = gp.TileSize*12;
-        gp.obj[mapnum][i].worldY = gp.TileSize*17;     
+        gp.obj[mapnum][i].worldY = gp.TileSize*17;      
         
         mapnum = 1;
         i++;
@@ -66,7 +74,14 @@ public class AssetSetter {
         gp.npc[mapnum][i] = new NPC_blueboy(gp);
         gp.npc[mapnum][i].worldX = gp.TileSize*38;
         gp.npc[mapnum][i].worldY = gp.TileSize*30;
-
+        i++;
+        gp.npc[mapnum][i] = new NPC_vhong(gp);
+        gp.npc[mapnum][i].worldX = gp.TileSize*39;
+        gp.npc[mapnum][i].worldY = gp.TileSize*30;
+        i++;
+        gp.npc[mapnum][i] = new NPC_Beverly(gp);
+        gp.npc[mapnum][i].worldX = gp.TileSize*8;
+        gp.npc[mapnum][i].worldY = gp.TileSize*10;
         mapnum = 3;
         i++;
         gp.npc[mapnum][i] = new NPC_merchant(gp);
@@ -78,11 +93,15 @@ public class AssetSetter {
         int i = 0;
         gp.monster[mapnum][i] = new MON_Snake(gp);
         gp.monster[mapnum][i].worldX = gp.TileSize*40;
-        gp.monster[mapnum][i].worldY = gp.TileSize*6; //ok
+        gp.monster[mapnum][i].worldY = gp.TileSize*6;
         i++;
         gp.monster[mapnum][i] = new MON_Snake(gp);
         gp.monster[mapnum][i].worldX = gp.TileSize*26;
-        gp.monster[mapnum][i].worldY = gp.TileSize*5; // ok
+        gp.monster[mapnum][i].worldY = gp.TileSize*5; 
+        i++;
+        gp.monster[mapnum][i] = new MON_MOMMY(gp);
+        gp.monster[mapnum][i].worldX = gp.TileSize*25;
+        gp.monster[mapnum][i].worldY = gp.TileSize*5;
         i++;
         gp.monster[mapnum][i] = new MON_Snake(gp);
         gp.monster[mapnum][i].worldX = gp.TileSize*24;

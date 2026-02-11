@@ -6,7 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     GamePanel gp;
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed, shotKeyPressed, arrowKeyPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed, shotKeyPressed, arrowKeyPressed, questkeyPressed;
     boolean showDebugText = false;
     //hold archer
     //boolean arrowpressed = false;
@@ -115,6 +115,9 @@ public class KeyHandler implements KeyListener {
         }
     }
     public void playState(int code) {
+        if (code == KeyEvent.VK_Q) {
+            gp.gameState = gp.questState;
+        }
         if (code == KeyEvent.VK_W) {
             upPressed = true;
          }
@@ -397,6 +400,9 @@ public class KeyHandler implements KeyListener {
         int code = e.getKeyCode();
         if (code == KeyEvent.VK_ENTER) {
             enterPressed = false;
+        }
+        if (code == KeyEvent.VK_Q) {
+            gp.gameState = gp.playState;
         }
         if (code == KeyEvent.VK_W) {
            upPressed = false;

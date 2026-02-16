@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import ai.Node;
 import main.GamePanel;
 import main.UtilityTool;
 
@@ -83,6 +84,7 @@ public class Entity {
     public Entity currentRange;
     public Projectile arrows;
     public Projectile projectiles;
+    public Color tintColor;
 
     // item attri
     public ArrayList<Entity> inventory = new ArrayList<>();
@@ -118,6 +120,7 @@ public class Entity {
     public final int type_door = 13;
     public final int type_obstacle = 14;
     public final int type_arrows = 15;
+    public boolean isPickup;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -537,54 +540,147 @@ public class Entity {
         return image;
     }
     
-    public void searchPath(int goalCol, int goalRow) {
+    // public void searchPath(int goalCol, int goalRow) {
+    //     int startCol = (worldX + solidArea.x) / gp.TileSize;
+    //     int startRow = (worldY + solidArea.y) / gp.TileSize;
+
+    //     gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
+
+    //     if (gp.pFinder.search() == true) {
+    //         int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
+    //         int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
+
+    //         int enLeftX = worldX + solidArea.x;
+    //         int enRightX = worldX + solidArea.x + solidArea.width;
+    //         int enTopY = worldY + solidArea.y;
+    //         int enBottomY = worldY + solidArea.y + solidArea.height;
+
+    //         if (enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+    //             Direction = "up";
+    //         } else if (enBottomY < nextY + gp.TileSize && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+    //             Direction = "down";
+    //         } else if (enTopY >= nextY && enBottomY < nextY + gp.TileSize) {
+    //             if (enLeftX > nextX) {
+    //                 Direction = "left";
+    //             }
+    //             if (enRightX < nextX + gp.TileSize) {
+    //                 Direction = "right";
+    //             }
+    //         } 
+    //         else if (enTopY > nextY && enLeftX > nextX) {
+    //             Direction = "up";
+    //             if (collisionOn == true) {
+    //                 Direction = "left";
+    //             }
+    //         } else if (enTopY > nextY && enRightX < nextX + gp.TileSize) {
+    //             Direction = "up";
+    //             if (collisionOn == true) {
+    //                 Direction = "right";
+    //             }
+    //         } else if (enBottomY < nextY + gp.TileSize && enLeftX > nextX) {
+    //             Direction = "down";
+    //             if (collisionOn == true) {
+    //                 Direction = "left";
+    //             }
+    //         } else if (enBottomY < nextY + gp.TileSize && enRightX < nextX + gp.TileSize) {
+    //             Direction = "down";
+    //             if (collisionOn == true) {
+    //                 Direction = "right";
+    //             }
+    //         }
+    //     }
+    // }
+    public boolean searchPath(int goalCol, int goalRow) {
         int startCol = (worldX + solidArea.x) / gp.TileSize;
         int startRow = (worldY + solidArea.y) / gp.TileSize;
-
+    
         gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
-
-        if (gp.pFinder.search() == true) {
-            int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
-            int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
-
-            int enLeftX = worldX + solidArea.x;
-            int enRightX = worldX + solidArea.x + solidArea.width;
-            int enTopY = worldY + solidArea.y;
-            int enBottomY = worldY + solidArea.y + solidArea.height;
-
-            if (enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
-                Direction = "up";
-            } else if (enBottomY < nextY + gp.TileSize && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
-                Direction = "down";
-            } else if (enTopY >= nextY && enBottomY < nextY + gp.TileSize) {
-                if (enLeftX > nextX) {
-                    Direction = "left";
-                }
-                if (enRightX < nextX + gp.TileSize) {
+    
+        if (gp.pFinder.search() == true && gp.pFinder.pathList != null && !gp.pFinder.pathList.isEmpty()) {
+            
+            // Get the next node from the path
+            Node nextNode = gp.pFinder.pathList.get(0);
+            
+            // Calculate the CENTER of the target tile
+            int targetTileCenterX = nextNode.col * gp.TileSize + gp.TileSize/2;
+            int targetTileCenterY = nextNode.row * gp.TileSize + gp.TileSize/2;
+            
+            // Get entity's center position
+            int enCenterX = worldX + solidArea.x + solidArea.width/2;
+            int enCenterY = worldY + solidArea.y + solidArea.height/2;
+            
+            // Calculate distances
+            int dx = targetTileCenterX - enCenterX;
+            int dy = targetTileCenterY - enCenterY;
+            
+            // Debug output (remove after testing)
+            System.out.println("Target: (" + targetTileCenterX + "," + targetTileCenterY + 
+                               ") Center: (" + enCenterX + "," + enCenterY + 
+                               ") dx: " + dx + " dy: " + dy);
+            
+            // Use a small threshold to prevent jittering
+            int threshold = 3;
+            
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Moving horizontally is priority
+                if (dx > threshold) {
                     Direction = "right";
-                }
-            } 
-            else if (enTopY > nextY && enLeftX > nextX) {
-                Direction = "up";
-                if (collisionOn == true) {
+                    System.out.println("Moving right");
+                } else if (dx < -threshold) {
                     Direction = "left";
+                    System.out.println("Moving left");
+                } else {
+                    // If horizontal is within threshold, check vertical
+                    if (dy > threshold) {
+                        Direction = "down";
+                        System.out.println("Moving down");
+                    } else if (dy < -threshold) {
+                        Direction = "up";
+                        System.out.println("Moving up");
+                    }
                 }
-            } else if (enTopY > nextY && enRightX < nextX + gp.TileSize) {
-                Direction = "up";
-                if (collisionOn == true) {
-                    Direction = "right";
-                }
-            } else if (enBottomY < nextY + gp.TileSize && enLeftX > nextX) {
-                Direction = "down";
-                if (collisionOn == true) {
-                    Direction = "left";
-                }
-            } else if (enBottomY < nextY + gp.TileSize && enRightX < nextX + gp.TileSize) {
-                Direction = "down";
-                if (collisionOn == true) {
-                    Direction = "right";
+            } else {
+                // Moving vertically is priority
+                if (dy > threshold) {
+                    Direction = "down";
+                    System.out.println("Moving down");
+                } else if (dy < -threshold) {
+                    Direction = "up";
+                    System.out.println("Moving up");
+                } else {
+                    // If vertical is within threshold, check horizontal
+                    if (dx > threshold) {
+                        Direction = "right";
+                        System.out.println("Moving right");
+                    } else if (dx < -threshold) {
+                        Direction = "left";
+                        System.out.println("Moving left");
+                    }
                 }
             }
+            
+            // Check if we've reached the current node
+            int currentTileCol = (worldX + solidArea.x + solidArea.width/2) / gp.TileSize;
+            int currentTileRow = (worldY + solidArea.y + solidArea.height/2) / gp.TileSize;
+            
+            if (currentTileCol == nextNode.col && currentTileRow == nextNode.row) {
+                System.out.println("Reached node at (" + nextNode.col + "," + nextNode.row + ")");
+                gp.pFinder.pathList.remove(0);
+                
+                if (gp.pFinder.pathList.isEmpty()) {
+                    System.out.println("Path complete!");
+                    onPath = false;
+                }
+            }
+            
+            return true;
         }
+        
+        // No path found
+        if (onPath) {
+            System.out.println("No path found to (" + goalCol + "," + goalRow + ")");
+        }
+        onPath = false;
+        return false;
     }
 }

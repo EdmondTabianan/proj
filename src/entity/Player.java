@@ -476,9 +476,12 @@ public class Player extends Entity {
     public void pickUpObject(int i) {
         if (i != 999) {
             Entity item = gp.obj[gp.currentMap][i];
-
-             // Mark as picked up in AssetSetter
-            if (item.isPickup) {
+            
+            // Add null check for item
+            if (item == null) return;
+    
+            // Mark as picked up in AssetSetter - with null check for aSetter
+            if (item.isPickup && gp.aSetter != null) {
                 gp.aSetter.markItemAsPickedUp(gp.currentMap, i);
             }
             

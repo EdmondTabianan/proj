@@ -18,9 +18,20 @@ public class Projectile extends Entity {
         this.user = user;
         this.life = this.maxLife;
         
+        // IMPORTANT: Set the speed for the projectile
+        this.speed = 5; // Set a default speed (adjust as needed)
+        
+        // Set attack damage if not already set
+        if (this.attack == 0) {
+            this.attack = 2; // Default attack damage
+        }
+        
         // Reset sprite animation when firing
         this.spriteCounter = 0;
         this.spriteNum = 1;
+        
+        // Add debug to see if projectile is created
+        System.out.println("Projectile created: " + this.name + " at (" + worldX + "," + worldY + ") direction: " + Direction);
     }
     
     public void update() {
@@ -29,66 +40,8 @@ public class Projectile extends Entity {
             return;
         }
         
-        // ===== CHECK COLLISION FIRST (BEFORE MOVING) =====
-        if (user != null && user == gp.player) {
-            // Player-fired projectile - damage monsters
-            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            
-            if (monsterIndex != 999 && monsterIndex >= 0 && monsterIndex < gp.monster[gp.currentMap].length) {
-                
-                Entity monster = gp.monster[gp.currentMap][monsterIndex];
-                
-                if (monster != null && monster.invincible == false) {
-                    
-                    // APPLY SLOW EFFECT for ice projectiles
-                    if (this.name.equals("Ice")) {
-                        monster.slowed = true;
-                        monster.slowCounter = 0;
-                        monster.slowDuration = 180;  // 3 seconds
-                        monster.slowAmount = 2;      // Reduce speed by 2
-                        
-                        // Store original speed if not already slowed
-                        if (monster.speed == monster.defaultSpeed) {
-                            monster.speed = monster.defaultSpeed - monster.slowAmount;
-                            if (monster.speed < 1) monster.speed = 1;
-                        }
-                        
-                        gp.ui.showMessage("Monster slowed!");
-                    }
-                    
-                    gp.player.damageMonster(monsterIndex, this.attack, this.knockBackPower);
-                    this.alive = false;
-                }
-            }
-            
-            // Check for interactive tiles
-            int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
-            
-            if (iTileIndex != 999 && iTileIndex >= 0 && iTileIndex < gp.iTile[gp.currentMap].length) {
-                
-                if (gp.iTile[gp.currentMap][iTileIndex] != null && 
-                    gp.iTile[gp.currentMap][iTileIndex].destructible == true) {
-                    
-                    gp.iTile[gp.currentMap][iTileIndex].life--;
-                    
-                    if (gp.iTile[gp.currentMap][iTileIndex].life <= 0) {
-                        gp.iTile[gp.currentMap][iTileIndex] = gp.iTile[gp.currentMap][iTileIndex].getDestroyedForm();
-                    }
-                }
-                this.alive = false;
-            }
-        }
-        else if (user != null && user != gp.player) {
-            // Monster-fired projectile - damage player WITH GUARD CHECK
-            boolean contactPlayer = gp.cChecker.checkPlayer(this);
-            
-            if (contactPlayer == true && gp.player.invincible == false) {
-                damagePlayerWithGuard(this.attack);  // Call the guard-aware method
-                this.alive = false;
-            }
-        }
-
-        // ===== MOVE PROJECTILE =====
+        // ===== MOVE PROJECTILE FIRST =====
+        // Move before checking collision to avoid hitting the shooter
         switch (Direction) {
             case "up": worldY -= speed; break;
             case "down": worldY += speed; break;
@@ -101,12 +54,88 @@ public class Projectile extends Entity {
         gp.cChecker.checkTile(this);
         if (collisionOn == true) {
             this.alive = false;
+            System.out.println("Projectile hit wall and died");
+            return;
+        }
+
+        // ===== CHECK COLLISION AFTER MOVING =====
+        if (user != null && user == gp.player) {
+            // Player-fired projectile - damage monsters
+            int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+            
+            if (monsterIndex != 999 && monsterIndex >= 0 && monsterIndex < gp.monster[gp.currentMap].length) {
+                
+                Entity monster = gp.monster[gp.currentMap][monsterIndex];
+                
+                if (monster != null && monster.invincible == false) {
+                    
+                    System.out.println("Projectile hit monster: " + monster.name);
+                    
+                    // APPLY SLOW EFFECT for ice projectiles
+                    if (this.name != null && this.name.equals("Ice")) {
+                        monster.slowed = true;
+                        monster.slowCounter = 0;
+                        monster.slowDuration = 180; // 3 seconds
+                        
+                        // Store original speed if not already stored
+                        if (monster.defaultSpeed == 0) {
+                            monster.defaultSpeed = monster.speed;
+                        }
+                        
+                        // Apply slow effect (reduce speed by half)
+                        monster.speed = monster.defaultSpeed / 2;
+                        if (monster.speed < 1) monster.speed = 1;
+                        
+                        // Set blue tint
+                        monster.tintColor = new java.awt.Color(100, 150, 255, 150);
+                        
+                        gp.ui.showMessage("Monster slowed!");
+                        System.out.println("Monster slowed! Speed reduced to: " + monster.speed);
+                    }
+                    
+                    gp.player.damageMonster(monsterIndex, this.attack, this.knockBackPower);
+                    this.alive = false;
+                    return;
+                }
+            }
+            
+            // Check for interactive tiles
+            int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
+            
+            if (iTileIndex != 999 && iTileIndex >= 0 && iTileIndex < gp.iTile[gp.currentMap].length) {
+                
+                if (gp.iTile[gp.currentMap][iTileIndex] != null && 
+                    gp.iTile[gp.currentMap][iTileIndex].destructible == true) {
+                    
+                    gp.iTile[gp.currentMap][iTileIndex].life--;
+                    System.out.println("Projectile hit interactive tile");
+                    
+                    if (gp.iTile[gp.currentMap][iTileIndex].life <= 0) {
+                        gp.iTile[gp.currentMap][iTileIndex] = gp.iTile[gp.currentMap][iTileIndex].getDestroyedForm();
+                    }
+                }
+                this.alive = false;
+                return;
+            }
+        }
+        else if (user != null && user != gp.player) {
+            // Monster-fired projectile - damage player WITH GUARD CHECK
+            boolean contactPlayer = gp.cChecker.checkPlayer(this);
+            
+            if (contactPlayer == true && gp.player.invincible == false) {
+                System.out.println("Projectile hit player");
+                damagePlayerWithGuard(this.attack);
+                this.alive = false;
+                return;
+            }
         }
 
         // ===== LIFETIME MANAGEMENT =====
         life--;
         if (life <= 0) {
             alive = false;
+            System.out.println("Projectile died from old age");
+            return;
         }
         
         // ===== SPRITE ANIMATION =====
@@ -122,8 +151,9 @@ public class Projectile extends Entity {
         }
     }
     
-    // UPDATED: Damage player with guard check - ZERO DAMAGE when successfully guarded
     public void damagePlayerWithGuard(int attack) {
+        if (gp.player == null) return;
+        
         if (gp.player.invincible == false) {
             
             int damage = attack - gp.player.defense;
@@ -134,7 +164,7 @@ public class Projectile extends Entity {
             // Check if player is guarding
             if (gp.player.guarding == true) {
                 // Get the direction the projectile is coming from
-                String attackDirection = this.Direction; // Projectile's direction
+                String attackDirection = this.Direction;
                 
                 // Get the direction the player needs to face to block
                 String oppositeDirection = getOppositeDirection(attackDirection);
@@ -142,7 +172,7 @@ public class Projectile extends Entity {
                 // Check if player is facing the projectile
                 if (gp.player.Direction.equals(oppositeDirection)) {
                     // SUCCESSFULLY GUARDED - TAKE ZERO DAMAGE!
-                    gp.playSE(15); // Guard sound
+                    if (gp.se != null) gp.playSE(15); // Guard sound
                     gp.ui.showMessage("Perfect Guard! No damage!");
                     
                     // Set invincibility but take NO damage
@@ -150,11 +180,11 @@ public class Projectile extends Entity {
                     gp.player.invincibleCounter = 0;
                     gp.player.transparent = true;
                     
-                    return; // EXIT WITHOUT APPLYING DAMAGE
+                    return;
                     
                 } else {
                     // Guard failed - wrong direction
-                    gp.playSE(6); // Hurt sound
+                    if (gp.se != null) gp.playSE(6); // Hurt sound
                     gp.ui.showMessage(damage + " damage from projectile!");
                     
                     // Apply damage
@@ -162,14 +192,14 @@ public class Projectile extends Entity {
                 }
             } else {
                 // Not guarding
-                gp.playSE(6); // Hurt sound
+                if (gp.se != null) gp.playSE(6); // Hurt sound
                 gp.ui.showMessage(damage + " damage from projectile!");
                 
                 // Apply damage
                 gp.player.life -= damage;
             }
             
-            // Set invincibility (only for non-perfect guards)
+            // Set invincibility
             gp.player.invincible = true;
             gp.player.invincibleCounter = 0;
             gp.player.transparent = true;
@@ -180,7 +210,6 @@ public class Projectile extends Entity {
         }
     }
     
-    // Helper method to get opposite direction
     public String getOppositeDirection(String Direction) {
         String oppositeDirection = "";
         
@@ -216,15 +245,16 @@ public class Projectile extends Entity {
             if (this instanceof object.OBJ_Arrows) {
                 user.arrow -= this.useCost;
                 if (user.arrow < 0) user.arrow = 0;
+                System.out.println("Arrow used. Remaining: " + user.arrow);
             }
             else if (this instanceof object.OBJ_ice) {
                 user.mana -= this.useCost;
                 if (user.mana < 0) user.mana = 0;
+                System.out.println("Mana used. Remaining: " + user.mana);
             }
         }
     }
     
-    // Keep original method for backward compatibility
     public void damagePlayer(int attack) {
         damagePlayerWithGuard(attack);
     }

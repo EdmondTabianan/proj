@@ -83,7 +83,6 @@ public class AssetSetter {
         }
     }
 
-    // Call this method when player picks up an item
     public void markItemAsPickedUp(int map, int index) {
         if (map >= 0 && map < gp.maxMap && index >= 0 && index < 20) {
             itemPickedUp[map][index][0] = true;

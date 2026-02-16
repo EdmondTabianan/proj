@@ -20,8 +20,16 @@ public class MON_MOMMY extends Entity {
     // Spawn point tracking
     private int spawnWorldX;
     private int spawnWorldY;
-    private int aggroRange = 5; // Tiles - if aggroed and goes beyond this, return to spawn
+    private int aggroRange = 8; // Tiles - increased for better gameplay
     private boolean returningToSpawn = false;
+    
+    // Pathfinding variables
+    private int pathUpdateCounter = 0;
+    private final int PATH_UPDATE_DELAY = 60; // Update path every 60 frames (1 second)
+    private int aggroCheckCounter = 0;
+    private final int AGGRO_CHECK_DELAY = 30; // Check aggro every 30 frames
+    private int shootCooldown = 0;
+    private final int SHOOT_DELAY = 180; // 3 seconds between shots
 
     public MON_MOMMY(GamePanel gp) {
         super(gp);
@@ -36,7 +44,7 @@ public class MON_MOMMY extends Entity {
         speed = defaultSpeed;
         maxLife = 8;
         life = maxLife;
-        attack = 3 ;
+        attack = 3;
         defense = 3;
         
         // FIX: Don't access gp.player in constructor!
@@ -72,49 +80,80 @@ public class MON_MOMMY extends Entity {
     }
     
     public void update() {
+        // Check aggro FIRST before movement
+        checkAggro();
+        
+        // Then do normal update (which calls setAction() and moves)
         super.update();
         
-        // FIX: Only access player if it exists
+        // Update exp based on player level (if player exists)
         if (gp.player != null) {
-            int xDistance = Math.abs(worldX - gp.player.worldX);
-            int yDistance = Math.abs(worldY - gp.player.worldY);
-            int tileDistanceFromPlayer = (xDistance + yDistance) / gp.TileSize;
-            
-            // Calculate distance from spawn point
+            exp = 3 + gp.player.level;
+        }
+        
+        // Update shoot cooldown
+        if (shootCooldown > 0) {
+            shootCooldown--;
+        }
+    }
+    
+    private void checkAggro() {
+        if (gp.player == null) return;
+        
+        aggroCheckCounter++;
+        if (aggroCheckCounter < AGGRO_CHECK_DELAY) return;
+        aggroCheckCounter = 0;
+        
+        int xDistance = Math.abs(worldX - gp.player.worldX);
+        int yDistance = Math.abs(worldY - gp.player.worldY);
+        int tileDistanceFromPlayer = (xDistance + yDistance) / gp.TileSize;
+        
+        // Calculate distance from spawn point
+        if (spawnWorldX != 0 || spawnWorldY != 0) {
             int xSpawnDistance = Math.abs(worldX - spawnWorldX);
             int ySpawnDistance = Math.abs(worldY - spawnWorldY);
             int tileDistanceFromSpawn = (xSpawnDistance + ySpawnDistance) / gp.TileSize;
         
-            // Check if aggroed and too far from spawn
+            // Check if too far from spawn while following
             if (onPath == true && tileDistanceFromSpawn > aggroRange) {
                 returningToSpawn = true;
-                onPath = false; // Temporarily disable following to return to spawn
+                onPath = false;
+                System.out.println("Mummy returning to spawn - too far!");
             }
             
             // Check if should start following player
-            if (onPath == false && !returningToSpawn && tileDistanceFromPlayer < 3) {
+            if (onPath == false && !returningToSpawn && tileDistanceFromPlayer < 4) {
                 int i = random.nextInt(100) + 1;
-                if (i > 50) {
+                if (i > 40) { // 60% chance to aggro
                     onPath = true;
+                    System.out.println("Mummy aggroed on player!");
                 }
             }
             
             // If we're at spawn while returning, stop returning
             if (returningToSpawn && tileDistanceFromSpawn <= 1) {
                 returningToSpawn = false;
+                System.out.println("Mummy returned to spawn");
             }
-            
-            // Update exp based on player level (if player exists)
-            exp = 3 + gp.player.level;
         }
     }
 
     public void setAction() {
-        if (returningToSpawn) {
+        if (returningToSpawn && (spawnWorldX != 0 || spawnWorldY != 0)) {
             // Return to spawn point
             int spawnCol = spawnWorldX / gp.TileSize;
             int spawnRow = spawnWorldY / gp.TileSize;
-            searchPath(spawnCol, spawnRow);
+            
+            // Only update path periodically
+            pathUpdateCounter++;
+            if (pathUpdateCounter > PATH_UPDATE_DELAY) {
+                boolean pathFound = searchPath(spawnCol, spawnRow);
+                if (!pathFound) {
+                    // If no path found, move directly towards spawn
+                    moveTowards(spawnWorldX, spawnWorldY);
+                }
+                pathUpdateCounter = 0;
+            }
             
             // If very close to spawn, just move directly
             if (Math.abs(worldX - spawnWorldX) < gp.TileSize && 
@@ -126,28 +165,38 @@ public class MON_MOMMY extends Entity {
                 if (worldY > spawnWorldY) worldY -= speed;
             }
         }
-        else if (onPath == true && gp.player != null) { // FIX: Add null check here
+        else if (onPath == true && gp.player != null) {
             int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
             int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
     
-            searchPath(goalCol, goalRow);
+            // Only update path periodically
+            pathUpdateCounter++;
+            if (pathUpdateCounter > PATH_UPDATE_DELAY) {
+                boolean pathFound = searchPath(goalCol, goalRow);
+                if (!pathFound) {
+                    // If no path found, move directly towards player
+                    moveTowards(gp.player.worldX, gp.player.worldY);
+                }
+                pathUpdateCounter = 0;
+            }
             
-            // Shooting logic
-            shotAvailableCounter++;
-            
-            if (shotAvailableCounter >= 120) {
+            // Shooting logic - use cooldown instead of counter
+            if (shootCooldown <= 0) {
                 int shootChance = random.nextInt(100) + 1;
-                if (shootChance > 70) {
-                    projectiles.set(worldX, worldY, Direction, true, this);
-                    for (int ii = 0; ii < gp.projectile[1].length; ii++) {
-                        if (gp.projectile[gp.currentMap][ii] == null) {
-                            gp.projectile[gp.currentMap][ii] = projectiles;
-                            break;
+                if (shootChance > 60) { // 40% chance to shoot when cooldown is ready
+                    // Check if player is in line of sight
+                    if (isPlayerInLineOfSight()) {
+                        // Create a NEW projectile each time
+                        OBJ_Bato newProjectile = new OBJ_Bato(gp);
+                        newProjectile.set(worldX, worldY, Direction, true, this);
+                        for (int ii = 0; ii < gp.projectile[1].length; ii++) {
+                            if (gp.projectile[gp.currentMap][ii] == null) {
+                                gp.projectile[gp.currentMap][ii] = newProjectile;
+                                break;
+                            }
                         }
+                        shootCooldown = SHOOT_DELAY;
                     }
-                    shotAvailableCounter = 0;
-                } else {
-                    shotAvailableCounter = 90;
                 }
             }
         } 
@@ -166,14 +215,94 @@ public class MON_MOMMY extends Entity {
                 getRandomDirection();
                 actionLockCounter = 0;
             }
-            
-            if (shotAvailableCounter < 90) {
-                shotAvailableCounter++;
+        }
+    }
+    
+    // Helper method to move directly towards a target
+    private void moveTowards(int targetX, int targetY) {
+        int dx = targetX - worldX;
+        int dy = targetY - worldY;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0) {
+                Direction = "right";
+            } else {
+                Direction = "left";
+            }
+        } else {
+            if (dy > 0) {
+                Direction = "down";
+            } else {
+                Direction = "up";
             }
         }
     }
     
-    // Helper method for random direction (fixed overlapping ranges)
+    @Override
+    public boolean searchPath(int goalCol, int goalRow) {
+        int startCol = (worldX + solidArea.x) / gp.TileSize;
+        int startRow = (worldY + solidArea.y) / gp.TileSize;
+
+        gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
+
+        if (gp.pFinder.search() == true) {
+            // Get the next node from the path
+            if (gp.pFinder.pathList != null && !gp.pFinder.pathList.isEmpty()) {
+                int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
+                int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
+                
+                // Get entity's center position
+                int enCenterX = worldX + solidArea.x + solidArea.width/2;
+                int enCenterY = worldY + solidArea.y + solidArea.height/2;
+                
+                // Determine direction based on next node position
+                if (Math.abs(enCenterX - (nextX + gp.TileSize/2)) > 5) {
+                    if (enCenterX < nextX + gp.TileSize/2) {
+                        Direction = "right";
+                    } else {
+                        Direction = "left";
+                    }
+                } else if (Math.abs(enCenterY - (nextY + gp.TileSize/2)) > 5) {
+                    if (enCenterY < nextY + gp.TileSize/2) {
+                        Direction = "down";
+                    } else {
+                        Direction = "up";
+                    }
+                } else {
+                    // Reached the node, remove it from path
+                    gp.pFinder.pathList.remove(0);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // Helper method to check if player is in line of sight
+    private boolean isPlayerInLineOfSight() {
+        if (gp.player == null) return false;
+        
+        int playerCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
+        int playerRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
+        int monsterCol = (worldX + solidArea.x) / gp.TileSize;
+        int monsterRow = (worldY + solidArea.y) / gp.TileSize;
+        
+        // Simple check: is player within 4 tiles and roughly in the direction monster is facing?
+        int colDiff = Math.abs(playerCol - monsterCol);
+        int rowDiff = Math.abs(playerRow - monsterRow);
+        
+        if (colDiff > 4 || rowDiff > 4) return false;
+        
+        switch (Direction) {
+            case "up":    return playerRow < monsterRow && colDiff <= 2;
+            case "down":  return playerRow > monsterRow && colDiff <= 2;
+            case "left":  return playerCol < monsterCol && rowDiff <= 2;
+            case "right": return playerCol > monsterCol && rowDiff <= 2;
+            default: return false;
+        }
+    }
+    
+    // Helper method for random direction
     private void getRandomDirection() {
         int i = random.nextInt(4); // 0-3
         
@@ -191,6 +320,7 @@ public class MON_MOMMY extends Entity {
             actionLockCounter = 0;
             onPath = true;
             returningToSpawn = false; // Cancel return if damaged
+            System.out.println("Mummy damaged - aggro!");
             
             switch (gp.player.Direction) {
                 case "up":    Direction = "down";  break;

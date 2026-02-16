@@ -15,13 +15,15 @@ public class OBJ_Potion_Blue extends Entity {
         name = "Blue potion";
         value = 2;
         down1 = setup("/objects/potion_blue", gp.TileSize, gp.TileSize);
-        description = "[Blue Potion]\n your mana by " + value + ".";
-        amount = 30;
+        description = "[Blue Potion]\nRecovers your mana by " + value + ".";
+        stackable = true;
+        price = 1;  // Default amount when created/spawned
     }
+    
     public void use(Entity entity) {
         gp.gameState = gp.dialogueState;
         gp.ui.currentDialogue = "You Drink the " + name + "!\n"
-            + "your mana has been recovered by " + value + ".";
+            + "Your mana has been recovered by " + value + ".";
         entity.mana += value;
         gp.playSE(2);
     }

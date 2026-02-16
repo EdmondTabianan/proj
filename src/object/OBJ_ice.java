@@ -9,18 +9,24 @@ public class OBJ_ice extends Projectile {
     GamePanel gp;
 
     public OBJ_ice(GamePanel gp) {
-        
         super(gp);
         this.gp = gp;
 
-        name = "Ice";
-        speed = 5;
-        maxLife = 80;
-        life = maxLife;
-        attack = 2;
-        useCost = 1;
-        alive = false;
-        knockBackPower = 0;
+        this.type = type_wand;
+        this.name = "Ice";
+        this.speed = 5;
+        this.maxLife = 80;
+        this.life = maxLife;
+        this.attack = 2;
+        this.useCost = 1;
+        this.alive = false;
+        this.knockBackPower = 0;
+        this.value = 2;  // Mana restoration value
+        
+        // Slow effect properties
+        this.slowDuration = 180;  // 3 seconds at 60 FPS
+        this.slowAmount = 2;      // Reduce speed by 2
+        
         getImage();
     }
 
@@ -38,6 +44,7 @@ public class OBJ_ice extends Projectile {
         right2 = setup("/projectile/ice_right_2", gp.TileSize, gp.TileSize);
         right3 = setup("/projectile/ice_right_3", gp.TileSize, gp.TileSize);
     }
+    
     public boolean haveResource(Entity user) {
         boolean haveResource = false;
         if (user.mana >= useCost) {
@@ -45,13 +52,20 @@ public class OBJ_ice extends Projectile {
         }
         return haveResource;
     }
+    
     public void SubtractResource(Entity user) {
         user.mana -= useCost;
     }
+    
+    // This is for picking up ice crystals
     public void use(Entity entity) {
-        
-        gp.ui.showMessage("+" + value + " life!");
+        gp.ui.showMessage("+" + value + " mana!");
         entity.mana += value;
+        
+        if (entity.mana > entity.maxMana) {
+            entity.mana = entity.maxMana;
+        }
+        
         gp.playSE(2);
     }
 }

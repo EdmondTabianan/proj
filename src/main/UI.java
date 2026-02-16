@@ -12,6 +12,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import entity.Entity;
+import entity.Player;
 import object.OBJ_Coin_Bronze;
 import object.OBJ_Heart;
 import object.OBJ_ManaCrystal;
@@ -65,9 +66,9 @@ public class UI {
         arial_40 = new Font("Times New Roman", Font.PLAIN, 40);
         arial_80B = new Font("Arial", Font.BOLD, 80);
         
-        // Initialize with a tip - ADD THIS LINE
+        // Initialize with a tip
         currentTip = getRandomGameplayTip();
-        lastTipChangeTime = System.currentTimeMillis(); // Initialize time
+        lastTipChangeTime = System.currentTimeMillis();
     
         // Create HUD object
         Entity heart = new OBJ_Heart(gp);
@@ -298,63 +299,65 @@ public class UI {
         message.add(text);
         messageCounter.add(0);
     }
+    
     public void draw(Graphics2D g2) {
         
         this.g2 = g2;
 
         g2.setFont(arial_40);
         g2.setColor(Color.white);
+        
         //title state
         if (gp.gameState == gp.titleState) {
             drawTitleScreen();
         }
         // PLAY STATE
-        if (gp.gameState == gp.playState) {
+        else if (gp.gameState == gp.playState) {
             drawPlayerLife();
             drawMessage();
         }
         // PAUSE STATE
-        if (gp.gameState == gp.pauseState) {
+        else if (gp.gameState == gp.pauseState) {
             drawPlayerLife();
             drawPauseScreen();
         }
         // DIALOGUE STATE
-        if (gp.gameState == gp.dialogueState) {
+        else if (gp.gameState == gp.dialogueState) {
             drawPlayerLife();
             drawDialogueScreen();
         }
         // CHARACTER STATE
-        if (gp.gameState == gp.characterState) {
+        else if (gp.gameState == gp.characterState) {
+            drawPlayerLife();
             drawCharacterScreen();
-            drawInventory(gp.player,true);
+            drawInventory(gp.player, true);
         }
         // OPTIONS STATE
-        if (gp.gameState == gp.optionsState) {
+        else if (gp.gameState == gp.optionsState) {
             drawOptionsScreen();
         }
         // Game over STATE
-        if (gp.gameState == gp.gameOverState) {
+        else if (gp.gameState == gp.gameOverState) {
             drawGameOverScreen();
         }
-        // OPTIONS STATE
-        if (gp.gameState == gp.optionsState) {
-            drawOptionsScreen();
-        }
         // TRANSITION STATE
-        if (gp.gameState == gp.transitionState) {
+        else if (gp.gameState == gp.transitionState) {
             drawTransitionScreen();
         }
         // Trade STATE
-        if (gp.gameState == gp.tradeState) {
+        else if (gp.gameState == gp.tradeState) {
             TradeScreen();
         }
         // Quest STATE
-        if (gp.gameState == gp.questState) {
+        else if (gp.gameState == gp.questState) {
             drawQuestScreen();
         }
         
     }
+    
     public void drawPlayerLife() {
+        // Add null check at the beginning
+        if (gp.player == null) return;
 
         //gp.player.life = 5;
 
@@ -375,7 +378,7 @@ public class UI {
 
         // Draw current life
         while (i < gp.player.life) {
-            g2.drawImage(heart_half,x, y, null);
+            g2.drawImage(heart_half, x, y, null);
             i++;
             if(i < gp.player.life){
                 g2.drawImage(heart_full, x, y, null);
@@ -403,7 +406,11 @@ public class UI {
             x += 35;
         }
     }
+    
     public void drawMessage() {
+        // Add null check
+        if (gp.player == null) return;
+        
         int messageX = gp.TileSize;
         int messageY = gp.TileSize*4;
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 32F));
@@ -427,65 +434,75 @@ public class UI {
             }
         }
     }
-    public void drawTitleScreen() {
-        if (titleScreenState == 0) {
 
-            // g2.setColor(new Color(50, 40, 90));
+    public void drawTitleScreen() {
+        // ============ DRAWING SECTION ============
+        if (titleScreenState == 0) {
+            // Draw main menu
             g2.setColor(new Color(0,0,0));
             g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-
+    
             // Title Name
             g2.setFont(g2.getFont().deriveFont(Font.BOLD,32F));
             String text = "The Hunt: Lost Tomb of Cleopatra";
             int x = getXforCenteredText(text);
             int y = gp.TileSize*3;
-
+    
             // shadow
             g2.setColor(Color.GRAY);
             g2.drawString(text, x+3, y+3);
             // Main Color
             g2.setColor(new Color(255, 215, 0));
             g2.drawString(text, x, y);
-
-            // Logo 
+    
+            // Logo / Character Preview - Simplified
             x = gp.ScreenWidth/2 - (gp.TileSize*2)/2;
             y += gp.TileSize*2;
-            g2.drawImage(gp.player.down1, x, y, gp.TileSize*2, gp.TileSize*2, null);
-
-            //Menu
+                         
+            // Menu options
             g2.setFont(g2.getFont().deriveFont(Font.BOLD,48F));
-
+    
             text = "New Game";
             x = getXforCenteredText(text);
-            y += gp.TileSize*3.5;
+            y += gp.TileSize;
             g2.drawString(text, x, y);
             if (commandNum == 0){
                 g2.drawString(">", x-gp.TileSize, y);
             }
+            
             text = "Load Game";
             x = getXforCenteredText(text);
-            y += gp.TileSize;
+            y += gp.TileSize*2;
             g2.drawString(text, x, y);
             if (commandNum == 1){
                 g2.drawString(">", x-gp.TileSize, y);
             }
+            
             text = "Quit";
             x = getXforCenteredText(text);
-            y += gp.TileSize;
+            y += gp.TileSize*2;
             g2.drawString(text, x, y);
             if (commandNum == 2){
                 g2.drawString(">", x-gp.TileSize, y);
             }
         }
-        else if (titleScreenState == 1 ) {
+        else if (titleScreenState == 1) {
+            // Draw character selection - SIMPLIFIED (NO PREVIEWS)
+            g2.setColor(new Color(0,0,0));
+            g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+            
             g2.setColor(Color.white);
-            g2.setFont(g2.getFont().deriveFont(42F));
-
-            String text = "select your hunter";
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+    
+            String text = "Select Your Hunter";
             int x = getXforCenteredText(text);
             int y = gp.TileSize*3;
             g2.drawString(text, x, y);
-
+    
+            // Character options - just text, no previews
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+            
+            // Xylo option
             text = "Xylo";
             x = getXforCenteredText(text);
             y += gp.TileSize*3;
@@ -493,13 +510,17 @@ public class UI {
             if (commandNum == 0) {
                 g2.drawString(">", x-gp.TileSize, y);
             }
-            text = "Alendria";
+            
+            // Alexandria option
+            text = "Alexandria";
             x = getXforCenteredText(text);
             y += gp.TileSize;
             g2.drawString(text, x, y);
             if (commandNum == 1) {
                 g2.drawString(">", x-gp.TileSize, y);
             }
+            
+            // Back option
             text = "Back";
             x = getXforCenteredText(text);
             y += gp.TileSize*2;
@@ -507,12 +528,63 @@ public class UI {
             if (commandNum == 2) {
                 g2.drawString(">", x-gp.TileSize, y);
             }
-            
+        }
+    
+        // ============ INPUT HANDLING SECTION ============
+        
+        // Handle main menu selection
+        if (gp.keyH.enterPressed == true && titleScreenState == 0) {
+            if (commandNum == 0) {
+                // New Game - go to character selection
+                titleScreenState = 1;
+                commandNum = 0;
+            }
+            if (commandNum == 1) {
+                // Load Game - to be implemented
+            }
+            if (commandNum == 2) {
+                // Quit
+                System.exit(0);
+            }
+            gp.keyH.enterPressed = false;
         }
         
+        // Handle character selection
+        if (gp.keyH.enterPressed == true && titleScreenState == 1) {
+            // Prevent multiple selections
+            if (gp.gameState == gp.titleState && !gp.loadingManager.isLoading()) {
+                if (commandNum == 0) {
+                    
+                    // Use the loading manager method
+                    gp.loadingManager.startGameWithCharacter(0);
+                    
+                    // Set game to transition state to show loading screen
+                    gp.gameState = gp.transitionState;
+                    commandNum = 0;
+                }
+                else if (commandNum == 1) {
+                    
+                    // Use the loading manager method
+                    gp.loadingManager.startGameWithCharacter(1);
+                    
+                    // Set game to transition state to show loading screen
+                    gp.gameState = gp.transitionState;
+                    commandNum = 0;
+                }
+                else if (commandNum == 2) {
+                    // Back to main menu
+                    titleScreenState = 0;
+                    commandNum = 0;
+                }
+            }
+            gp.keyH.enterPressed = false;
+        }
     }
+  
     public void drawDialogueScreen() {
-
+        // Add null check
+        if (gp.player == null) return;
+        
         // Window
         int x = gp.TileSize*2;
         int y = gp.TileSize/2;
@@ -531,7 +603,10 @@ public class UI {
         }
         
     }
+    
     public void drawCharacterScreen() {
+        // Add null check
+        if (gp.player == null) return;
 
         // Create a Name
         final int frameX = gp.TileSize;
@@ -553,13 +628,13 @@ public class UI {
         g2.drawString("Life", textX, textY); textY += lineHeight;
         // g2.drawString("Mana", textX, textY); textY += lineHeight;
         g2.drawString("Arrows", textX, textY); textY += lineHeight;
-        g2.drawString("Strengt", textX, textY); textY += lineHeight;
+        g2.drawString("Strength", textX, textY); textY += lineHeight; // Fixed typo
         g2.drawString("Dexterity", textX, textY); textY += lineHeight;
         g2.drawString("Attack", textX, textY); textY += lineHeight;
         g2.drawString("Defense", textX, textY); textY += lineHeight;
         g2.drawString("Exp", textX, textY); textY += lineHeight;
         g2.drawString("Next Level", textX, textY); textY += lineHeight;
-        g2.drawString("coin", textX, textY); textY += lineHeight + 10;
+        g2.drawString("Coin", textX, textY); textY += lineHeight + 10;
         g2.drawString("Weapon", textX, textY); textY += lineHeight + 15;
         g2.drawString("Shield", textX, textY); textY += lineHeight;
 
@@ -579,10 +654,6 @@ public class UI {
         g2.drawString(value, textX, textY);
         textY += lineHeight;
 
-        // value = String.valueOf(gp.player.mana + "/" + gp.player.maxMana);
-        // textX = getXforAlignToRightText(value, tailX);
-        // g2.drawString(value, textX, textY);
-        // textY += lineHeight;
         value = String.valueOf(gp.player.arrow);
         textX = getXforAlignToRightText(value, tailX);
         g2.drawString(value, textX, textY);
@@ -622,15 +693,18 @@ public class UI {
         textX = getXforAlignToRightText(value, tailX);
         g2.drawString(value, textX, textY);
 
-        g2.drawImage(gp.player.currentweapon.down1, tailX - gp.TileSize, textY+14, null);
+        if (gp.player.currentweapon != null) {
+            g2.drawImage(gp.player.currentweapon.down1, tailX - gp.TileSize, textY+14, null);
+        }
         textY += gp.TileSize;
-        g2.drawImage(gp.player.currentShield.down1, tailX - gp.TileSize, textY+14, null);  
-        
-        if (gp.gameState == gp.characterState) {
-            drawInventory(gp.player, true);
+        if (gp.player.currentShield != null) {
+            g2.drawImage(gp.player.currentShield.down1, tailX - gp.TileSize, textY+14, null);
         }
     }
+    
     public void drawInventory(Entity entity, boolean cursor) {
+        // Add null check
+        if (entity == null) return;
 
         //Frame
         int frameX = 0;
@@ -660,7 +734,6 @@ public class UI {
         // Draw frame
         drawSubWindow(frameX, frameY, framewidth, frameHeight);
 
-
         // sloth
         final int slotXstart = frameX + 20;
         final int slotYstart = frameY + 20;
@@ -681,6 +754,26 @@ public class UI {
             
             g2.drawImage(entity.inventory.get(i).down1, slotX, slotY, null);
 
+            // display ammounts 
+            if (entity.inventory.get(i).amount > 1 ) {
+
+                g2.setFont(g2.getFont().deriveFont(28f));
+                int amountX = slotX + gp.TileSize - 20;
+                int amountY = slotY + gp.TileSize - 10;
+
+                String s = "" + entity.inventory.get(i).amount;
+                amountX = getXforAlignToRightText(s, slotX + 44);
+                amountY = slotY + gp.TileSize;
+
+                // shadow
+                g2.setColor(new Color(60, 60, 60));
+                g2.drawString(s, amountX, amountY);
+
+                //numbers
+                g2.setColor(Color.white);  
+                g2.drawString(s, amountX-3, amountY-3);
+            }
+
             slotX += slotSize;
 
             if(i == 4 || i == 9 || i == 14) {
@@ -700,32 +793,15 @@ public class UI {
             g2.setStroke(new BasicStroke(3));
             g2.drawRoundRect(cursorX, cursorY, cursorWidth, cursorHeight, 10, 10);
 
-            // description frame
-            int dframeX = frameX;
-            int dframeY = frameY + frameHeight;
-            int dframeWidth = framewidth;
-            int dframeHeight = gp.TileSize*3;
-            // drawSubWindow(dframeX, dframeY, dframeWidth, dframeHeight);
-            // //description text
-            // int textX = dframeX + 20;
-            // int textY = dframeY + gp.TileSize;
-            // g2.setFont(g2.getFont().deriveFont(28f));
-
-            // int itemIndex = getItemIndexOnSlot(slotCol, slotRow);
-
-            // if (itemIndex < entity.inventory.size()) {
-
-            //     for(String line: entity.inventory.get(itemIndex).description.split("\n")){
-            //         g2.drawString(line, textX, textY);
-            //         textY += 32;
-            //     } 
-                
-            // }
             int itemIndex = getItemIndexOnSlot(slotCol, slotRow);
 
             if (cursor && itemIndex < entity.inventory.size()) {
 
                 // description frame
+                int dframeX = frameX;
+                int dframeY = frameY + frameHeight;
+                int dframeWidth = framewidth;
+                int dframeHeight = gp.TileSize*3;
                 drawSubWindow(dframeX, dframeY, dframeWidth, dframeHeight);
 
                 int textX = dframeX + 20;
@@ -742,10 +818,9 @@ public class UI {
                     }
                 }
             }
-
         }
-
     }
+    
     public void drawGameOverScreen() {
         
         g2.setColor(new Color(0,0,0,150));
@@ -783,6 +858,7 @@ public class UI {
             g2.drawString(">", x-40, y);
         }
     }
+    
     public void drawOptionsScreen() {
         g2.setColor(Color.white);
         g2.setFont(g2.getFont().deriveFont(32f));
@@ -802,6 +878,7 @@ public class UI {
             case 3: option_endGameConfirmation(frameX, frameY); break;
         }
     }
+    
     public void options_top(int frameX, int frameY) {
         int textX;
         int textY;
@@ -926,6 +1003,7 @@ public class UI {
             gp.config.saveConfig();
         }
     }
+    
     public void option_save(int frameX, int frameY) {
         int textX;
         int textY;
@@ -972,6 +1050,7 @@ public class UI {
             textY += gp.TileSize * 1.5;
         }
     }
+    
     public void option_control(int frameX, int frameY) {
         int textX;
         int textY;
@@ -1038,6 +1117,7 @@ public class UI {
             }
         }
     }
+    
     public void option_endGameConfirmation(int frameX, int frameY) {
         int textX;
         int textY;
@@ -1074,6 +1154,7 @@ public class UI {
             textY += gp.TileSize;
         }
     }
+    
     public void drawTransitionScreen() {
         counter++;
         g2.setColor(new Color(0,0,0,counter*5));
@@ -1085,13 +1166,16 @@ public class UI {
             gp.currentMap = gp.eHandler.tempMap;
             
             // FIX: Use tempColFloat instead of tempCol (which doesn't exist)
-            gp.player.worldX = (int)(gp.eHandler.tempColFloat * gp.TileSize);
-            gp.player.worldY = gp.eHandler.tempRow * gp.TileSize;
-            
-            gp.eHandler.previouseEventX = gp.player.worldX;
-            gp.eHandler.previouseEventY = gp.player.worldY;
+            if (gp.player != null) {
+                gp.player.worldX = (int)(gp.eHandler.tempColFloat * gp.TileSize);
+                gp.player.worldY = gp.eHandler.tempRow * gp.TileSize;
+                
+                gp.eHandler.previouseEventX = gp.player.worldX;
+                gp.eHandler.previouseEventY = gp.player.worldY;
+            }
         }
     }   
+    
     public void TradeScreen() {
         switch (subState) {
            
@@ -1101,6 +1185,7 @@ public class UI {
         }
         // gp.keyH.enterPressed = false;
     }
+    
     public void trade_select() {
         drawDialogueScreen();
         // draw window
@@ -1145,6 +1230,9 @@ public class UI {
     }
 
     public void trade_buy() {
+        // Add null check
+        if (gp.player == null || npc == null) return;
+        
         // draw players inventory
         drawInventory(gp.player, false);
         // draw npc inventory
@@ -1177,14 +1265,14 @@ public class UI {
             drawSubWindow(x, y, width, height);
             g2.drawImage(coin, x+10, y+10, 32, 32, null);
             
-            int amount = npc.inventory.get(itemIndex).amount;
-            String text = "" + amount;
+            int price = npc.inventory.get(itemIndex).price;
+            String text = "" + price;
             x = getXforAlignToRightText(text, gp.TileSize*8 - 30);
             g2.drawString(text, x, y+35);
             
             // Check for Enter press to buy
             if (gp.keyH.enterPressed == true) {
-                if (amount > gp.player.coin) {
+                if (price > gp.player.coin) {
                     subState = 0;  // Go back to main trade menu
                     gp.gameState = gp.dialogueState;
                     currentDialogue = "You don't have enough coin!";
@@ -1198,7 +1286,7 @@ public class UI {
                 }
                 else {
                         
-                    gp.player.coin -= amount;
+                    gp.player.coin -= price;
                     gp.player.inventory.add(npc.inventory.get(itemIndex));
                     showMessage("Purchased: " + npc.inventory.get(itemIndex).name);
                     subState = 0;  // Go back to main trade menu
@@ -1213,7 +1301,9 @@ public class UI {
 
     
     public void trade_sell() {
-
+        // Add null check
+        if (gp.player == null) return;
+        
         // draw players inventory
         drawInventory(gp.player, true);
         // draw hint window
@@ -1249,8 +1339,8 @@ public class UI {
             drawSubWindow(x, y, width, height);
             g2.drawImage(coin, x+10, y+10, 32, 32, null);
             
-            int amount = gp.player.inventory.get(itemIndex).amount/2;
-            String text = "" + amount;
+            int price = gp.player.inventory.get(itemIndex).price/2;
+            String text = "" + price;
             x = getXforAlignToRightText(text, gp.TileSize*15 - 30);
             g2.drawString(text, x, y+35);
             
@@ -1267,7 +1357,7 @@ public class UI {
                     gp.keyH.enterPressed = false;  // Reset only after processing
                 }
                 else {
-                    gp.player.coin += amount;
+                    gp.player.coin += price;
                     String itemName = gp.player.inventory.get(itemIndex).name;
                     gp.player.inventory.remove(itemIndex);
                     showMessage("Sold: " + itemName);
@@ -1282,7 +1372,9 @@ public class UI {
     } 
 
     public void drawQuestScreen() {
-
+        // Add null check
+        if (gp.player == null) return;
+        
         int frameX = gp.TileSize * 2;
         int frameY = gp.TileSize;
         int frameWidth = gp.ScreenWidth - (gp.TileSize * 4);
@@ -1316,6 +1408,7 @@ public class UI {
         int itemIndex = slotCol + (slotRow*5);
         return itemIndex;
     }
+    
     public void drawSubWindow(int x, int y, int width, int height){
         Color c = new Color(0, 0, 0, 200);
         g2.setColor(c);
@@ -1326,8 +1419,8 @@ public class UI {
         g2.setStroke(new BasicStroke(5));
         g2.drawRoundRect(x+5, y+5, width-10, height-10, 25, 25);
     }
+    
     public void drawPauseScreen() {
-
         g2.setFont(g2.getFont().deriveFont(Font.PLAIN,80F));
         String text = "PAUSED";
         int x = getXforCenteredText(text);
@@ -1336,17 +1429,18 @@ public class UI {
 
         g2.drawString(text, x ,y);
     }
+    
     public int getXforCenteredText(String text) {
-
         int length = (int)g2.getFontMetrics().getStringBounds(text, g2).getWidth();
         int x = gp.ScreenWidth/2 - length/2;
         return x;
     }
+    
     public int getXforAlignToRightText(String text,int tailX) {
-
         int length = (int)g2.getFontMetrics().getStringBounds(text, g2).getWidth();
         int x = tailX - length;
         return x;
     }
+    
     public void currentDialogue() {}
 }

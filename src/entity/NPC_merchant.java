@@ -29,14 +29,14 @@ public class NPC_merchant extends Entity {
         setItem();
     }
     public void getImage() {
-            up1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
-            up2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
-            down1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
-            down2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
-            left1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
-            left2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
-            right1 = setup("/player/boy_down_1", gp.TileSize, gp.TileSize);
-            right2 = setup("/player/boy_down_2", gp.TileSize, gp.TileSize);
+            up1 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+            up2 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+            down1 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+            down2 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+            left1 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+            left2 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+            right1 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
+            right2 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
     }
     public void setDialogue() {
 

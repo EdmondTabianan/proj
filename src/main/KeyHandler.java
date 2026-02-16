@@ -6,7 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyHandler implements KeyListener {
 
     GamePanel gp;
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed, shotKeyPressed, arrowKeyPressed, questkeyPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed, shotKeyPressed, arrowKeyPressed, questkeyPressed, spacePressed;
     boolean showDebugText = false;
     //hold archer
     //boolean arrowpressed = false;
@@ -58,6 +58,14 @@ public class KeyHandler implements KeyListener {
         else if (gp.gameState == gp.tradeState) {
             tradeState(code);
         }
+        // transition state - allow escape to cancel? (optional)
+        else if (gp.gameState == gp.transitionState) {
+            // Optionally allow cancel during transition
+            if (code == KeyEvent.VK_ESCAPE) {
+                gp.gameState = gp.titleState;
+                gp.loadingManager.isLoading = false;
+            }
+        }
     }   
 
     public void titleState(int code) {
@@ -67,23 +75,28 @@ public class KeyHandler implements KeyListener {
                 if (gp.ui.commandNum < 0) {
                     gp.ui.commandNum = 2;
                 }
+                gp.playSE(9);
             }
             if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN){
                 gp.ui.commandNum++;
                 if (gp.ui.commandNum > 2) {
                     gp.ui.commandNum = 0;
                 }
+                gp.playSE(9);
             }
             if (code == KeyEvent.VK_ENTER){
                 if(gp.ui.commandNum == 0) {
                     gp.ui.titleScreenState = 1;
+                    gp.ui.commandNum = 0;
                 }
                 if(gp.ui.commandNum == 1) {
                     // later add 
+                    gp.ui.showMessage("Load Game - Coming soon!");
                 }
                 if (gp.ui.commandNum == 2) {
                     System.exit(0);
                 }
+                enterPressed = false;
             }
         }
         else if(gp.ui.titleScreenState == 1) {
@@ -92,32 +105,41 @@ public class KeyHandler implements KeyListener {
                 if (gp.ui.commandNum < 0) {
                     gp.ui.commandNum = 2;
                 }
+                gp.playSE(9);
             }
             if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN){
                 gp.ui.commandNum++;
                 if (gp.ui.commandNum > 2) {
                     gp.ui.commandNum = 0;
                 }
+                gp.playSE(9);
             }
             if (code == KeyEvent.VK_ENTER){
                 if(gp.ui.commandNum == 0) {
-                    gp.gameState = gp.playState;
-                    gp.playMusic(0);
+                    // Xylo selected - Use LoadingManager
+                    gp.loadingManager.startGameWithCharacter(0);
+                    gp.gameState = gp.transitionState;
                 }
                 if(gp.ui.commandNum == 1) {
-                    gp.gameState = gp.playState;
-                    gp.playMusic(0);
+                    // Alexandria selected - Use LoadingManager
+                    gp.loadingManager.startGameWithCharacter(1);
+                    gp.gameState = gp.transitionState;
                 }
                 if (gp.ui.commandNum == 2) {
                     gp.ui.titleScreenState = 0;
+                    gp.ui.commandNum = 0;
                 }
+                enterPressed = false;
             }
         }
     }
+    
     public void playState(int code) {
         if (code == KeyEvent.VK_Q) {
-            gp.gameState = gp.questState;
+            // gp.gameState = gp.questState;
+            questkeyPressed = true;
         }
+
         if (code == KeyEvent.VK_W) {
             upPressed = true;
          }
@@ -145,6 +167,9 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_ESCAPE) {
             gp.gameState = gp.optionsState;
          }
+         if (code == KeyEvent.VK_SPACE) {
+            spacePressed = true;
+         }
  
          // Debug
          if (code == KeyEvent.VK_T) {
@@ -160,19 +185,22 @@ public class KeyHandler implements KeyListener {
                 case 1: gp.tileM.loadMap("/map/secndmap.txt", 1);break;
             }
             // gp.tileM.loadMap("/map/main.txt", 0);
-            gp.aSetter.setInteractiveTile();
+            gp.aSetter.setInteractiveTile(gp.currentMap);
          } 
     }
+    
     public void pauseState(int code) {
         if (code == KeyEvent.VK_P) {
             gp.gameState = gp.playState;
         }
     }
+    
     public void dialogueState(int code) {
         if(code == KeyEvent.VK_ENTER) {
                 gp.gameState = gp.playState;
             }
     }
+    
     public void characterState(int code) {
         if(code == KeyEvent.VK_C) {
             gp.gameState = gp.playState;
@@ -183,6 +211,7 @@ public class KeyHandler implements KeyListener {
         }
         playerInventory(code);
     }
+    
     public void optionsState(int code) {
         if (code == KeyEvent.VK_ESCAPE) {
             if (gp.ui.subState == 0) {
@@ -226,7 +255,7 @@ public class KeyHandler implements KeyListener {
         if(code == KeyEvent.VK_S) {
             gp.ui.commandNum++;
             gp.playSE(9);
-            if (gp.ui.commandNum > maxCommandNum) {  // FIXED: > instead of ==
+            if (gp.ui.commandNum > maxCommandNum) {
                 gp.ui.commandNum = 0;
             }
         }
@@ -257,6 +286,7 @@ public class KeyHandler implements KeyListener {
             }
         }
     }
+    
     public void gameOverState(int code) {
         if (code == KeyEvent.VK_W) {
             gp.ui.commandNum--;
@@ -268,11 +298,11 @@ public class KeyHandler implements KeyListener {
     
         if (code == KeyEvent.VK_S) {
             gp.ui.commandNum++;
-        }
-        if (gp.ui.commandNum > 1) {
-            gp.ui.commandNum = 0;
-        }
+            if (gp.ui.commandNum > 1) {
+                gp.ui.commandNum = 0;
+            }
             gp.playSE(9);
+        }
             
         if (code == KeyEvent.VK_ENTER) {
             if(gp.ui.commandNum == 0) {
@@ -284,6 +314,7 @@ public class KeyHandler implements KeyListener {
                 gp.gameState = gp.titleState;
                 gp.restart();
             }
+            enterPressed = false;
         }
     }
 
@@ -294,12 +325,12 @@ public class KeyHandler implements KeyListener {
                 gp.gameState = gp.playState;
             } else {
                 gp.ui.subState = 0;
+                gp.ui.commandNum = 0;
             }
-            enterPressed = false; // Reset when escaping
+            enterPressed = false;
         }
         
         // Only set enterPressed to true if Enter is pressed
-        // Don't reset it here - let it be handled in the UI
         if(code == KeyEvent.VK_ENTER) {
             enterPressed = true;
         }
@@ -312,7 +343,7 @@ public class KeyHandler implements KeyListener {
                 if (gp.ui.commandNum < 0) {
                     gp.ui.commandNum = 2;
                 }
-                enterPressed = false; // Reset when navigating
+                enterPressed = false;
             }
             if(code == KeyEvent.VK_S) {
                 gp.ui.commandNum++;
@@ -320,14 +351,13 @@ public class KeyHandler implements KeyListener {
                 if (gp.ui.commandNum > 2) { 
                     gp.ui.commandNum = 0;
                 }
-                enterPressed = false; // Reset when navigating
+                enterPressed = false;
             }
         }   
         
         // Handle navigation in buy menu (npc inventory)
         if (gp.ui.subState == 1) {
             npcInventory(code);
-            // If user navigates with arrow keys, reset enterPressed
             if (code == KeyEvent.VK_W || code == KeyEvent.VK_S || 
                 code == KeyEvent.VK_A || code == KeyEvent.VK_D) {
                 enterPressed = false;
@@ -335,13 +365,13 @@ public class KeyHandler implements KeyListener {
         }
         if (gp.ui.subState == 2) {
             playerInventory(code);
-            // If user navigates with arrow keys, reset enterPressed
             if (code == KeyEvent.VK_W || code == KeyEvent.VK_S || 
                 code == KeyEvent.VK_A || code == KeyEvent.VK_D) {
                 enterPressed = false;
             }
         }        
     }   
+    
     public void playerInventory(int code) {
         if (code == KeyEvent.VK_W) {
             if (gp.ui.playerSlotRow != 0) {
@@ -368,6 +398,7 @@ public class KeyHandler implements KeyListener {
             }
         } 
     }
+    
     public void npcInventory(int code) {
         if (code == KeyEvent.VK_W) {
             if (gp.ui.npcSlotRow != 0) {
@@ -402,7 +433,7 @@ public class KeyHandler implements KeyListener {
             enterPressed = false;
         }
         if (code == KeyEvent.VK_Q) {
-            gp.gameState = gp.playState;
+            questkeyPressed = false;
         }
         if (code == KeyEvent.VK_W) {
            upPressed = false;
@@ -418,6 +449,9 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_F) {
             shotKeyPressed = false;
+        }
+        if (code == KeyEvent.VK_SPACE) {
+            spacePressed = false;
         }
     }
 }

@@ -7,32 +7,36 @@ import object.OBJ_Heart;
 import object.OBJ_ManaCrystal;
 import object.OBJ_Potion_Blue;
 import object.OBJ_Potion_Red;
+import entity.Entity;
 
 import java.util.Random;
-
-import entity.Entity;
 
 public class MON_Snake extends Entity {
     
     GamePanel gp;
+    private Random random = new Random();
+    
+    // Spawn point tracking
+    private int spawnWorldX;
+    private int spawnWorldY;
+    private int aggroRange = 5; // Tiles - if aggroed and goes beyond this, return to spawn
+    private boolean returningToSpawn = false;
 
     public MON_Snake(GamePanel gp) {
         super(gp);
-
         this.gp = gp;
         
         type = 2;
         name = "snake";
         action = true;
-
-        defaultSpeed = (int)(1.5);
+        defaultSpeed = 2;
         speed = defaultSpeed;
-        maxLife = 12 + gp.player.level * 3;
+        maxLife = 12;
         life = maxLife;
         attack = 2;
-        defense = 1 + gp.player.level / 3;
-        exp = 5 + gp.player.level * 2;
-
+        defense = 1;
+        exp = 5;
+        
         solidArea.x = 3;
         solidArea.y = 10;
         solidArea.width = 42;
@@ -41,6 +45,12 @@ public class MON_Snake extends Entity {
         solidAreaDefaultY = solidArea.y;
 
         getImage();
+    }
+
+    // Call this after setting worldX/worldY to record spawn point
+    public void setSpawnPoint(int worldX, int worldY) {
+        this.spawnWorldX = worldX;
+        this.spawnWorldY = worldY;
     }
 
     public void getImage() {
@@ -55,111 +65,112 @@ public class MON_Snake extends Entity {
     }
     
     public void update() {
-        super.update();
+        super.update(); // This enables knockback, invincibility, and animation
 
-        int xDistance = Math.abs(worldX - gp.player.worldX);
-        int yDistance = Math.abs(worldY - gp.player.worldY);
-        int tileDistance = (xDistance + yDistance) / gp.TileSize;
+        // FIX: Only access player if it exists
+        if (gp.player != null) {
+            int xDistance = Math.abs(worldX - gp.player.worldX);
+            int yDistance = Math.abs(worldY - gp.player.worldY);
+            int tileDistanceFromPlayer = (xDistance + yDistance) / gp.TileSize;
+            
+            // Calculate distance from spawn point
+            int xSpawnDistance = Math.abs(worldX - spawnWorldX);
+            int ySpawnDistance = Math.abs(worldY - spawnWorldY);
+            int tileDistanceFromSpawn = (xSpawnDistance + ySpawnDistance) / gp.TileSize;
 
-        if (onPath == false && tileDistance < 5) {
-            int i = new Random().nextInt(100)+1;
-            if (i > 50) {
-                onPath = true;
+            // Check if aggroed and too far from spawn
+            if (onPath == true && tileDistanceFromSpawn > aggroRange) {
+                returningToSpawn = true;
+                onPath = false; // Temporarily disable following to return to spawn
+            }
+            
+            // Check if should start following player
+            if (onPath == false && !returningToSpawn && tileDistanceFromPlayer < 3) {
+                if (random.nextInt(100) + 1 > 50) {
+                    onPath = true;
+                }
+            }
+            
+            // If we're at spawn while returning, stop returning
+            if (returningToSpawn && tileDistanceFromSpawn <= 1) {
+                returningToSpawn = false;
             }
         }
     }
     
     public void setAction() {
-        if (onPath == true) {
+        if (returningToSpawn) {
+            // Return to spawn point
+            int spawnCol = spawnWorldX / gp.TileSize;
+            int spawnRow = spawnWorldY / gp.TileSize;
+            searchPath(spawnCol, spawnRow);
+            
+            // If very close to spawn, just move directly
+            if (Math.abs(worldX - spawnWorldX) < gp.TileSize && 
+                Math.abs(worldY - spawnWorldY) < gp.TileSize) {
+                // Direct movement towards spawn
+                if (worldX < spawnWorldX) worldX += speed;
+                if (worldX > spawnWorldX) worldX -= speed;
+                if (worldY < spawnWorldY) worldY += speed;
+                if (worldY > spawnWorldY) worldY -= speed;
+            }
+        }
+        else if (onPath == true && gp.player != null) { // FIX: Add null check here
             int goalCol = (gp.player.worldX + gp.player.solidArea.x) / gp.TileSize;
             int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
-
             searchPath(goalCol, goalRow);
-            
-            // Check if close enough to damage player
-            int playerDistance = Math.abs(worldX - gp.player.worldX) + Math.abs(worldY - gp.player.worldY);
-            if (playerDistance < gp.TileSize * 1.5) {
-                // Try to damage player if not invincible
-                if (gp.player.Invincible == false && Invincible == false) {
-                    // Damage will be handled in Player.contactMonster() method
-                }
-            }
         } 
         else {
             actionLockCounter++;
-
             if (collisionOn == true) {
-                Random random = new Random();
-                int i = random.nextInt(4);
-
-                switch (i) {
-                    case 0: Direction = "up"; break;
-                    case 1: Direction = "down"; break;
-                    case 2: Direction = "left"; break;
-                    case 3: Direction = "right"; break;
-                }
+                changeDirection();
                 collisionOn = false;
                 actionLockCounter = 0;
                 return;
             }
-
             if(actionLockCounter == 120) {
-                Random random = new Random();
-                int i = random.nextInt(100)+1;
-                
-                if (i <=25) {
-                    Direction = "up";
-                }
-                if (i >=25 && i <= 50) {
-                    Direction = "down";
-                } 
-                if (i >=50  && i <= 75) {
-                    Direction = "left";
-                }
-                if (i >= 75 && i <= 100) {
-                    Direction = "right";
-                }
+                changeDirection();
                 actionLockCounter = 0;
             }
         }
     }
     
+    private void changeDirection() {
+        int i = random.nextInt(100) + 1;
+        if (i <= 25) { 
+            Direction = "up"; 
+        } else if (i <= 50) { 
+            Direction = "down";
+        } else if (i <= 75) { 
+            Direction = "left";
+        } else { 
+            Direction = "right";
+        }
+    }
+    
     public void checkDrop() {
-        int roll = new Random().nextInt(100)+1;
-
-        if (roll < 40) {
-            // no drop (40%)
-        }
-        else if (roll < 60) {
-            dropItem(new OBJ_Coin_Bronze(gp));     // 20%
-        }
-        else if (roll < 75) {
-            dropItem(new OBJ_Arrows(gp));      // 15%
-        }
-        else if (roll < 85) {
-            dropItem(new OBJ_Heart(gp));         // 10%
-        }
-        else if (roll < 93) {
-            dropItem(new OBJ_ManaCrystal(gp));   // 8%
-        }
-        else if (roll < 98) {
-            dropItem(new OBJ_Potion_Blue(gp));   // 5%
-        }
-        else if (roll < 100) {
-            dropItem(new OBJ_Potion_Red(gp));    // 2%
-        }
+        int roll = random.nextInt(100) + 1;
+        if (roll < 40) {}
+        else if (roll < 60) { dropItem(new OBJ_Coin_Bronze(gp)); }
+        else if (roll < 75) { dropItem(new OBJ_Arrows(gp)); }
+        else if (roll < 85) { dropItem(new OBJ_Heart(gp)); }
+        else if (roll < 93) { dropItem(new OBJ_ManaCrystal(gp)); }
+        else if (roll < 98) { dropItem(new OBJ_Potion_Blue(gp)); }
+        else { dropItem(new OBJ_Potion_Red(gp)); }
     }
 
     public void damageReaction() {
-        actionLockCounter = 0;
-        onPath = true;
-        
-        switch (gp.player.Direction) {
-            case "up":    Direction = "down";  break;
-            case "down":  Direction = "up";    break;
-            case "left":  Direction = "right"; break;
-            case "right": Direction = "left";  break;
+        // FIX: Only access player if it exists
+        if (gp.player != null) {
+            actionLockCounter = 0;
+            onPath = true;
+            returningToSpawn = false; // Cancel return if damaged
+            switch (gp.player.Direction) {
+                case "up":    Direction = "down";  break;
+                case "down":  Direction = "up";    break;
+                case "left":  Direction = "right"; break;
+                case "right": Direction = "left";  break;
+            }
         }
-        
     }
 }

@@ -1,27 +1,26 @@
 package tile;
 
-import java.awt.Color;
+import main.GamePanel;
+import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import javax.imageio.ImageIO;
-import main.GamePanel;
-import main.UtilityTool;
+import java.awt.image.BufferedImage;
 
 public class TileManager {
-
+    
     GamePanel gp;
     public Tile[] tile;
     public int mapTileNum[][][];
-    boolean drawPath = true;
-
+    
     public TileManager(GamePanel gp) {
         this.gp = gp;
-
-        tile = new Tile[300];
+        
+        tile = new Tile[300]; // Increased size to accommodate all tiles
         mapTileNum = new int[gp.maxMap][gp.maxWorldCol][gp.maxWorldRow];
-
+        
         getTileImage();
         loadMap("/map/main.txt", 0);
         loadMap("/map/secondmap.txt", 1);
@@ -29,8 +28,20 @@ public class TileManager {
         loadMap("/map/shop.txt", 3);
         loadMap("/map/pyramid_first_basement.txt", 4);
         loadMap("/map/pyramid_second_basement.txt", 5);
+        loadMap("/map/passage.txt", 6);
     }
-
+    
+    // ADD THIS MISSING METHOD
+    public void setup(int index, String imageName, boolean collision) {
+        try {
+            tile[index] = new Tile();
+            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName + ".png"));
+            tile[index].collision = collision;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void getTileImage() {
         int i = 0;
         
@@ -271,26 +282,33 @@ public class TileManager {
         setup(i, "233", true); i++;
         setup(i, "234", true); i++;
         setup(i, "235", true); i++;
+        setup(i, "236", true); i++;
+        setup(i, "237", true); i++;
+        setup(i, "238", true); i++;
+        setup(i, "239", true); i++;
+        setup(i, "240", true); i++;
+        setup(i, "241", true); i++;
+        setup(i, "242", true); i++;
+        setup(i, "243", true); i++;
+        setup(i, "244", true); i++;
+        setup(i, "245", true); i++;
+        setup(i, "246", true); i++;
+        setup(i, "247", true); i++;
+        setup(i, "248", true); i++;
+        setup(i, "249", false); i++;
+        setup(i, "250", true); i++;       
+        setup(i, "251", true); i++;
+        setup(i, "252", true); i++;
+        setup(i, "253", true); i++;
+        setup(i, "254", true); i++;
+        setup(i, "255", true); i++;
     }
     
-    public void setup(int index, String imageName, boolean collision ) {
-        UtilityTool uTool = new UtilityTool();
-
+    public void loadMap(String filePath, int map) {
         try {
-            tile[index] = new Tile();
-            tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + imageName + ".png"));
-            tile[index].image = uTool.scaleImage(tile[index].image, gp.TileSize, gp.TileSize);
-            tile[index].collision = collision;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void loadMap(String filepath, int map) {
-        try {
-            InputStream is = getClass().getResourceAsStream(filepath);
+            InputStream is = getClass().getResourceAsStream(filePath);
             if (is == null) {
-                System.err.println("Map file not found: " + filepath);
+                System.err.println("Map file not found: " + filePath);
                 return;
             }
             
@@ -324,58 +342,39 @@ public class TileManager {
         }
     }
     
-    // Optional: Add a method to check map bounds
-    public boolean isTileCollision(int worldCol, int worldRow) {
-        if (worldCol < 0 || worldCol >= gp.maxWorldCol || 
-            worldRow < 0 || worldRow >= gp.maxWorldRow) {
-            return true;
-        }
-        int tileNum = mapTileNum[gp.currentMap][worldCol][worldRow];
-        if (tileNum < 0 || tileNum >= tile.length) {
-            return true;
-        }
-        return tile[tileNum].collision;
-    }
-    
     public void draw(Graphics2D g2) {
         int worldCol = 0;
         int worldRow = 0;
-
+        
+        // FIX: Check if player exists before drawing
+        if (gp.player == null) {
+            return; // Don't draw tiles if player doesn't exist
+        }
+        
         while (worldCol < gp.maxWorldCol && worldRow < gp.maxWorldRow) {
-
+            
             int tileNum = mapTileNum[gp.currentMap][worldCol][worldRow];
-
+            
             int worldX = worldCol * gp.TileSize;
             int worldY = worldRow * gp.TileSize;
-
             int screenX = worldX - gp.player.worldX + gp.player.screenX;
             int screenY = worldY - gp.player.worldY + gp.player.screenY;
-
+            
+            // Only draw if tile is on screen
             if (worldX + gp.TileSize > gp.player.worldX - gp.player.screenX &&
                 worldX - gp.TileSize < gp.player.worldX + gp.player.screenX &&
                 worldY + gp.TileSize > gp.player.worldY - gp.player.screenY &&
                 worldY - gp.TileSize < gp.player.worldY + gp.player.screenY) {
-
-                g2.drawImage(tile[tileNum].image, screenX, screenY, null);
+                
+                g2.drawImage(tile[tileNum].image, screenX, screenY, gp.TileSize, gp.TileSize, null);
             }
+            
             worldCol++;
-
+            
             if (worldCol == gp.maxWorldCol) {
                 worldCol = 0;
                 worldRow++;
             }
         }
-
-        // if (drawPath == true) {
-        //     g2.setColor(new Color(255, 0, 0, 70));
-        //     for (int i = 0; i < gp.pFinder.pathList.size(); i++) {
-        //         int worldX = gp.pFinder.pathList.get(i).col * gp.TileSize;
-        //         int worldY = gp.pFinder.pathList.get(i).row * gp.TileSize;
-        //         int screenX = worldX - gp.player.worldX + gp.player.screenX;
-        //         int screenY = worldY - gp.player.worldY + gp.player.screenY;
-
-        //         g2.fillRect(screenX, screenY, gp.TileSize, gp.TileSize);
-        //     }
-        // }
     }
 }

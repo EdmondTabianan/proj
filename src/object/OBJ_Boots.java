@@ -13,6 +13,6 @@ public class OBJ_Boots extends Entity{
          
         name = "Boots";
         down1 = setup("/objects/boots", gp.TileSize, gp.TileSize);
-        amount = 100;
+        price = 100;
     }
 }

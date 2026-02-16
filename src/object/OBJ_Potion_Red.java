@@ -18,7 +18,9 @@ public class OBJ_Potion_Red extends Entity{
         value = 4;
         down1 = setup("/objects/potion_red", gp.TileSize, gp.TileSize);
         description = "[Red Potion]\n your life by " + value + ".";
-        amount = 20;
+        price = 20;
+        amount = 1;  // Default amount when created/spawned
+        stackable = true;
     }
     public void use(Entity entity) {
         gp.gameState = gp.dialogueState;

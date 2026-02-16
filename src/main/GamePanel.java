@@ -21,7 +21,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int TileSize = OriginalTileSize * Scale; // 48x48 tile
     public final int MaxScreenCol = 18;
     public final int MaxScreenRow = 12;
-    public final int ScreenWidth = TileSize * MaxScreenCol; // if maxscreen is 16 768 pixels if maxscreen is 18 864 pixels
+    public final int ScreenWidth = TileSize * MaxScreenCol; // 864 pixels
     public final int ScreenHeight = TileSize * MaxScreenRow; // 576 pixels
 
     // World settings
@@ -35,34 +35,33 @@ public class GamePanel extends JPanel implements Runnable {
 
     public TileManager tileM = new TileManager(this);
     public KeyHandler keyH = new KeyHandler(this);
-    Sound music = new Sound();
-    Sound se = new Sound();
+    public Sound music = new Sound();
+    public Sound se = new Sound();
     public CollisionChecker cChecker = new CollisionChecker(this); 
     public AssetSetter aSetter = new AssetSetter(this);
     public UI ui = new UI(this);
     public eventHandler eHandler = new eventHandler(this);
-    Config config = new Config(this);
+    public Config config = new Config(this);
     public PathFinder pFinder = new PathFinder(this);
     public LoadingManager loadingManager;
     Thread gameThread;
 
     // Entity and Object
-    public Player player = new Player(this, keyH);
-    public NPC_blueboy npc_blueboy = new NPC_blueboy(this);
+    public Player player;
+    public NPC_blueboy npc_blueboy;
     public Entity obj[][] = new Entity[maxMap][20];
     public Entity npc[][] = new Entity[maxMap][10];
-    public Entity monster[][] = new Entity[maxMap][20];
+    public Entity monster[][] = new Entity[maxMap][100];
     public InteractiveTile iTile[][] = new InteractiveTile[maxMap][50];
     public Entity projectile[][] = new Entity[maxMap][20];
-    // public ArrayList<Entity> projectileList = new ArrayList<>();
     ArrayList<Entity> entityList = new ArrayList<>();
 
     // GAME STATE
     public int gameState;
-    public final int titleState = 0;
-    public final int playState = 1;
-    public final int pauseState = 2;
-    public final int dialogueState = 3;
+    public final static int titleState = 0;
+    public final static int playState = 1;
+    public final static int pauseState = 2;
+    public final static int dialogueState = 3;
     public final int characterState = 4;
     public final int optionsState = 5;
     public final int loadingState = 6;
@@ -86,28 +85,40 @@ public class GamePanel extends JPanel implements Runnable {
         
         // Set initial game state to loading
         gameState = loadingState;
+        
+        // Initialize npc_blueboy
+        npc_blueboy = new NPC_blueboy(this);
     }
 
     public void setupGame() {
         // This will be called by LoadingManager
-        aSetter.setObject();
-        aSetter.setNPC();
-        aSetter.setMonster();
-        aSetter.setInteractiveTile();
-        
-        // Set player defaults AFTER loading
-        player.setDefaultValues();
-        player.selectItem();
+        if (aSetter != null) {
+            aSetter.clearMapAssets(currentMap);
+            aSetter.setObject(currentMap);
+            aSetter.setNPC(currentMap);
+            aSetter.setMonster(currentMap);
+            aSetter.setInteractiveTile(currentMap);
+        }
     }
 
     public void retry() {
-        player.respawnAtMapEntrance(currentMap);
-        player.resetLifeAndMana();
+        if (player != null) {
+            player.respawnAtMapEntrance(currentMap);
+            player.resetLifeAndMana();
+            if (aSetter != null) {
+                aSetter.setMonster(currentMap);
+            }
+            player.invincible = false;
+            player.transparent = false;
+            player.guarding = false;
+        }
     }
 
     public void restart() {
-        player.setDefaultValues();
-        player.selectItem();
+        if (player != null) {
+            player.setDefaultValues();
+            player.setItems();
+        }
     }
 
     public void startGameThread() {
@@ -134,7 +145,7 @@ public class GamePanel extends JPanel implements Runnable {
             // Start loading in a separate thread
             Thread loadingStarter = new Thread(() -> {
                 try {
-                    Thread.sleep(500); // Give everything time to initialize
+                    Thread.sleep(100); // Give everything time to initialize
                     loadingManager.startLoading();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -158,72 +169,83 @@ public class GamePanel extends JPanel implements Runnable {
             }
             
             if (timer >= 1000000000) {
-                // System.out.println("FPS: " + drawCount);
                 drawCount = 0;
                 timer = 0;
-            }
-            
-            // Check if loading is complete and switch to title state
-            if (gameState == loadingState && !loadingManager.isLoading()) {
-                gameState = titleState;
             }
         }
     }
 
     public void update() {
         // Don't update game logic while loading
-        if (loadingManager.isLoading()) {
+        if (loadingManager != null && loadingManager.isLoading()) {
             return;
         }
-
+    
+        // Check if loading is complete and switch to title state
+        if (gameState == loadingState && loadingManager != null && !loadingManager.isLoading()) {
+            gameState = titleState;
+            return;
+        }
+    
         if (gameState == playState) {
-            // Player
-            player.update();
+            // Player - only update if player exists
+            if (player != null) {
+                player.update();
+            }
             
             // NPC
-            for(int i = 0; i < npc[1].length; i++){
-                if(npc[currentMap][i] != null) {
-                    npc[currentMap][i].update();
+            if (npc[currentMap] != null) {
+                for(int i = 0; i < npc[1].length; i++) {
+                    if(npc[currentMap][i] != null) {
+                        npc[currentMap][i].update();
+                    }
                 }
             }
             
             // Monsters
-            for (int i = 0; i < monster[1].length; i++) {
-                if(monster[currentMap][i] != null) {
-                    if(monster[currentMap][i].alive == true && monster[currentMap][i].dying == false) {
-                        monster[currentMap][i].update();
-                    } 
-                    if(monster[currentMap][i].alive == false) {
-                        monster[currentMap][i].checkDrop();
-                        monster[currentMap][i] = null;
-                        monsterRespawnCounter++;
-                        if (monsterRespawnCounter == 120) {
-                            aSetter.setMonster();
+            if (monster[currentMap] != null) {
+                for (int i = 0; i < monster[1].length; i++) {
+                    if(monster[currentMap][i] != null) {
+                        if(monster[currentMap][i].alive == true && monster[currentMap][i].dying == false) {
+                            monster[currentMap][i].update();
+                        } 
+                        if(monster[currentMap][i].alive == false) {
+                            monster[currentMap][i].checkDrop();
+                            monster[currentMap][i] = null;
                         }
                     }
                 }
             }
             
             // Projectiles
-            for (int i = 0; i < projectile[1].length; i++) {
-                if(projectile[currentMap][i]  != null) {
-                    if(projectile[currentMap][i].alive == true) {
-                        projectile[currentMap][i].update();
-                    } 
-                    if(projectile[currentMap][i].alive == false) {
-                        projectile[currentMap][i] = null;
+            if (projectile[currentMap] != null) {
+                for (int i = 0; i < projectile[1].length; i++) {
+                    if(projectile[currentMap][i] != null) {
+                        if(projectile[currentMap][i].alive == true) {
+                            projectile[currentMap][i].update();
+                        } 
+                        if(projectile[currentMap][i].alive == false) {
+                            projectile[currentMap][i] = null;
+                        }
                     }
                 }
             }
             
             // Interactive Tiles
-            for (int i = 0; i < iTile[1].length; i++) {
-                if(iTile[currentMap][i] != null) {
-                    iTile[currentMap][i].update();
+            if (iTile[currentMap] != null) {
+                for (int i = 0; i < iTile[1].length; i++) {
+                    if(iTile[currentMap][i] != null) {
+                        iTile[currentMap][i].update();
+                    }
                 }
             }
         }
         
+        else if (gameState == transitionState) {
+            // Don't update during transition
+            return;
+        }
+       
         if (gameState == pauseState) {
             // Nothing updates when paused
         }
@@ -232,9 +254,13 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-
+        
+        // Enable anti-aliasing
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
         // Always draw loading screen if loading
-        if (loadingManager.isLoading()) {
+        if (loadingManager != null && loadingManager.isLoading()) {
             ui.drawLoadingScreen(g2);
         } 
         else if (gameState == titleState) {
@@ -246,92 +272,97 @@ public class GamePanel extends JPanel implements Runnable {
                  gameState == transitionState || gameState == tradeState ||
                  gameState == questState) {
             
-            // Debug timing
-            long drawStart = 0;
-            if (keyH.showDebugText == true){
-                drawStart = System.nanoTime();
-            }
-
-            // Draw tile
-            tileM.draw(g2);
-
-            // Interactive Tile
-            for (int i = 0; i < iTile[1].length; i++) {
-                if(iTile[currentMap][i] != null) {
-                    iTile[currentMap][i].draw(g2);
+            // Only draw game world if player exists
+            if (player != null) {
+                // Draw tile
+                tileM.draw(g2);
+    
+                // Draw interactive tiles
+                if (iTile[currentMap] != null) {
+                    for (int i = 0; i < iTile[1].length; i++) {
+                        if(iTile[currentMap][i] != null) {
+                            iTile[currentMap][i].draw(g2);
+                        }
+                    }
                 }
-            }
-
-            // Add entities to the list
-            entityList.add(player);
-
-            for(int i = 0; i < npc[1].length; i++) {
-                if (npc[currentMap][i] != null) {
-                    entityList.add(npc[currentMap][i]);
+    
+                // Add entities to the list
+                entityList.add(player);
+    
+                // Add NPCs
+                if (npc[currentMap] != null) {
+                    for(int i = 0; i < npc[1].length; i++) {
+                        if (npc[currentMap][i] != null) {
+                            entityList.add(npc[currentMap][i]);
+                        }
+                    }
                 }
-            }
-            
-            for(int i = 0; i < obj[1].length; i++) {
-                if (obj[currentMap][i] != null) {
-                    entityList.add(obj[currentMap][i]);
+                
+                // Add objects
+                if (obj[currentMap] != null) {
+                    for(int i = 0; i < obj[1].length; i++) {
+                        if (obj[currentMap][i] != null) {
+                            entityList.add(obj[currentMap][i]);
+                        }
+                    }
                 }
-            }
-            
-            for(int i = 0; i < monster[1].length; i++) {
-                if (monster[currentMap][i] != null) {
-                    entityList.add(monster[currentMap][i]);
+                
+                // Add monsters
+                if (monster[currentMap] != null) {
+                    for(int i = 0; i < monster[1].length; i++) {
+                        if (monster[currentMap][i] != null) {
+                            entityList.add(monster[currentMap][i]);
+                        }
+                    }
                 }
-            }
-            
-            for(int i = 0; i < projectile[1].length; i++) {
-                if (projectile[currentMap][i] != null) {
-                    entityList.add(projectile[currentMap][i]);
+                
+                // Add projectiles
+                if (projectile[currentMap] != null) {
+                    for(int i = 0; i < projectile[1].length; i++) {
+                        if (projectile[currentMap][i] != null) {
+                            entityList.add(projectile[currentMap][i]);
+                        }
+                    }
                 }
-            }
-
-            // Sort by Y position for proper drawing order
-            Collections.sort(entityList, new Comparator<Entity>() {
-                @Override
-                public int compare(Entity e1, Entity e2) {
-                    return Integer.compare(e1.worldY, e2.worldY);
+    
+                // Sort by Y position for proper drawing order
+                if (entityList.size() > 0) {
+                    Collections.sort(entityList, new Comparator<Entity>() {
+                        @Override
+                        public int compare(Entity e1, Entity e2) {
+                            return Integer.compare(e1.worldY, e2.worldY);
+                        }
+                    });
                 }
-            });
-
-            // Draw entities
-            for (int i = 0; i < entityList.size(); i++) {
-                entityList.get(i).draw(g2);
-            }
-            
-            // Empty entities list
-            entityList.clear();
-
-            // Draw UI
-            ui.draw(g2);
-
-            // Debug info
-            if (keyH.showDebugText == true){
-                long drawEnd = System.nanoTime();
-                long passed = drawEnd - drawStart;
-                g2.setFont(new Font("Arial", Font.PLAIN,20));
-                g2.setColor(Color.white);
-                int x = 10;
-                int y = 400;
-                int lineHeight = 20;
-                g2.drawString("worldX" + player.worldX, x, y); y += lineHeight;
-                g2.drawString("worldY" + player.worldY, x, y); y += lineHeight;
-                g2.drawString("Col" + (player.worldX + player.solidArea.x)/TileSize, x, y); y += lineHeight;
-                g2.drawString("Row" + (player.worldY + player.solidArea.y)/TileSize, x, y); y += lineHeight;
-                g2.drawString("Draw Time: " + passed, x, y);
+    
+                // Draw entities
+                for (int i = 0; i < entityList.size(); i++) {
+                    entityList.get(i).draw(g2);
+                }
+                
+                // Empty entities list
+                entityList.clear();
+    
+                // Draw UI
+                ui.draw(g2);
+            } else {
+                // If player doesn't exist but we're in play state, go back to title
+                gameState = titleState;
+                ui.draw(g2);
             }
         }
-
+        
+        // For transition state, still draw loading screen
+        else if (gameState == transitionState) {
+            ui.drawLoadingScreen(g2);
+        }
+    
         g2.dispose();
     }
 
     public void playMusic(int i) {
-        if (!loadingManager.isLoading()) { // Don't play music while loading
+        if (loadingManager != null && !loadingManager.isLoading()) {
             music.setFile(i);
-            music.play();
             music.loop();
         }
     }
@@ -341,7 +372,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void playSE(int i) {
-        if (!loadingManager.isLoading()) { // Don't play sounds while loading
+        if (loadingManager != null && !loadingManager.isLoading()) {
             se.setFile(i);
             se.play();
         }

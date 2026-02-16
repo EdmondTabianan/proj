@@ -21,49 +21,40 @@ public class PathFinder {
     }
 
     public void instantiateNodes() {
-
         node = new Node[gp.maxWorldCol][gp.maxWorldRow];
 
-        int col = 0;
-        int row = 0;
-
-        while (col < gp.maxWorldCol && row < gp.maxWorldRow) {
-            
-            node[col][row] = new Node(col, row);
-
-            col++;
-            if (col == gp.maxWorldCol) {
-                col = 0;
-                row++;
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                node[col][row] = new Node(col, row);
             }
         }
     }
-    public void resetNode() {
-            
-            int col = 0;
-            int row = 0;
     
-            while (col < gp.maxWorldCol && row < gp.maxWorldRow) {
-                
+    public void resetNode() {
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
                 node[col][row].open = false;
                 node[col][row].checked = false;
                 node[col][row].solid = false;
                 node[col][row].parent = null;
-    
-                col++;
-                if (col == gp.maxWorldCol) {
-                    col = 0;
-                    row++;
-                }
             }
+        }
         openList.clear();
         pathList.clear();
         goalReached = false;
         step = 0;
     }
+    
     public void setNodes(int startCol, int startRow, int goalCol, int goalRow, Entity entity) {
-
         resetNode();
+
+        // Validate coordinates
+        if (startCol < 0 || startCol >= gp.maxWorldCol || 
+            startRow < 0 || startRow >= gp.maxWorldRow ||
+            goalCol < 0 || goalCol >= gp.maxWorldCol || 
+            goalRow < 0 || goalRow >= gp.maxWorldRow) {
+            return;
+        }
 
         // set start and goal node
         startNode = node[startCol][startRow];   
@@ -71,118 +62,133 @@ public class PathFinder {
         goalNode = node[goalCol][goalRow];
         openList.add(currentNode);
 
-        int col = 0;
-        int row = 0;
-
-        while (col < gp.maxWorldCol && row < gp.maxWorldRow) {
-            
-            // check tile collision
-            int tileNum = gp.tileM.mapTileNum[gp.currentMap][col][row];
-            if (gp.tileM.tile[tileNum].collision == true) {
-                node[col][row].solid = true;
-            }
-            else {
-                node[col][row].solid = false;
-            }
-            // check interactive tile collision
-            for(int i = 0; i < gp.iTile[1].length; i++) {
-                if(gp.iTile[gp.currentMap][i] != null && gp.iTile[gp.currentMap][i].destructible == true) {
-                    int itCol = gp.iTile[gp.currentMap][i].worldX / gp.TileSize;
-                    int itRow = gp.iTile[gp.currentMap][i].worldY / gp.TileSize;
-                    node[itCol][itRow].solid = true;
+        // FIRST: Set all solid nodes based on tiles
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                // Check tile collision
+                int tileNum = gp.tileM.mapTileNum[gp.currentMap][col][row];
+                if (gp.tileM.tile[tileNum].collision) {
+                    node[col][row].solid = true;
                 }
             }
+        }
 
-            // set cost
-            getCost(node[col][row]);
-
-            col++;
-            if (col == gp.maxWorldCol) {
-                col = 0;
-                row++;
-            }
-            // check if any entity is colliding
-            for(int i = 0; i < gp.obj[1].length; i++) {
-                if(gp.obj[gp.currentMap][i] != null) {
-                    if(gp.obj[gp.currentMap][i].collision == true) {
-                        if(gp.obj[gp.currentMap][i].worldX / gp.TileSize == col &&
-                            gp.obj[gp.currentMap][i].worldY / gp.TileSize == row) {
+        // SECOND: Check interactive tiles
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                for(int i = 0; i < gp.iTile[1].length; i++) {
+                    if(gp.iTile[gp.currentMap][i] != null) {
+                        int itCol = gp.iTile[gp.currentMap][i].worldX / gp.TileSize;
+                        int itRow = gp.iTile[gp.currentMap][i].worldY / gp.TileSize;
+                        if(itCol == col && itRow == row) {
+                            // Only set solid if it's not destructible OR if it's still alive
+                            if(!gp.iTile[gp.currentMap][i].destructible || 
+                               gp.iTile[gp.currentMap][i].life > 0) {
                                 node[col][row].solid = true;
+                            }
+                            break;
                         }
                     }
                 }
             }
         }
-    }
-    public void getCost(Node node) {
 
-        // gCost
+        // THIRD: Check objects
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                for(int i = 0; i < gp.obj[1].length; i++) {
+                    if(gp.obj[gp.currentMap][i] != null && gp.obj[gp.currentMap][i].collision) {
+                        int objCol = gp.obj[gp.currentMap][i].worldX / gp.TileSize;
+                        int objRow = gp.obj[gp.currentMap][i].worldY / gp.TileSize;
+                        if(objCol == col && objRow == row) {
+                            node[col][row].solid = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // FOURTH: Check other monsters (optional - to avoid crowding)
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                for(int i = 0; i < gp.monster[1].length; i++) {
+                    if(gp.monster[gp.currentMap][i] != null && 
+                       gp.monster[gp.currentMap][i] != entity) { // Don't avoid itself
+                        int monsterCol = gp.monster[gp.currentMap][i].worldX / gp.TileSize;
+                        int monsterRow = gp.monster[gp.currentMap][i].worldY / gp.TileSize;
+                        if(monsterCol == col && monsterRow == row) {
+                            node[col][row].solid = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Calculate costs for all nodes
+        for (int col = 0; col < gp.maxWorldCol; col++) {
+            for (int row = 0; row < gp.maxWorldRow; row++) {
+                getCost(node[col][row]);
+            }
+        }
+    }
+    
+    public void getCost(Node node) {
+        // gCost (distance from start)
         int xDistance = Math.abs(node.col - startNode.col);
         int yDistance = Math.abs(node.row - startNode.row);
         node.gCost = xDistance + yDistance;
 
-        // hCost
+        // hCost (distance to goal)
         xDistance = Math.abs(node.col - goalNode.col);
         yDistance = Math.abs(node.row - goalNode.row);
         node.hCost = xDistance + yDistance;
 
-        // fCost
+        // fCost (total)
         node.fCost = node.gCost + node.hCost;
     }
+    
     public boolean search() {
-
-        while (goalReached == false && step < 500) {
-                
+        while (!goalReached && step < 500) {
             int col = currentNode.col;
             int row = currentNode.row;
 
             currentNode.checked = true;
             openList.remove(currentNode);
 
-            // open the up node
-            if(row - 1 >= 0) {
-                openNode(node[col][row - 1]);
-            }
-            // open the down node
-            if(row + 1 < gp.maxWorldRow) {
-                openNode(node[col][row + 1]);
-            }
-            // open the left node
-            if(col - 1 >= 0) {
-                openNode(node[col - 1][row]);
-            }
-            // open the right node
-            if(col + 1 < gp.maxWorldCol) {
-                openNode(node[col + 1][row]);
+            // Open adjacent nodes
+            if (row - 1 >= 0) openNode(node[col][row - 1]); // Up
+            if (row + 1 < gp.maxWorldRow) openNode(node[col][row + 1]); // Down
+            if (col - 1 >= 0) openNode(node[col - 1][row]); // Left
+            if (col + 1 < gp.maxWorldCol) openNode(node[col + 1][row]); // Right
+
+            // Find the best node in openList
+            if (openList.isEmpty()) {
+                break;
             }
 
-            // find the best node
             int bestNodeIndex = 0;
-            int bestNodeFCost = 999;
+            int bestNodeFCost = Integer.MAX_VALUE;
 
             for (int i = 0; i < openList.size(); i++) {
-                // check if the node in openList has lower fCost than currentNode
-                if(openList.get(i).fCost < bestNodeFCost) {
+                Node testNode = openList.get(i);
+                
+                if (testNode.fCost < bestNodeFCost) {
                     bestNodeIndex = i;
-                    bestNodeFCost = openList.get(i).fCost;
+                    bestNodeFCost = testNode.fCost;
                 } 
-                // if fCost is equal, check hCost
-                else if (openList.get(i).fCost == bestNodeFCost) {
-                    if(openList.get(i).hCost < openList.get(bestNodeIndex).gCost) {
+                else if (testNode.fCost == bestNodeFCost) {
+                    // If fCost is equal, choose the one with lower hCost
+                    if (testNode.hCost < openList.get(bestNodeIndex).hCost) {
                         bestNodeIndex = i;
                     }
                 }
             }
 
-            // if there is no node in openList, end the search
-            if (openList.size() == 0) {
-                break;
-            }
-
-            // after the loop, check if the currentNode is the goalNode
             currentNode = openList.get(bestNodeIndex);
 
-            if(currentNode == goalNode) {
+            if (currentNode == goalNode) {
                 goalReached = true;
                 trackThePath();
             }
@@ -191,21 +197,27 @@ public class PathFinder {
 
         return goalReached;
     }
+    
     public void openNode(Node node) {
-
-        if(node.solid == false && node.checked == false && node.open == false) {
+        if (!node.solid && !node.checked && !node.open) {
             node.open = true;
             node.parent = currentNode;
             openList.add(node);
         }
     }
+    
     public void trackThePath() {
-
         Node current = goalNode;
-
+        
         while (current != startNode) {
             pathList.add(0, current);
             current = current.parent;
+            
+            // Safety check to prevent infinite loop
+            if (current == null) {
+                pathList.clear();
+                break;
+            }
         }
     }
 }

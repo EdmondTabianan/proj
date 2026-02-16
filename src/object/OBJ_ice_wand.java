@@ -18,7 +18,7 @@ public class OBJ_ice_wand extends Entity {
         description = "[" + name + "]\n normal wand\n" + "attack: " + attackvalue;
         attackArea.width = 36;
         attackArea.height = 36;
-        amount = 100;
+        //price = 100;
     }
 
 }

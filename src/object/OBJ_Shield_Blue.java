@@ -12,6 +12,6 @@ public class OBJ_Shield_Blue extends Entity {
         down1 = setup("/objects/shield_blue", gp.TileSize, gp.TileSize);
         defenseValue = 5;
         description = "[" + name + "]\n shiny shield\n" + "Defense: " + defenseValue;
-        amount = 200;
+        price = 200;
     }
 }

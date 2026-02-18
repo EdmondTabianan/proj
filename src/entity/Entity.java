@@ -37,7 +37,7 @@ public class Entity {
     boolean attacking = false;
     public boolean alive = true;
     public boolean dying = false;
-    boolean hpBarOn = false;
+    public boolean hpBarOn = false;
     public boolean hasTablet = false;
     public boolean onPath = false;
     public boolean knockBack = false;
@@ -54,7 +54,7 @@ public class Entity {
     public int invincibleCounter = 0;
     public int shotAvailableCounter = 0;
     int dyingCounter = 0;
-    int hpBarCounter = 0;
+    protected int hpBarCounter = 0;
     int knockBackCounter = 0;
     public int talkcounter = 0;
     public int killCount = 0;
@@ -119,6 +119,7 @@ public class Entity {
     public final int type_door = 13;
     public final int type_obstacle = 14;
     public final int type_arrows = 15;
+
     public boolean isPickup;
 
     // ===== Spawn System =====

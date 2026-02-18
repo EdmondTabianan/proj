@@ -54,9 +54,6 @@ public class MON_Snake extends Entity {
         defense = 1 + playerLevel / 3;
         exp = 5 + playerLevel * 2;
 
-        // Projectile (optional)
-        projectiles = new OBJ_Bato(gp);
-
         // Shrinked solid area for narrow paths
         solidArea.x = 8;
         solidArea.y = 12;
@@ -149,26 +146,6 @@ public class MON_Snake extends Entity {
             int goalRow = (gp.player.worldY + gp.player.solidArea.y) / gp.TileSize;
 
             searchPath(goalCol, goalRow);
-
-            // Projectile attack (like Green Slime)
-            shotAvailableCounter++;
-            if (shotAvailableCounter >= 120) {
-                int chance = random.nextInt(100) + 1;
-                if (chance > 70) {
-                    if (projectiles != null) {
-                        projectiles.set(worldX, worldY, Direction, true, this);
-                        for (int i = 0; i < gp.projectile[1].length; i++) {
-                            if (gp.projectile[gp.currentMap][i] == null) {
-                                gp.projectile[gp.currentMap][i] = projectiles;
-                                break;
-                            }
-                        }
-                    }
-                    shotAvailableCounter = 0;
-                } else {
-                    shotAvailableCounter = 90;
-                }
-            }
             return;
         }
 
@@ -196,9 +173,6 @@ public class MON_Snake extends Entity {
             else Direction = "right";
             actionLockCounter = 0;
         }
-
-        // Increment projectile cooldown even when not chasing
-        if (shotAvailableCounter < 90) shotAvailableCounter++;
     }
 
     private void moveTowards(int targetX, int targetY) {

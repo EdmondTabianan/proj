@@ -8,6 +8,8 @@ import object.OBJ_tablet;
 public class NPC_vhong extends Entity {
 
     int questState = 0;
+    private String[] dialoguePages; // For multi-page dialogue
+    private int currentPage = 0;
 
     public NPC_vhong(GamePanel gp) {
         super(gp);
@@ -16,10 +18,9 @@ public class NPC_vhong extends Entity {
         speed = 1;
 
         getImage();
-        // Don't call setDialogue() here - player doesn't exist yet!
-        // setDialogue(); // REMOVE THIS LINE
-
-        // Initialize with default dialogue
+        
+        // Initialize with default dialogue (safe version without player)
+        dialogues = new String[10]; // Initialize array
         dialogues[0] = "Kill 3 slimes.";
         dialogues[1] = "You killed 3 slimes!";
         dialogues[2] = "Take the clue";
@@ -103,31 +104,93 @@ public class NPC_vhong extends Entity {
     }
     
     public void speak() {
-        // Update dialogue with current kill count before speaking
-        if (gp.player != null) {
-            if (questState == 0) {
-                gp.ui.currentDialogue = "Kill 3 slimes. 0/3";
-                gp.player.killCount = 0; // reset for quest
-                questState = 1;
-            }
-            else if (questState == 1) {
-                if (gp.player.killCount < 3) {
-                    gp.ui.currentDialogue = "Kill 3 slimes: " + gp.player.killCount + "/3";
-                } else {
-                    gp.ui.currentDialogue = "You killed 3 slimes!";
-                    spawnTablet();
-                    questState = 2;
-                }
-            }
-            else if (questState == 2) {
-                gp.ui.currentDialogue = "Get the clue at the entrance of the passage.";
-            }
-        } else {
-            // Fallback if player is somehow null
-            gp.ui.currentDialogue = "Hello, adventurer!";
+        facePlayer();
+        
+        // Prepare dialogue pages based on quest state
+        prepareDialoguePages();
+        
+        // Start with first page
+        if (dialoguePages != null && dialoguePages.length > 0) {
+            currentPage = 0;
+            gp.ui.setDialogue(dialoguePages[currentPage]);
         }
         
-        facePlayer();
+        // Enter dialogue state
+        gp.gameState = gp.dialogueState;
+    }
+    
+    private void prepareDialoguePages() {
+        if (questState == 0) {
+            // First meeting - multiple pages
+            dialoguePages = new String[] {
+                "Hello adventurer!",
+                "I have an important quest for you.",
+                "Kill 3 slimes in the forest.",
+                "Come back when you're done!"
+            };
+            gp.player.killCount = 0; // Reset kill count for quest
+            questState = 1;
+        }
+        else if (questState == 1) {
+            if (gp.player.killCount < 3) {
+                // Quest in progress - single page with dynamic count
+                dialoguePages = new String[] {
+                    "You still need to kill " + (3 - gp.player.killCount) + " slimes.\nCome back when you're done."
+                };
+            } else {
+                // Quest complete - multiple pages
+                dialoguePages = new String[] {
+                    "You killed 3 slimes! Well done!",
+                    "Here's your reward.",
+                    "Take this clue tablet."
+                };
+                spawnTablet();
+                questState = 2;
+            }
+        }
+        else if (questState == 2) {
+            // After receiving reward
+            dialoguePages = new String[] {
+                "The clue is at the entrance of the passage.",
+                "It will guide you to the treasure.",
+                "Good luck on your journey!"
+            };
+            questState = 3;
+        }
+        else if (questState == 3) {
+            // Final repeated dialogue
+            dialoguePages = new String[] {
+                "Remember, the clue is at the passage entrance.",
+                "Farewell, adventurer!"
+            };
+        }
+    }
+    
+    /**
+     * Call this method when player presses ENTER during dialogue
+     * Handles advancing through pages and animation
+     */
+    public void nextDialogue() {
+        if (!gp.ui.isDialogueFinished()) {
+            // If animation isn't finished, skip to the end
+            gp.ui.skipToEnd();
+        } else {
+            // Move to next page or close dialogue
+            currentPage++;
+            
+            if (dialoguePages != null && currentPage < dialoguePages.length) {
+                // Show next page
+                gp.ui.setDialogue(dialoguePages[currentPage]);
+            } else {
+                // No more pages, close dialogue
+                gp.gameState = gp.playState;
+                
+                // Optional: Trigger any post-dialogue actions
+                if (questState == 2 && currentPage >= dialoguePages.length) {
+                    // Quest just completed - you could add special effects here
+                }
+            }
+        }
     }
     
     public void spawnTablet() {

@@ -27,7 +27,17 @@ public class UI {
     ArrayList<Integer> messageCounter = new ArrayList<>();
 
     public boolean gameFinished = false;
+    
+    // Dialogue animation variables
     public String currentDialogue = "";
+    private String targetDialogue = ""; // Full dialogue to display
+    private int displayedChars = 0; // Number of characters displayed so far
+    private int charCounter = 0; // Counter for animation timing
+    private final int CHAR_SPEED = 2; // Characters per frame (higher = faster)
+    private boolean dialogueFinished = false;
+    private long lastCharTime = 0;
+    private final long CHAR_DELAY = 30; // Milliseconds between characters
+    
     public int commandNum = 0;
     public int titleScreenState = 0; // 0 the first screen 1 second screen
     public int playerSlotCol = 0;
@@ -53,8 +63,8 @@ public class UI {
     // For typing effect
     private String displayedTip = "";
     private int tipCharIndex = 0;
-    private long lastCharTime = 0;
-    private final long CHAR_DELAY = 30; // milliseconds between characters
+    private long lastTipCharTime = 0;
+    private final long TIP_CHAR_DELAY = 30; // milliseconds between characters
 
     double playTime;
     DecimalFormat dFormat = new DecimalFormat("0.00");
@@ -194,7 +204,7 @@ public class UI {
             tipAlpha = 0;
             tipFadingIn = true;
             lastTipChangeTime = currentTime;
-            lastCharTime = currentTime;
+            lastTipCharTime = currentTime;
             lastTipUpdateTime = currentTime;
         }
         
@@ -206,16 +216,16 @@ public class UI {
             tipAlpha = 0;
             tipFadingIn = true;
             lastTipChangeTime = currentTime;
-            lastCharTime = currentTime;
+            lastTipCharTime = currentTime;
             lastTipUpdateTime = currentTime;
         }
         
         // Handle typing effect
         if (tipCharIndex < currentTip.length()) {
-            if (currentTime - lastCharTime > CHAR_DELAY) {
+            if (currentTime - lastTipCharTime > TIP_CHAR_DELAY) {
                 displayedTip += currentTip.charAt(tipCharIndex);
                 tipCharIndex++;
-                lastCharTime = currentTime;
+                lastTipCharTime = currentTime;
             }
         }
         
@@ -580,10 +590,69 @@ public class UI {
             gp.keyH.enterPressed = false;
         }
     }
-  
+    
+    /**
+     * Set the dialogue text to be displayed with animation
+     * @param text The full dialogue text to display
+     */
+    public void setDialogue(String text) {
+        this.targetDialogue = text;
+        this.displayedChars = 0;
+        this.dialogueFinished = false;
+        this.charCounter = 0;
+        this.currentDialogue = ""; // Clear current display
+        this.lastCharTime = System.currentTimeMillis();
+    }
+    
+    /**
+     * Update the dialogue animation - call this in your game loop
+     */
+    public void updateDialogueAnimation() {
+        if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
+            long currentTime = System.currentTimeMillis();
+            
+            // Time-based animation (smoother)
+            if (currentTime - lastCharTime > CHAR_DELAY) {
+                if (displayedChars < targetDialogue.length()) {
+                    displayedChars++;
+                    currentDialogue = targetDialogue.substring(0, displayedChars);
+                    lastCharTime = currentTime;
+                    
+                    // Optional: Play typing sound every few characters
+                    if (displayedChars % 3 == 0) {
+                        // gp.playSE(someSound); // Uncomment if you have a typing sound
+                    }
+                } else {
+                    dialogueFinished = true;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Skip to the end of the current dialogue
+     */
+    public void skipToEnd() {
+        if (targetDialogue != null) {
+            displayedChars = targetDialogue.length();
+            currentDialogue = targetDialogue;
+            dialogueFinished = true;
+        }
+    }
+    
+    /**
+     * Check if the current dialogue animation is finished
+     */
+    public boolean isDialogueFinished() {
+        return dialogueFinished;
+    }
+
     public void drawDialogueScreen() {
         // Add null check
         if (gp.player == null) return;
+        
+        // Update animation
+        updateDialogueAnimation();
         
         // Window
         int x = gp.TileSize*2;
@@ -597,11 +666,23 @@ public class UI {
         x += gp.TileSize;
         y += gp.TileSize;
 
-        for (String line : currentDialogue.split("\n")) {
-            g2.drawString(line, x, y);
-            y+= 40;
+        // Draw the animated dialogue
+        if (currentDialogue != null && !currentDialogue.isEmpty()) {
+            for (String line : currentDialogue.split("\n")) {
+                g2.drawString(line, x, y);
+                y += 40;
+            }
         }
         
+        // Draw a "next" indicator when dialogue is finished
+        if (dialogueFinished) {
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
+            g2.setColor(new Color(255, 255, 255, 200));
+            String nextIndicator = "▼ Press ENTER to continue";
+            int indicatorX = x + width - 250;
+            int indicatorY = y + 10;
+            g2.drawString(nextIndicator, indicatorX, indicatorY);
+        }
     }
     
     public void drawCharacterScreen() {

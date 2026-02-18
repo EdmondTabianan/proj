@@ -5,25 +5,18 @@ import java.util.Random;
 import main.GamePanel;
 import object.OBJ_tablet;
 
-public class NPC_vhong extends Entity {
+public class NPC_sailor extends Entity {
 
-    int questState = 0;
+    GamePanel gp;
 
-    public NPC_vhong(GamePanel gp) {
+    public NPC_sailor(GamePanel gp) {
         super(gp);
+        this.gp = gp;
 
         Direction = "down";
         speed = 1;
 
         getImage();
-        // Don't call setDialogue() here - player doesn't exist yet!
-        // setDialogue(); // REMOVE THIS LINE
-
-        // Initialize with default dialogue
-        dialogues[0] = "Kill 3 slimes.";
-        dialogues[1] = "You killed 3 slimes!";
-        dialogues[2] = "Take the clue";
-        dialogues[3] = "Test";
 
         solidArea.x = 8;
         solidArea.y = 16;
@@ -34,29 +27,25 @@ public class NPC_vhong extends Entity {
     }
     
     public void getImage() {
-        up1 = setup("/npc/npc_1_back", gp.TileSize, gp.TileSize);
-        up2 = setup("/npc/npc_1_back", gp.TileSize, gp.TileSize);
-        down1 = setup("/npc/npc_1_front", gp.TileSize, gp.TileSize);
-        down2 = setup("/npc/npc_1_front", gp.TileSize, gp.TileSize);
-        left1 = setup("/npc/npc_1_left", gp.TileSize, gp.TileSize);
-        left2 = setup("/npc/npc_1_left", gp.TileSize, gp.TileSize);
-        right1 = setup("/npc/npc_1_right", gp.TileSize, gp.TileSize);
-        right2 = setup("/npc/npc_1_right", gp.TileSize, gp.TileSize);
+        up1 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+        up2 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+        down1 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+        down2 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+        left1 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+        left2 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+        right1 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
+        right2 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
     }
     
     public void setDialogue() {
         // Only access player if it exists
         if (gp.player != null) {
-            dialogues[0] = "Kill 3 slimes. " + gp.player.killCount + "/3";
-            dialogues[1] = "You killed 3 slimes!";
-            dialogues[2] = "Take the clue";
-            dialogues[3] = "Test";
+            dialogues[0] = "Hello adventurer! Welcome to the island.";
+            dialogues[1] = "if you want to go to other islands, you need to find the key.";
         } else {
             // Default dialogue when player doesn't exist yet
-            dialogues[0] = "Kill 3 slimes.";
-            dialogues[1] = "You killed 3 slimes!";
-            dialogues[2] = "Take the clue";
-            dialogues[3] = "Test";
+            dialogues[0] = "Hello adventurer! Welcome to the island.";
+            dialogues[1] = "if you want to go to other islands, you need to find the key.";
         }
     }
     
@@ -103,30 +92,8 @@ public class NPC_vhong extends Entity {
     }
     
     public void speak() {
-        // Update dialogue with current kill count before speaking
-        if (gp.player != null) {
-            if (questState == 0) {
-                gp.ui.currentDialogue = "Kill 3 slimes. 0/3";
-                gp.player.killCount = 0; // reset for quest
-                questState = 1;
-            }
-            else if (questState == 1) {
-                if (gp.player.killCount < 3) {
-                    gp.ui.currentDialogue = "Kill 3 slimes: " + gp.player.killCount + "/3";
-                } else {
-                    gp.ui.currentDialogue = "You killed 3 slimes!";
-                    spawnTablet();
-                    questState = 2;
-                }
-            }
-            else if (questState == 2) {
-                gp.ui.currentDialogue = "Get the clue at the entrance of the passage.";
-            }
-        } else {
-            // Fallback if player is somehow null
-            gp.ui.currentDialogue = "Hello, adventurer!";
-        }
         
+        gp.ui.currentDialogue = "if you want to go to other islands,\n you need to find the key.";
         facePlayer();
     }
     

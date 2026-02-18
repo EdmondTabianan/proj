@@ -182,7 +182,9 @@ public class KeyHandler implements KeyListener {
          if (code == KeyEvent.VK_R) {
             switch (gp.currentMap) {
                 case 0: gp.tileM.loadMap("/map/main.txt", 0);break;
-                case 1: gp.tileM.loadMap("/map/secndmap.txt", 1);break;
+                case 1: gp.tileM.loadMap("/map/secondmap.txt", 1);break;
+                case 2: gp.tileM.loadMap("/map/first_floor.txt", 2);break;
+                case 3: gp.tileM.loadMap("/map/shop.txt", 3);break;
             }
             // gp.tileM.loadMap("/map/main.txt", 0);
             gp.aSetter.setInteractiveTile(gp.currentMap);

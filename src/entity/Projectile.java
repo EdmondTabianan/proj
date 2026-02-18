@@ -30,8 +30,6 @@ public class Projectile extends Entity {
         this.spriteCounter = 0;
         this.spriteNum = 1;
         
-        // Add debug to see if projectile is created
-        System.out.println("Projectile created: " + this.name + " at (" + worldX + "," + worldY + ") direction: " + Direction);
     }
     
     public void update() {
@@ -54,7 +52,7 @@ public class Projectile extends Entity {
         gp.cChecker.checkTile(this);
         if (collisionOn == true) {
             this.alive = false;
-            System.out.println("Projectile hit wall and died");
+            
             return;
         }
 
@@ -69,7 +67,7 @@ public class Projectile extends Entity {
                 
                 if (monster != null && monster.invincible == false) {
                     
-                    System.out.println("Projectile hit monster: " + monster.name);
+                    
                     
                     // APPLY SLOW EFFECT for ice projectiles
                     if (this.name != null && this.name.equals("Ice")) {
@@ -90,7 +88,7 @@ public class Projectile extends Entity {
                         monster.tintColor = new java.awt.Color(100, 150, 255, 150);
                         
                         gp.ui.showMessage("Monster slowed!");
-                        System.out.println("Monster slowed! Speed reduced to: " + monster.speed);
+                        
                     }
                     
                     gp.player.damageMonster(monsterIndex, this.attack, this.knockBackPower);
@@ -108,7 +106,7 @@ public class Projectile extends Entity {
                     gp.iTile[gp.currentMap][iTileIndex].destructible == true) {
                     
                     gp.iTile[gp.currentMap][iTileIndex].life--;
-                    System.out.println("Projectile hit interactive tile");
+                   
                     
                     if (gp.iTile[gp.currentMap][iTileIndex].life <= 0) {
                         gp.iTile[gp.currentMap][iTileIndex] = gp.iTile[gp.currentMap][iTileIndex].getDestroyedForm();
@@ -123,7 +121,7 @@ public class Projectile extends Entity {
             boolean contactPlayer = gp.cChecker.checkPlayer(this);
             
             if (contactPlayer == true && gp.player.invincible == false) {
-                System.out.println("Projectile hit player");
+                
                 damagePlayerWithGuard(this.attack);
                 this.alive = false;
                 return;
@@ -134,7 +132,7 @@ public class Projectile extends Entity {
         life--;
         if (life <= 0) {
             alive = false;
-            System.out.println("Projectile died from old age");
+            
             return;
         }
         
@@ -245,12 +243,12 @@ public class Projectile extends Entity {
             if (this instanceof object.OBJ_Arrows) {
                 user.arrow -= this.useCost;
                 if (user.arrow < 0) user.arrow = 0;
-                System.out.println("Arrow used. Remaining: " + user.arrow);
+                
             }
             else if (this instanceof object.OBJ_ice) {
                 user.mana -= this.useCost;
                 if (user.mana < 0) user.mana = 0;
-                System.out.println("Mana used. Remaining: " + user.mana);
+                
             }
         }
     }

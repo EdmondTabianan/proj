@@ -11,10 +11,8 @@ public class OBJ_Arrows extends Projectile {
     public OBJ_Arrows(GamePanel gp) {
         super(gp);
         this.gp = gp;
-
-        // FIX 1: Set correct type for projectiles
-        this.type = type_pickupOnly;  // Add this for pickup behavior
-        
+    
+        this.type = type_pickupOnly;  // For pickup behavior
         this.name = "Arrow";
         this.speed = 6;
         this.maxLife = 80;
@@ -23,12 +21,21 @@ public class OBJ_Arrows extends Projectile {
         this.useCost = 1;
         this.alive = false;
         this.value = 1;
-        this.price = 10;  // Amount given when picked up
+        this.price = 10;
         this.knockBackPower = 1;
         this.description = "[" + name + "]\nA sharp arrow to shoot.\nYou can pick up more";
-        
+    
+        // --- SHRINK COLLISION BOX ---
+        solidArea = new java.awt.Rectangle();
+        solidArea.x = 6;         // Offset from sprite edge
+        solidArea.y = 6;
+        solidArea.width = 12;    // Smaller than full tile
+        solidArea.height = 12;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+    
         getImage();
-    }
+    }    
     
     public void getImage() {
         up1 = setup("/projectile/arrow_up_1", gp.TileSize, gp.TileSize);

@@ -4,6 +4,7 @@ import entity.Entity;
 import entity.NPC_Beverly;
 import entity.NPC_blueboy;
 import entity.NPC_merchant;
+import entity.NPC_sailor;
 import entity.NPC_vhong;
 import monster.MON_GreenSlime;
 import monster.MON_MOMMY;
@@ -115,6 +116,7 @@ public class AssetSetter {
         Object[][] npcConfigs = {
             {0, 39, 30, NPC_vhong.class},
             {0, 8, 10, NPC_Beverly.class},
+            {0, 45, 42, NPC_sailor.class},
             {3, 20, 20, NPC_merchant.class}
         };
 

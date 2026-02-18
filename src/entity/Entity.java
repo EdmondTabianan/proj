@@ -48,7 +48,6 @@ public class Entity {
     public boolean guarding = false;
     public boolean transparent = false;
 
-
     // counter 
     public int spriteCounter = 0;
     public int actionLockCounter = 0;
@@ -121,6 +120,11 @@ public class Entity {
     public final int type_obstacle = 14;
     public final int type_arrows = 15;
     public boolean isPickup;
+
+    // ===== Spawn System =====
+    public int spawnWorldX;
+    public int spawnWorldY;
+    public int pathIndex = 0;
 
     public Entity(GamePanel gp) {
         this.gp = gp;
@@ -198,6 +202,34 @@ public class Entity {
                 speed = defaultSpeed;
                 knockBackCounter = 0;
                 return;
+            }
+            else {
+                if (action == true) {
+                    // CRITICAL FIX: Only call setAction() if NOT on a path
+                    // This prevents overwriting the pathfinding direction
+                    if (!onPath) {
+                        setAction();
+                    }
+                    
+                    checkCollision();
+        
+                    if (collisionOn == false) {
+                        switch (Direction) {
+                            case "up": worldY -= speed; break;
+                            case "down": worldY += speed; break;
+                            case "left": worldX -= speed; break;
+                            case "right": worldX += speed; break;
+                            case "idle": break; // Don't move when idle
+                        }
+                    } else {
+                        // If we hit something while pathfinding, recalculate path
+                        if (onPath) {
+                            
+                        }
+                    }
+                } else {
+                    idle();
+                }
             }
             
             // STORE original position BEFORE moving
@@ -363,11 +395,14 @@ public class Entity {
     }
     
     public void damageplayer(int attack) {
-        // FIX: Add null check for player
-        if (gp.player == null) {
-            return;
+        int screenX = worldX;
+        int screenY = worldY;
+
+        if (gp.player != null) {
+            screenX = worldX - gp.player.worldX + gp.player.screenX;
+            screenY = worldY - gp.player.worldY + gp.player.screenY;
         }
-        
+
         // Only damage player if player is not invincible
         if (gp.player.invincible == false) {
             
@@ -453,6 +488,7 @@ public class Entity {
                     if (spriteNum == 2) { image = right2; }
                     break;
                 default:
+                    image = down1;
                     break;
             }
     
@@ -540,147 +576,58 @@ public class Entity {
         return image;
     }
     
-    // public void searchPath(int goalCol, int goalRow) {
-    //     int startCol = (worldX + solidArea.x) / gp.TileSize;
-    //     int startRow = (worldY + solidArea.y) / gp.TileSize;
-
-    //     gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
-
-    //     if (gp.pFinder.search() == true) {
-    //         int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
-    //         int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
-
-    //         int enLeftX = worldX + solidArea.x;
-    //         int enRightX = worldX + solidArea.x + solidArea.width;
-    //         int enTopY = worldY + solidArea.y;
-    //         int enBottomY = worldY + solidArea.y + solidArea.height;
-
-    //         if (enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
-    //             Direction = "up";
-    //         } else if (enBottomY < nextY + gp.TileSize && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
-    //             Direction = "down";
-    //         } else if (enTopY >= nextY && enBottomY < nextY + gp.TileSize) {
-    //             if (enLeftX > nextX) {
-    //                 Direction = "left";
-    //             }
-    //             if (enRightX < nextX + gp.TileSize) {
-    //                 Direction = "right";
-    //             }
-    //         } 
-    //         else if (enTopY > nextY && enLeftX > nextX) {
-    //             Direction = "up";
-    //             if (collisionOn == true) {
-    //                 Direction = "left";
-    //             }
-    //         } else if (enTopY > nextY && enRightX < nextX + gp.TileSize) {
-    //             Direction = "up";
-    //             if (collisionOn == true) {
-    //                 Direction = "right";
-    //             }
-    //         } else if (enBottomY < nextY + gp.TileSize && enLeftX > nextX) {
-    //             Direction = "down";
-    //             if (collisionOn == true) {
-    //                 Direction = "left";
-    //             }
-    //         } else if (enBottomY < nextY + gp.TileSize && enRightX < nextX + gp.TileSize) {
-    //             Direction = "down";
-    //             if (collisionOn == true) {
-    //                 Direction = "right";
-    //             }
-    //         }
-    //     }
-    // }
-    public boolean searchPath(int goalCol, int goalRow) {
+    public void searchPath(int goalCol, int goalRow) {
         int startCol = (worldX + solidArea.x) / gp.TileSize;
         int startRow = (worldY + solidArea.y) / gp.TileSize;
-    
+
         gp.pFinder.setNodes(startCol, startRow, goalCol, goalRow, this);
-    
-        if (gp.pFinder.search() == true && gp.pFinder.pathList != null && !gp.pFinder.pathList.isEmpty()) {
-            
-            // Get the next node from the path
-            Node nextNode = gp.pFinder.pathList.get(0);
-            
-            // Calculate the CENTER of the target tile
-            int targetTileCenterX = nextNode.col * gp.TileSize + gp.TileSize/2;
-            int targetTileCenterY = nextNode.row * gp.TileSize + gp.TileSize/2;
-            
-            // Get entity's center position
-            int enCenterX = worldX + solidArea.x + solidArea.width/2;
-            int enCenterY = worldY + solidArea.y + solidArea.height/2;
-            
-            // Calculate distances
-            int dx = targetTileCenterX - enCenterX;
-            int dy = targetTileCenterY - enCenterY;
-            
-            // Debug output (remove after testing)
-            System.out.println("Target: (" + targetTileCenterX + "," + targetTileCenterY + 
-                               ") Center: (" + enCenterX + "," + enCenterY + 
-                               ") dx: " + dx + " dy: " + dy);
-            
-            // Use a small threshold to prevent jittering
-            int threshold = 3;
-            
-            if (Math.abs(dx) > Math.abs(dy)) {
-                // Moving horizontally is priority
-                if (dx > threshold) {
-                    Direction = "right";
-                    System.out.println("Moving right");
-                } else if (dx < -threshold) {
+
+        if (gp.pFinder.search() == true) {
+            int nextX = gp.pFinder.pathList.get(0).col * gp.TileSize;
+            int nextY = gp.pFinder.pathList.get(0).row * gp.TileSize;
+
+            int enLeftX = worldX + solidArea.x;
+            int enRightX = worldX + solidArea.x + solidArea.width;
+            int enTopY = worldY + solidArea.y;
+            int enBottomY = worldY + solidArea.y + solidArea.height;
+
+            if (enTopY > nextY && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+                Direction = "up";
+            } else if (enBottomY < nextY + gp.TileSize && enLeftX >= nextX && enRightX < nextX + gp.TileSize) {
+                Direction = "down";
+            } else if (enTopY >= nextY && enBottomY < nextY + gp.TileSize) {
+                if (enLeftX > nextX) {
                     Direction = "left";
-                    System.out.println("Moving left");
-                } else {
-                    // If horizontal is within threshold, check vertical
-                    if (dy > threshold) {
-                        Direction = "down";
-                        System.out.println("Moving down");
-                    } else if (dy < -threshold) {
-                        Direction = "up";
-                        System.out.println("Moving up");
-                    }
                 }
-            } else {
-                // Moving vertically is priority
-                if (dy > threshold) {
-                    Direction = "down";
-                    System.out.println("Moving down");
-                } else if (dy < -threshold) {
-                    Direction = "up";
-                    System.out.println("Moving up");
-                } else {
-                    // If vertical is within threshold, check horizontal
-                    if (dx > threshold) {
-                        Direction = "right";
-                        System.out.println("Moving right");
-                    } else if (dx < -threshold) {
-                        Direction = "left";
-                        System.out.println("Moving left");
-                    }
+                if (enRightX < nextX + gp.TileSize) {
+                    Direction = "right";
+                }
+            } 
+            else if (enTopY > nextY && enLeftX > nextX) {
+                Direction = "up";
+                if (collisionOn == true) {
+                    Direction = "left";
+                }
+            } else if (enTopY > nextY && enRightX < nextX + gp.TileSize) {
+                Direction = "up";
+                if (collisionOn == true) {
+                    Direction = "right";
+                }
+            } else if (enBottomY < nextY + gp.TileSize && enLeftX > nextX) {
+                Direction = "down";
+                if (collisionOn == true) {
+                    Direction = "left";
+                }
+            } else if (enBottomY < nextY + gp.TileSize && enRightX < nextX + gp.TileSize) {
+                Direction = "down";
+                if (collisionOn == true) {
+                    Direction = "right";
                 }
             }
-            
-            // Check if we've reached the current node
-            int currentTileCol = (worldX + solidArea.x + solidArea.width/2) / gp.TileSize;
-            int currentTileRow = (worldY + solidArea.y + solidArea.height/2) / gp.TileSize;
-            
-            if (currentTileCol == nextNode.col && currentTileRow == nextNode.row) {
-                System.out.println("Reached node at (" + nextNode.col + "," + nextNode.row + ")");
-                gp.pFinder.pathList.remove(0);
-                
-                if (gp.pFinder.pathList.isEmpty()) {
-                    System.out.println("Path complete!");
-                    onPath = false;
-                }
-            }
-            
-            return true;
         }
-        
-        // No path found
-        if (onPath) {
-            System.out.println("No path found to (" + goalCol + "," + goalRow + ")");
-        }
-        onPath = false;
-        return false;
+    }
+    public void setSpawnPoint(int worldX, int worldY) {
+        this.spawnWorldX = worldX;
+        this.spawnWorldY = worldY;
     }
 }

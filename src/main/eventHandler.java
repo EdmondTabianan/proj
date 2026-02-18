@@ -72,7 +72,7 @@ public class eventHandler {
             else if(hit(0, 10, 24, "left") == true) {teleport(6, 48, 18);}
             else if(hit(6, 48, 18, "right") == true) {teleport(0, 11, 24);}
             else if(hit(6, 48, 19, "right" ) == true) {teleport(0, 11, 24);}
-            else if(hit(0, 5, 19, "down") == true) {teleport(6, 48, 18);}
+            else if(hit(0, 5, 19, "down") == true) {teleport(6, 13, 1);}
             else if(hit(6, 13, 1, "up") == true) {teleport(0, 5, 17);}
             else if(hit(6, 14, 1, "up" ) == true) {teleport(0, 5, 17);}
         }
@@ -103,22 +103,19 @@ public class eventHandler {
         return hit;
     }
     
-    // ============ FIXED TELEPORT METHOD ============
     public void teleport(int map, float col, int row) {
-        // Only teleport if ENTER is pressed
-        if(gp.keyH.enterPressed == true) {
-            gp.player.attackCanceled = true;
-            
+     
             // Despawn current map assets
             gp.aSetter.despawnMonsters(gp.currentMap);
             gp.aSetter.despawnNPCs(gp.currentMap);
             gp.aSetter.despawnObjects(gp.currentMap);
             gp.aSetter.despawnInteractiveTiles(gp.currentMap);
             
+            canTouchEvent = false;
+
             // Use LoadingManager for transition
             gp.loadingManager.startTransition(map, col, row);
             gp.playSE(13);
-        }
     }
     
     public void healingPool(int gameState) {

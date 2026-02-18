@@ -11,7 +11,7 @@ public class OBJ_ice extends Projectile {
     public OBJ_ice(GamePanel gp) {
         super(gp);
         this.gp = gp;
-
+    
         this.type = type_wand;
         this.name = "Ice";
         this.speed = 5;
@@ -23,13 +23,23 @@ public class OBJ_ice extends Projectile {
         this.alive = false;
         this.knockBackPower = 0;
         this.value = 2;  // Mana restoration value
-        
+    
         // Slow effect properties
         this.slowDuration = 180;  // 3 seconds at 60 FPS
         this.slowAmount = 2;      // Reduce speed by 2
-        
+    
+        // --- SHRINK COLLISION BOX ---
+        solidArea = new java.awt.Rectangle();
+        solidArea.x = 6;           // offset inside sprite
+        solidArea.y = 6;
+        solidArea.width = 12;      // smaller than full tile
+        solidArea.height = 12;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+    
         getImage();
     }
+    
 
     public void getImage() {
         up1 = setup("/projectile/ice_up", gp.TileSize, gp.TileSize);

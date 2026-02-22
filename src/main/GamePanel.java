@@ -337,7 +337,6 @@ public class GamePanel extends JPanel implements Runnable {
                 // Draw UI
                 ui.draw(g2);
             } else {
-                // If player doesn't exist but we're in play state, go back to title
                 gameState = titleState;
                 ui.draw(g2);
             }

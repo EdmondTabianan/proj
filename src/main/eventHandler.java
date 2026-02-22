@@ -59,16 +59,16 @@ public class eventHandler {
             else if(hit(1, 9, 29, "up") == true) {teleport(3, 24.0f, 35);}
             else if(hit(3, 24, 36, "down") == true) {teleport(1, 9, 29);}
             else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][1]);}
-            else if(hit(2, 4, 3, "any") == true) {teleport(4, 4.0f, 3);}
-            else if(hit(4, 4, 3, "any") == true) {teleport(2, 4.0f, 3);}
+            else if(hit(2, 4, 3, "any") == true) {teleport(4, 5, 3);}
+            else if(hit(4, 4, 3, "any") == true) {teleport(2, 5.0f, 3);}
             else if(hit(4, 10, 10, "up") == true) {teleportToFinalStage(0, 25 , 35, gp.dialogueState);}            
             else if(hit(0, 28, 17, "up") == true || hit(0, 29, 17, "up") == true) {
                 entrance(2, 24, 48, gp.dialogueState);
             }
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28, 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29, 17);}
-            else if(hit(4, 43, 44, "any") == true) {teleport(5, 43, 44);}
-            else if(hit(5, 43, 44, "any") == true) {teleport(4, 43, 44);}
+            else if(hit(4, 43, 44, "any") == true) {teleport(5, 42, 44);}
+            else if(hit(5, 43, 44, "any") == true) {teleport(4, 42, 44);}
             else if(hit(0, 10, 24, "left") == true) {teleport(6, 48, 18);}
             else if(hit(6, 48, 18, "right") == true) {teleport(0, 11, 24);}
             else if(hit(6, 48, 19, "right" ) == true) {teleport(0, 11, 24);}

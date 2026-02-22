@@ -6,9 +6,10 @@ import entity.NPC_blueboy;
 import entity.NPC_merchant;
 import entity.NPC_sailor;
 import entity.NPC_vhong;
-import monster.MON_GreenSlime;
+import monster.MON_EarthSlime;
 import monster.MON_MOMMY;
 import monster.MON_Snake;
+import monster.MON_anubis;
 import object.OBJ_Axe;
 import object.OBJ_Doors;
 import object.OBJ_Key;
@@ -61,7 +62,6 @@ public class AssetSetter {
                 
                 // Skip if this is a pickup item and it has already been collected
                 if (isPickup && itemPickedUp[map][index][0]) {
-                    System.out.println("Skipping already collected pickup: " + itemClass.getSimpleName() + " at (" + x + "," + y + ")");
                     index++;
                     continue;
                 }
@@ -87,7 +87,6 @@ public class AssetSetter {
     public void markItemAsPickedUp(int map, int index) {
         if (map >= 0 && map < gp.maxMap && index >= 0 && index < 20) {
             itemPickedUp[map][index][0] = true;
-            System.out.println("Marked item as picked up - map: " + map + ", index: " + index);
         }
     }
 
@@ -97,7 +96,6 @@ public class AssetSetter {
             for (int i = 0; i < 20; i++) {
                 itemPickedUp[map][i][0] = false;
             }
-            System.out.println("Reset picked up items for map: " + map);
         }
     }
 
@@ -108,7 +106,6 @@ public class AssetSetter {
                 itemPickedUp[map][i][0] = false;
             }
         }
-        System.out.println("Reset all picked up items");
     }
 
     public void setNPC(int currentMap) {
@@ -144,9 +141,12 @@ public class AssetSetter {
         // Monster configurations: [map, x, y, monsterClass]
         Object[][] monsterConfigs = {
             // Map 0
-            {0, 32, 32, MON_GreenSlime.class},
-            {0, 30, 30, MON_GreenSlime.class},
-            {0, 34, 28, MON_GreenSlime.class},
+            // if (questProgess == 1) {
+                {0, 32, 32, MON_EarthSlime.class},
+                {0, 30, 30, MON_EarthSlime.class},
+                {0, 34, 28, MON_EarthSlime.class},
+            // }
+           
             {0, 35, 6, MON_Snake.class},
             {0, 5, 19, MON_Snake.class},
             
@@ -163,18 +163,18 @@ public class AssetSetter {
             {1, 43, 45, MON_Snake.class},
             {1, 28, 28, MON_Snake.class},
             {1, 16, 22, MON_Snake.class},
-            {1, 16, 33, MON_GreenSlime.class},
-            {1, 36, 38, MON_GreenSlime.class},
-            {1, 32, 30, MON_GreenSlime.class},
-            {1, 20, 19, MON_GreenSlime.class},
-            {1, 12, 38, MON_GreenSlime.class},
-            {1, 2, 28, MON_GreenSlime.class},
-            {1, 23, 24, MON_GreenSlime.class},
-            {1, 6, 24, MON_GreenSlime.class},
-            {1, 8, 31, MON_GreenSlime.class},
-            {1, 34, 34, MON_GreenSlime.class},
-            {1, 33, 23, MON_GreenSlime.class},
-            {1, 11, 14, MON_GreenSlime.class},
+            {1, 16, 33, MON_EarthSlime.class},
+            {1, 36, 38, MON_EarthSlime.class},
+            {1, 32, 30, MON_EarthSlime.class},
+            {1, 20, 19, MON_EarthSlime.class},
+            {1, 12, 38, MON_EarthSlime.class},
+            {1, 2, 28, MON_EarthSlime.class},
+            {1, 23, 24, MON_EarthSlime.class},
+            {1, 6, 24, MON_EarthSlime.class},
+            {1, 8, 31, MON_EarthSlime.class},
+            {1, 34, 34, MON_EarthSlime.class},
+            {1, 33, 23, MON_EarthSlime.class},
+            {1, 11, 14, MON_EarthSlime.class},
             
             // Map 2 (Pyramid first floor)
             {2, 46, 44, MON_Snake.class},
@@ -185,18 +185,18 @@ public class AssetSetter {
             {2, 41, 27, MON_Snake.class},
             {2, 34, 10, MON_Snake.class},
             {2, 25, 16, MON_Snake.class},
-            {2, 46, 32, MON_GreenSlime.class},
-            {2, 39, 2, MON_GreenSlime.class},
-            {2, 22, 27, MON_GreenSlime.class},
-            {2, 30, 43, MON_GreenSlime.class},
-            {2, 36, 19, MON_GreenSlime.class},
-            {2, 44, 6, MON_GreenSlime.class},
-            {2, 18, 14, MON_GreenSlime.class},
-            {2, 24, 36, MON_GreenSlime.class},
-            {2, 30, 35, MON_GreenSlime.class},
-            {2, 42, 15, MON_GreenSlime.class},
-            {2, 10, 2, MON_GreenSlime.class},
-            {2, 14, 39, MON_GreenSlime.class},
+            {2, 46, 32, MON_EarthSlime.class},
+            {2, 39, 2, MON_EarthSlime.class},
+            {2, 22, 27, MON_EarthSlime.class},
+            {2, 30, 43, MON_EarthSlime.class},
+            {2, 36, 19, MON_EarthSlime.class},
+            {2, 44, 6, MON_EarthSlime.class},
+            {2, 18, 14, MON_EarthSlime.class},
+            {2, 24, 36, MON_EarthSlime.class},
+            {2, 30, 35, MON_EarthSlime.class},
+            {2, 42, 15, MON_EarthSlime.class},
+            {2, 10, 2, MON_EarthSlime.class},
+            {2, 14, 39, MON_EarthSlime.class},
             {2, 31, 15, MON_MOMMY.class},
             {2, 36, 25, MON_MOMMY.class},
             {2, 46, 22, MON_MOMMY.class},
@@ -207,17 +207,17 @@ public class AssetSetter {
             {2, 36, 36, MON_MOMMY.class},
             
             // Map 4 (Pyramid basement)
-            {4, 16, 2, MON_GreenSlime.class},
-            {4, 22, 14, MON_GreenSlime.class},
-            {4, 45, 24, MON_GreenSlime.class},
-            {4, 13, 15, MON_GreenSlime.class},
-            {4, 35, 2, MON_GreenSlime.class},
-            {4, 34, 8, MON_GreenSlime.class},
-            {4, 24, 23, MON_GreenSlime.class},
-            {4, 2, 15, MON_GreenSlime.class},
-            {4, 24, 47, MON_GreenSlime.class},
-            {4, 33, 43, MON_GreenSlime.class},
-            {4, 9, 41, MON_GreenSlime.class},
+            {4, 16, 2, MON_EarthSlime.class},
+            {4, 22, 14, MON_EarthSlime.class},
+            {4, 45, 24, MON_EarthSlime.class},
+            {4, 13, 15, MON_EarthSlime.class},
+            {4, 35, 2, MON_EarthSlime.class},
+            {4, 34, 8, MON_EarthSlime.class},
+            {4, 24, 23, MON_EarthSlime.class},
+            {4, 2, 15, MON_EarthSlime.class},
+            {4, 24, 47, MON_EarthSlime.class},
+            {4, 33, 43, MON_EarthSlime.class},
+            {4, 9, 41, MON_EarthSlime.class},
             {4, 16, 10, MON_Snake.class},
             {4, 40, 15, MON_Snake.class},
             {4, 34, 28, MON_Snake.class},
@@ -241,7 +241,11 @@ public class AssetSetter {
             {4, 38, 20, MON_MOMMY.class},
             {4, 9, 21, MON_MOMMY.class},
             {4, 14, 47, MON_MOMMY.class},
-            {4, 33, 36, MON_MOMMY.class}
+            {4, 33, 36, MON_MOMMY.class},
+
+            // last stage 
+            {5, 25, 23, MON_anubis.class}
+            
         };
     
         int index = 0;
@@ -258,8 +262,8 @@ public class AssetSetter {
                     monster.worldY = gp.TileSize * y;
                     
                     // Set spawn point for ALL monster types
-                    if (monster instanceof MON_GreenSlime) {
-                        ((MON_GreenSlime) monster).setSpawnPoint(monster.worldX, monster.worldY);
+                    if (monster instanceof MON_EarthSlime) {
+                        ((MON_EarthSlime) monster).setSpawnPoint(monster.worldX, monster.worldY);
                     }
                     else if (monster instanceof MON_Snake) {
                         ((MON_Snake) monster).setSpawnPoint(monster.worldX, monster.worldY);
@@ -272,7 +276,6 @@ public class AssetSetter {
                     index++;
                     
                 } catch (Exception e) {
-                    System.err.println("Error spawning monster at (" + x + "," + y + "): " + e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -378,5 +381,63 @@ public class AssetSetter {
                 }
             }
         }
+    }
+    
+    // ============ NEW METHODS FOR SAVE/LOAD ============
+    
+    /**
+     * Get the item pickup tracking array
+     * @return 3D boolean array of picked up items
+     */
+    public boolean[][][] getItemPickedUp() {
+        return itemPickedUp;
+    }
+
+    /**
+     * Set the item pickup tracking array from loaded data
+     * @param loadedData The loaded pickup data
+     */
+    public void setItemPickedUp(boolean[][][] loadedData) {
+        if (loadedData != null) {
+            // Make sure dimensions match
+            for (int map = 0; map < Math.min(itemPickedUp.length, loadedData.length); map++) {
+                for (int i = 0; i < Math.min(itemPickedUp[map].length, loadedData[map].length); i++) {
+                    if (loadedData[map][i] != null && loadedData[map][i].length > 0) {
+                        itemPickedUp[map][i][0] = loadedData[map][i][0];
+                    }
+                }
+            }
+            System.out.println("Pickup items status loaded successfully");
+        }
+    }
+
+    /**
+     * Check if a specific item has been picked up
+     * @param map The map index
+     * @param index The item index
+     * @return true if picked up, false otherwise
+     */
+    public boolean isItemPickedUp(int map, int index) {
+        if (map >= 0 && map < itemPickedUp.length && 
+            index >= 0 && index < itemPickedUp[map].length) {
+            return itemPickedUp[map][index][0];
+        }
+        return false;
+    }
+    
+    /**
+     * Get the total count of picked up items (for debugging)
+     * @return Total number of picked up items across all maps
+     */
+    public int getTotalPickedUpCount() {
+        int count = 0;
+        for (int map = 0; map < itemPickedUp.length; map++) {
+            for (int i = 0; i < itemPickedUp[map].length; i++) {
+                if (itemPickedUp[map][i][0]) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 }

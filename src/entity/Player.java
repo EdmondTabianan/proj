@@ -15,16 +15,15 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
-
 import main.GamePanel;
 
 public class Player extends Entity {
 
-    KeyHandler keyH;
+    public KeyHandler keyH;
     
     public final int screenX;
     public final int screenY;
-    int standCounter = 0;
+    public int standCounter = 0;
     public boolean attackCanceled = false;
     Random random = new Random();
 
@@ -35,6 +34,8 @@ public class Player extends Entity {
         this.characterused = characterChoice;
 
         type = 0;
+
+        Direction = "down";
         
         screenX = gp.ScreenWidth/2 - (gp.TileSize/2);
         screenY = gp.ScreenHeight/2 - (gp.TileSize/2);
@@ -50,17 +51,21 @@ public class Player extends Entity {
         // attackArea.width = 36;
         // attackArea.height = 36;
 
-        setDefaultValues();
-        getImage();
-        getAttackImage();
-        getGuardImage();
-        setItems();
+        // setDefaultValues();
+        // getImage();
+        // getAttackImage();
+        // getGuardImage();
+        // setItems();
     }
-    public void setDefaultValues() {
+    public void startPosition() {
+        gp.currentMap = 0;
         worldX = gp.TileSize * 46;
         worldY = gp.TileSize * 39;
-        // worldX = gp.TileSize * 28;
-        // worldY = gp.TileSize * 19;
+        Direction = "down"; // Set direction
+        collisionOn = false; // Reset collision
+    }
+    public void setDefaultValues() {
+        startPosition();
         defaultSpeed = 4;
         speed = defaultSpeed;
         Direction = "down";
@@ -77,7 +82,7 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        hasKey = 2; 
+        hasKey = 0; 
         hasTablet = false;
         currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
@@ -87,12 +92,11 @@ public class Player extends Entity {
         defense = getDefense(); // total defense 
 
         killCount = 0;
-    }
-    public void setDeaultPosition(int mapnum) {
-        mapnum = 0;
-        worldX = gp.TileSize * 45;
-        worldY = gp.TileSize * 40;
-        Direction = "down";
+
+        getImage();
+        getAttackImage();
+        getGuardImage();
+        setItems();
     }
     // In Player class, add this method:
     public void respawnAtMapEntrance(int mapNum) {
@@ -133,12 +137,12 @@ public class Player extends Entity {
         invincibleCounter = 0;
         
         // RESET TRANSPARENT FLAG
-        transparent = false;  // ADD THIS LINE
+        transparent = false; 
         
         // Reset combat states
         attacking = false;
         knockBack = false;
-        guarding = false;     // ADD THIS LINE (reset guard state)
+        guarding = false;    
         spriteCounter = 0;
         spriteNum = 1;
         standCounter = 0;
@@ -147,6 +151,9 @@ public class Player extends Entity {
         life = maxLife;
         mana = maxMana;
         invincible = false;
+        attacking = false;
+        guarding = false;
+        knockBack = false;
     }
     public void setItems() {
         inventory.clear();
@@ -155,21 +162,11 @@ public class Player extends Entity {
         inventory.add(currentRange);
     }
     public int getAttack() {
-        int roll = random.nextInt(100); // 0–99
         attackArea = currentweapon.attackArea;
+        motion1_duration = currentweapon.motion1_duration;
+        motion2_duration = currentweapon.motion2_duration;
         int baseDamage = strength * currentweapon.attackvalue;
-        if (roll < 100) {
-            // Normal hit (80%)
-            attack = baseDamage;
-        } 
-        // else if (roll < 95) {
-        //     // Crit hit (15%)
-        //     attack = baseDamage * 2;
-        // } 
-        // else {
-        //     // Super crit (5%)
-        //     attack = baseDamage * 4;
-        // }
+        attack = baseDamage;
         return attack;
     }
     
@@ -271,6 +268,25 @@ public class Player extends Entity {
         }
     }
     public void update() {
+        // SAFETY CHECK: Ensure projectiles is not null
+        if (projectiles == null) {
+            System.out.println("WARNING: projectiles was null, reinitializing...");
+            if (currentRange != null) {
+                if (currentRange.type == type_wand) {
+                    projectiles = new OBJ_ice(gp);
+                } else if (currentRange.type == type_bow) {
+                    projectiles = new OBJ_Arrows(gp);
+                } else {
+                    projectiles = new OBJ_ice(gp);
+                }
+            } else {
+                projectiles = new OBJ_ice(gp);
+            }
+        }
+        
+        if (Direction == null) {
+            Direction = "down";
+        }
         if (attacking == true) {
             attacking();
             guarding = false; // Can't guard while attacking
@@ -347,7 +363,10 @@ public class Player extends Entity {
     
             // Check monster collision
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            contactMonster(monsterIndex);    
+            // Only call contactMonster if there's actually a monster (index not 999)
+            if (monsterIndex != 999) {
+                contactMonster(monsterIndex, gp.monster[gp.currentMap][monsterIndex]);
+            } 
             
             // Check interactive tile collision
             int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
@@ -426,15 +445,19 @@ public class Player extends Entity {
             gp.playSE(12);
         }
     }
+    
     public void attacking() {
+        if (Direction == null) {
+            Direction = "down";
+        }
         spriteCounter++;
-
+    
         if (spriteCounter <= 5) {
             spriteNum = 1;
         }
         if (spriteCounter > 5 && spriteCounter <= 25) {
             spriteNum = 2;
-
+    
             // save the current worldx, worldy, solidArea
             int currentWorldX = worldX;
             int currentWorldY = worldY;
@@ -450,16 +473,23 @@ public class Player extends Entity {
             //attackarea become solid area
             solidArea.width = attackArea.width;
             solidArea.height = attackArea.height;
+            
             // check monster collision with updated worldx, worldy, and solidarea
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
-            damageMonster(monsterIndex, attack, knockBackPower);
-
+            if (monsterIndex != 999) {
+                damageMonster(monsterIndex, this, attack, knockBackPower);
+            }
+    
             int iTileIndex = gp.cChecker.checkEntity(this, gp.iTile);
-            damageInteractiveTile(iTileIndex);
-
+            if (iTileIndex != 999) {
+                damageInteractiveTile(iTileIndex);
+            }
+    
             int projectileIndex = gp.cChecker.checkEntity(this, gp.projectile);
-            damageProjectile(projectileIndex);
-
+            if (projectileIndex != 999) {
+                damageProjectile(projectileIndex);
+            }
+    
             // after checking collision resotre the original data
             worldX = currentWorldX;
             worldY = currentWorldY;
@@ -606,13 +636,19 @@ public class Player extends Entity {
     //     }
     // }
     
-    public void contactMonster(int i) {
-        if(i != 999) {
+    public void contactMonster(int i, Entity monster) {
+        if(i != 999 && monster != null) {
+            
+            // SAFETY CHECK: Ensure monster's Direction is not null
+            if (monster.Direction == null) {
+                monster.Direction = "down";
+            }
+            
             // Check if player is NOT invincible AND monster is NOT dying
-            if (invincible == false && gp.monster[gp.currentMap][i].dying == false) {
+            if (invincible == false && monster.dying == false) {
                 
                 // Calculate base damage
-                int damage = gp.monster[gp.currentMap][i].attack - defense;
+                int damage = monster.attack - defense;
                 if(damage < 1) {
                     damage = 1;
                 }
@@ -620,12 +656,13 @@ public class Player extends Entity {
                 // CHECK GUARD HERE!
                 if (guarding == true) {
                     // Get the direction the attack is coming from (monster's direction)
-                    String attackDirection = gp.monster[gp.currentMap][i].Direction;
+                    String attackDirection = monster.Direction;
                     
                     // Check if player is facing the attack (opposite direction)
                     String oppositeDirection = getOppositeDirection(attackDirection);
                     
-                    if (Direction.equals(oppositeDirection)) {
+                    // FIX: Add null check for Direction
+                    if (Direction != null && Direction.equals(oppositeDirection)) {
                         // PERFECT GUARD - NO DAMAGE! + KNOCKBACK MONSTER
                         gp.playSE(15); // Guard sound
                         gp.ui.showMessage("Perfect Guard! No damage!");
@@ -639,7 +676,7 @@ public class Player extends Entity {
                         }
                         
                         // Apply knockback to monster
-                        knockBack(gp.monster[gp.currentMap][i], knockbackPower);
+                        setKnockBack(monster, this, knockbackPower);
                         
                         // DO NOT set invincible or transparent since no damage taken
                         return; // Exit without applying damage or invincibility
@@ -671,7 +708,6 @@ public class Player extends Entity {
             }
         }
     }
-
     // public void damageMonster(int i, int attack, int knockBackPower) {
     //     if (i != 999) {
     //         if (gp.monster[gp.currentMap][i].invincible == false) {
@@ -703,7 +739,7 @@ public class Player extends Entity {
     //         }
     //     }
     // }
-    public void damageMonster(int i, int attack, int knockBackPower) {
+    public void damageMonster(int i, Entity attacker, int attack, int knockBackPower) {
         if (i != 999) {
             if (gp.monster[gp.currentMap][i].invincible == false) {
                 gp.playSE(5);
@@ -716,7 +752,7 @@ public class Player extends Entity {
     
                 // Apply knockback if power > 0
                 if (knockBackPower > 0) {
-                    knockBack(gp.monster[gp.currentMap][i], knockBackPower);
+                    setKnockBack(gp.monster[gp.currentMap][i],attacker, knockBackPower);
                 }
             
                 int damage = attack - gp.monster[gp.currentMap][i].defense;
@@ -742,13 +778,13 @@ public class Player extends Entity {
             }
         }
     }
-    public void knockBack(Entity entity, int knockBackPower) {
+    // public void knockBack(Entity entity, int knockBackPower) {
 
-        entity.Direction = Direction;
-        entity.speed += knockBackPower; 
-        entity.knockBack = true;
-        entity.knockBackCounter = 0;
-    }
+    //     entity.Direction = Direction;
+    //     entity.speed += knockBackPower; 
+    //     entity.knockBack = true;
+    //     entity.knockBackCounter = 0;
+    // }
     public void damageInteractiveTile(int i) {
         if (i != 999 && gp.iTile[gp.currentMap][i].destructible == true 
             && gp.iTile[gp.currentMap][i].isCorrectItem(this)== true && gp.iTile[gp.currentMap][i].invincible == false) { 
@@ -778,7 +814,7 @@ public class Player extends Entity {
             gp.ui.showMessage("You leveled up! You are\nlevel " + level + " now!");
             gp.playSE(8);
             exp -= nextLevelExp;
-            nextLevelExp += level * 5;
+            nextLevelExp += level * 2;
     
             maxLife += 2;
             life += 2;
@@ -809,12 +845,12 @@ public class Player extends Entity {
             }
             else if (selectedItem.type == type_bow) {
                 currentRange = selectedItem;
-                projectiles = new OBJ_Arrows(gp);  
+                projectiles = new OBJ_Arrows(gp);  // Re-initialize projectiles for bow
                 getAttackImage();
             }
             else if (selectedItem.type == type_wand) {
                 currentRange = selectedItem;
-                projectiles = new OBJ_ice(gp);     
+                projectiles = new OBJ_ice(gp);     // Re-initialize projectiles for wand
                 getAttackImage();
             }
             else if (selectedItem.type == type_shield) {

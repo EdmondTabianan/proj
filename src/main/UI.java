@@ -2,12 +2,19 @@ package main;
 
 import java.awt.Image;
 import javax.imageio.ImageIO;
+
+import data.DataStorage;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -279,11 +286,7 @@ public class UI {
             "Pause: P",
             
             // Gameplay advice
-            "Upgrade equipment at blacksmiths.",
-            "Listen for audio cues of danger.",
             "Collect coins to buy better gear.",
-            "The mini-map shows unexplored areas.",
-            "Some secrets require solving puzzles.",
             
             // Combat tips
             "Environmental objects can help in combat.",
@@ -445,6 +448,152 @@ public class UI {
         }
     }
 
+    // public void drawTitleScreen() {
+    //     // ============ DRAWING SECTION ============
+    //     if (titleScreenState == 0) {
+    //         // Draw main menu
+    //         g2.setColor(new Color(0,0,0));
+    //         g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+    
+    //         // Title Name
+    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD,32F));
+    //         String text = "The Hunt: Lost Tomb of Cleopatra";
+    //         int x = getXforCenteredText(text);
+    //         int y = gp.TileSize*3;
+    
+    //         // shadow
+    //         g2.setColor(Color.GRAY);
+    //         g2.drawString(text, x+3, y+3);
+    //         // Main Color
+    //         g2.setColor(new Color(255, 215, 0));
+    //         g2.drawString(text, x, y);
+    
+    //         // Logo / Character Preview - Simplified
+    //         x = gp.ScreenWidth/2 - (gp.TileSize*2)/2;
+    //         y += gp.TileSize*2;
+                         
+    //         // Menu options
+    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD,48F));
+    
+    //         text = "New Game";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 0){
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+            
+    //         text = "Load Game";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize*2;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 1){
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+            
+    //         text = "Quit";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize*2;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 2){
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+    //     }
+    //     else if (titleScreenState == 1) {
+    //         // Draw character selection - SIMPLIFIED (NO PREVIEWS)
+    //         g2.setColor(new Color(0,0,0));
+    //         g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+            
+    //         g2.setColor(Color.white);
+    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+    
+    //         String text = "Select Your Hunter";
+    //         int x = getXforCenteredText(text);
+    //         int y = gp.TileSize*3;
+    //         g2.drawString(text, x, y);
+    
+    //         // Character options - just text, no previews
+    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+            
+    //         // Xylo option
+    //         text = "Xylo";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize*3;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 0) {
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+            
+    //         // Alexandria option
+    //         text = "Alexandria";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 1) {
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+            
+    //         // Back option
+    //         text = "Back";
+    //         x = getXforCenteredText(text);
+    //         y += gp.TileSize*2;
+    //         g2.drawString(text, x, y);
+    //         if (commandNum == 2) {
+    //             g2.drawString(">", x-gp.TileSize, y);
+    //         }
+    //     }
+    
+    //     // ============ INPUT HANDLING SECTION ============
+        
+    //     // Handle main menu selection
+    //     if (gp.keyH.enterPressed == true && titleScreenState == 0) {
+    //         if (commandNum == 0) {
+    //             // New Game - go to character selection
+    //             titleScreenState = 1;
+    //             commandNum = 0;
+    //         }
+    //         if (commandNum == 1) {
+    //             // Load Game - to be implemented
+    //         }
+    //         if (commandNum == 2) {
+    //             // Quit
+    //             System.exit(0);
+    //         }
+    //         gp.keyH.enterPressed = false;
+    //     }
+        
+    //     // Handle character selection
+    //     if (gp.keyH.enterPressed == true && titleScreenState == 1) {
+    //         // Prevent multiple selections
+    //         if (gp.gameState == gp.titleState && !gp.loadingManager.isLoading()) {
+    //             if (commandNum == 0) {
+                    
+    //                 // Use the loading manager method
+    //                 gp.loadingManager.startGameWithCharacter(0);
+                    
+    //                 // Set game to transition state to show loading screen
+    //                 gp.gameState = gp.transitionState;
+    //                 commandNum = 0;
+    //             }
+    //             else if (commandNum == 1) {
+                    
+    //                 // Use the loading manager method
+    //                 gp.loadingManager.startGameWithCharacter(1);
+                    
+    //                 // Set game to transition state to show loading screen
+    //                 gp.gameState = gp.transitionState;
+    //                 commandNum = 0;
+    //             }
+    //             else if (commandNum == 2) {
+    //                 // Back to main menu
+    //                 titleScreenState = 0;
+    //                 commandNum = 0;
+    //             }
+    //         }
+    //         gp.keyH.enterPressed = false;
+    //     }
+    // }
+    
     public void drawTitleScreen() {
         // ============ DRAWING SECTION ============
         if (titleScreenState == 0) {
@@ -486,6 +635,30 @@ public class UI {
             g2.drawString(text, x, y);
             if (commandNum == 1){
                 g2.drawString(">", x-gp.TileSize, y);
+                
+                // Show available save slots when hovering
+                g2.setFont(g2.getFont().deriveFont(Font.PLAIN,20F));
+                g2.setColor(Color.LIGHT_GRAY);
+                
+                int saveY = y + 40;
+                boolean hasAnySave = false;
+                
+                for (int i = 0; i < 3; i++) {
+                    String status = checkSaveSlotStatus(i);
+                    if (!status.equals("EMPTY")) {
+                        String saveInfo = "Slot " + (i+1) + ": " + status;
+                        int saveX = getXforCenteredText(saveInfo);
+                        g2.drawString(saveInfo, saveX, saveY);
+                        saveY += 25;
+                        hasAnySave = true;
+                    }
+                }
+                
+                if (!hasAnySave) {
+                    String noSaveMsg = "No saved games found";
+                    int msgX = getXforCenteredText(noSaveMsg);
+                    g2.drawString(noSaveMsg, msgX, saveY);
+                }
             }
             
             text = "Quit";
@@ -497,47 +670,12 @@ public class UI {
             }
         }
         else if (titleScreenState == 1) {
-            // Draw character selection - SIMPLIFIED (NO PREVIEWS)
-            g2.setColor(new Color(0,0,0));
-            g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-            
-            g2.setColor(Color.white);
-            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
-    
-            String text = "Select Your Hunter";
-            int x = getXforCenteredText(text);
-            int y = gp.TileSize*3;
-            g2.drawString(text, x, y);
-    
-            // Character options - just text, no previews
-            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
-            
-            // Xylo option
-            text = "Xylo";
-            x = getXforCenteredText(text);
-            y += gp.TileSize*3;
-            g2.drawString(text, x, y);
-            if (commandNum == 0) {
-                g2.drawString(">", x-gp.TileSize, y);
-            }
-            
-            // Alexandria option
-            text = "Alexandria";
-            x = getXforCenteredText(text);
-            y += gp.TileSize;
-            g2.drawString(text, x, y);
-            if (commandNum == 1) {
-                g2.drawString(">", x-gp.TileSize, y);
-            }
-            
-            // Back option
-            text = "Back";
-            x = getXforCenteredText(text);
-            y += gp.TileSize*2;
-            g2.drawString(text, x, y);
-            if (commandNum == 2) {
-                g2.drawString(">", x-gp.TileSize, y);
-            }
+            // Draw character selection (ONLY for New Game)
+            drawCharacterSelectionScreen();
+        }
+        else if (titleScreenState == 2) {
+            // Draw load game selection screen
+            drawLoadGameScreen();
         }
     
         // ============ INPUT HANDLING SECTION ============
@@ -550,7 +688,9 @@ public class UI {
                 commandNum = 0;
             }
             if (commandNum == 1) {
-                // Load Game - to be implemented
+                // Load Game - go to load game selection screen
+                titleScreenState = 2;
+                commandNum = 0;
             }
             if (commandNum == 2) {
                 // Quit
@@ -559,38 +699,242 @@ public class UI {
             gp.keyH.enterPressed = false;
         }
         
-        // Handle character selection
+        // Handle character selection (for New Game only)
         if (gp.keyH.enterPressed == true && titleScreenState == 1) {
-            // Prevent multiple selections
-            if (gp.gameState == gp.titleState && !gp.loadingManager.isLoading()) {
-                if (commandNum == 0) {
-                    
-                    // Use the loading manager method
-                    gp.loadingManager.startGameWithCharacter(0);
-                    
-                    // Set game to transition state to show loading screen
-                    gp.gameState = gp.transitionState;
-                    commandNum = 0;
-                }
-                else if (commandNum == 1) {
-                    
-                    // Use the loading manager method
-                    gp.loadingManager.startGameWithCharacter(1);
-                    
-                    // Set game to transition state to show loading screen
-                    gp.gameState = gp.transitionState;
-                    commandNum = 0;
-                }
-                else if (commandNum == 2) {
-                    // Back to main menu
-                    titleScreenState = 0;
-                    commandNum = 0;
-                }
-            }
+            handleCharacterSelection();
+            gp.keyH.enterPressed = false;
+        }
+        
+        // Handle load game selection
+        if (gp.keyH.enterPressed == true && titleScreenState == 2) {
+            handleLoadGameSelection();
             gp.keyH.enterPressed = false;
         }
     }
     
+    public void drawCharacterSelectionScreen() {
+        g2.setColor(new Color(0,0,0));
+        g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+        
+        g2.setColor(Color.white);
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+    
+        String text = "Select Your Hunter";
+        int x = getXforCenteredText(text);
+        int y = gp.TileSize*3;
+        g2.drawString(text, x, y);
+    
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+        
+        // Xylo option
+        text = "Xylo";
+        x = getXforCenteredText(text);
+        y += gp.TileSize*3;
+        g2.drawString(text, x, y);
+        if (commandNum == 0) {
+            g2.drawString(">", x-gp.TileSize, y);
+        }
+        
+        // Alexandria option
+        text = "Alexandria";
+        x = getXforCenteredText(text);
+        y += gp.TileSize;
+        g2.drawString(text, x, y);
+        if (commandNum == 1) {
+            g2.drawString(">", x-gp.TileSize, y);
+        }
+        
+        // Back option
+        text = "Back";
+        x = getXforCenteredText(text);
+        y += gp.TileSize*2;
+        g2.drawString(text, x, y);
+        if (commandNum == 2) {
+            g2.drawString(">", x-gp.TileSize, y);
+        }
+    }
+
+    private void handleCharacterSelection() {
+        if (gp.gameState == gp.titleState && !gp.loadingManager.isLoading()) {
+            if (commandNum == 0) {
+                // Start new game with Xylo
+                gp.loadingManager.startGameWithCharacter(0);
+                gp.gameState = gp.transitionState;
+                commandNum = 0;
+            }
+            else if (commandNum == 1) {
+                // Start new game with Alexandria
+                gp.loadingManager.startGameWithCharacter(1);
+                gp.gameState = gp.transitionState;
+                commandNum = 0;
+            }
+            else if (commandNum == 2) {
+                // Back to main menu
+                titleScreenState = 0;
+                commandNum = 0;
+            }
+        }
+    }
+
+    public void drawLoadGameScreen() {
+        g2.setColor(new Color(0,0,0));
+        g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
+        
+        g2.setColor(Color.white);
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
+        
+        String text = "LOAD GAME";
+        int x = getXforCenteredText(text);
+        int y = gp.TileSize*2;
+        g2.drawString(text, x, y);
+        
+        // Save slots
+        y = gp.TileSize*4;
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 36F));
+        
+        String[] slotNames = {"LOAD 1", "LOAD 2", "LOAD 3", "BACK"};
+        
+        for (int i = 0; i < slotNames.length; i++) {
+            text = slotNames[i];
+            x = getXforCenteredText(text);
+            
+            // Set color based on save existence
+            if (i < 3) {
+                String status = checkSaveSlotStatus(i);
+                if (status.equals("EMPTY")) {
+                    g2.setColor(Color.DARK_GRAY);
+                } else {
+                    g2.setColor(Color.GREEN);
+                }
+            } else {
+                g2.setColor(Color.WHITE);
+            }
+            
+            g2.drawString(text, x, y);
+            
+            // Show save status below slot name
+            if (i < 3) {
+                String status = checkSaveSlotStatus(i);
+                g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
+                g2.setColor(Color.LIGHT_GRAY);
+                int statusX = getXforCenteredText(status);
+                g2.drawString(status, statusX, y + 30);
+                g2.setColor(Color.WHITE);
+                g2.setFont(g2.getFont().deriveFont(Font.BOLD, 36F));
+            }
+            
+            // Draw cursor for selected slot
+            if (commandNum == i) {
+                g2.setColor(Color.WHITE);
+                g2.drawString(">", x - 50, y);
+            }
+            
+            y += gp.TileSize * 2;
+        }
+        
+        // Draw instructions
+        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
+        g2.setColor(Color.LIGHT_GRAY);
+        String instructions = "Use ↑/↓ to select, ENTER to load";
+        int instX = getXforCenteredText(instructions);
+        int instY = gp.ScreenHeight - 50;
+        g2.drawString(instructions, instX, instY);
+        
+        // Reset color
+        g2.setColor(Color.WHITE);
+    }
+    
+    private void handleLoadGameSelection() {
+        if (commandNum == 0) {
+            // Load slot 1
+            loadGame(0);
+            gp.gameState = gp.playState;
+            titleScreenState = 0;
+            commandNum = 0;
+            showMessage("Game Loaded from Slot 1");
+            gp.playMusic(0);
+        }
+        else if (commandNum == 1) {
+            // Load slot 2
+            loadGame(1);
+            gp.gameState = gp.playState;
+            titleScreenState = 0;
+            commandNum = 0;
+            showMessage("Game Loaded from Slot 2");
+            gp.playMusic(0);
+        }
+        else if (commandNum == 2) {
+            // Load slot 3
+            loadGame(2);
+            gp.gameState = gp.playState;
+            titleScreenState = 0;
+            commandNum = 0;
+            showMessage("Game Loaded from Slot 3");
+            gp.playMusic(0);
+        }
+        else if (commandNum == 3) {
+            // Back to main menu
+            titleScreenState = 0;
+            commandNum = 1; // Select Load Game option
+        }
+    }
+
+    private void loadGame(int slot) {
+        try {
+            String filename = "save_slot_" + (slot + 1) + ".dat";
+            ObjectInputStream ois = new ObjectInputStream(new java.io.FileInputStream(new File(filename)));
+            
+            DataStorage ds = (DataStorage) ois.readObject();
+            ois.close();
+            
+            // Load player stats
+            gp.player.level = ds.level;
+            gp.player.maxLife = ds.maxHP;
+            gp.player.life = ds.currentHP;
+            gp.player.maxMana = ds.maxMana;
+            gp.player.mana = ds.currentMana;
+            gp.player.strength = ds.strength;
+            gp.player.dexterity = ds.dexterity;
+            gp.player.exp = ds.exp;
+            gp.player.nextLevelExp = ds.nextLevelExp;
+            gp.player.coin = ds.coin;
+            
+            // Load player position and map
+            gp.player.worldX = ds.worldX;
+            gp.player.worldY = ds.worldY;
+            gp.currentMap = ds.currentMap;
+            
+            // LOAD PICKUP ITEMS STATUS into AssetSetter
+            if (gp.aSetter != null && ds.itemPickedUp != null) {
+                gp.aSetter.setItemPickedUp(ds.itemPickedUp);
+            }
+            
+            // Recalculate player stats
+            gp.player.attack = gp.player.getAttack();
+            gp.player.defense = gp.player.getDefense();
+            
+            // Refresh player images
+            gp.player.getImage();
+            gp.player.getAttackImage();
+            gp.player.getGuardImage();
+            
+            // Reset assets for the loaded map (this will use the loaded pickup status)
+            gp.aSetter.clearMapAssets(gp.currentMap);
+            gp.aSetter.setObject(gp.currentMap);
+            gp.aSetter.setNPC(gp.currentMap);
+            gp.aSetter.setMonster(gp.currentMap);
+            gp.aSetter.setInteractiveTile(gp.currentMap);
+            
+            System.out.println("Game loaded from slot " + (slot + 1));
+            
+        } catch (Exception e) {
+            System.out.println("Load failed: " + e.getMessage());
+            e.printStackTrace();
+            showMessage("LOAD FAILED!");
+        }
+    }
+        
+
     /**
      * Set the dialogue text to be displayed with animation
      * @param text The full dialogue text to display
@@ -629,9 +973,7 @@ public class UI {
         }
     }
     
-    /**
-     * Skip to the end of the current dialogue
-     */
+
     public void skipToEnd() {
         if (targetDialogue != null) {
             displayedChars = targetDialogue.length();
@@ -1105,10 +1447,16 @@ public class UI {
             
             // Add save status indicator
             if (i < 3) {
-                String status = ""; // Add your save status check here
+                String status = checkSaveSlotStatus(i); // This returns a String
                 g2.setFont(g2.getFont().deriveFont(20f)); // Smaller font for status
-                g2.drawString(status, textX, textY + 15);
+                g2.setColor(Color.LIGHT_GRAY);
+                
+                // Draw status text - properly as a String
+                int statusX = textX - 150; // Position status to the left of slot name
+                g2.drawString(status, statusX, textY + 15);
+                
                 g2.setFont(g2.getFont().deriveFont(32f)); // Reset to normal font
+                g2.setColor(Color.WHITE);
             }
             
             g2.drawString(slotNames[i], textX, textY);
@@ -1118,8 +1466,8 @@ public class UI {
                 if (gp.keyH.enterPressed == true) {
                     if (i < 3) {
                         // Save to slot i
-                        //saveGame(i);
-                        showMessage("SAVED!");
+                        saveGame(i);
+                        showMessage("GAME SAVED TO SLOT " + (i + 1) + "!");
                     } else {
                         // Back
                         subState = 0;
@@ -1129,6 +1477,87 @@ public class UI {
                 }
             }
             textY += gp.TileSize * 1.5;
+        }
+    }
+
+    private void saveGame(int slot) {
+        try {
+            String filename = "save_slot_" + (slot + 1) + ".dat";
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filename)));
+            
+            DataStorage ds = new DataStorage();
+            
+            // Player stats
+            ds.level = gp.player.level;
+            ds.maxHP = gp.player.maxLife;
+            ds.currentHP = gp.player.life;
+            ds.maxMana = gp.player.maxMana;
+            ds.currentMana = gp.player.mana;
+            ds.strength = gp.player.strength;
+            ds.dexterity = gp.player.dexterity;
+            ds.exp = gp.player.exp;
+            ds.nextLevelExp = gp.player.nextLevelExp;
+            ds.coin = gp.player.coin;
+            
+            // Player position and map
+            ds.worldX = gp.player.worldX;
+            ds.worldY = gp.player.worldY;
+            ds.currentMap = gp.currentMap;
+            
+            // Save pickup items status
+            if (gp.aSetter != null) {
+                ds.itemPickedUp = gp.aSetter.getItemPickedUp();
+            }
+            
+            ds.saveTime = System.currentTimeMillis();
+            
+            oos.writeObject(ds);
+            oos.close();
+            
+            System.out.println("Game saved to slot " + (slot + 1));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showMessage("SAVE FAILED!");
+        }
+    }
+
+    private String checkSaveSlotStatus(int slot) {
+        String filename = "save_slot_" + (slot + 1) + ".dat";
+        File saveFile = new File(filename);
+        
+        if (saveFile.exists()) {
+            try {
+                ObjectInputStream ois = new ObjectInputStream(new java.io.FileInputStream(saveFile));
+                DataStorage ds = (DataStorage) ois.readObject();
+                ois.close();
+                
+                // Format the save info (level and date)
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MM/dd HH:mm");
+                String date = sdf.format(new java.util.Date(ds.saveTime));
+                
+                // Count picked up items (optional)
+                int pickedUpCount = 0;
+                if (ds.itemPickedUp != null) {
+                    for (int map = 0; map < ds.itemPickedUp.length; map++) {
+                        if (ds.itemPickedUp[map] != null) {
+                            for (int i = 0; i < ds.itemPickedUp[map].length; i++) {
+                                if (ds.itemPickedUp[map][i] != null && ds.itemPickedUp[map][i][0]) {
+                                    pickedUpCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return "Lv." + ds.level + " - " + date + " (" + pickedUpCount + " items)";
+                
+            } catch (Exception e) {
+                System.out.println("Save file corrupted: " + filename);
+                return "CORRUPTED";
+            }
+        } else {
+            return "EMPTY";
         }
     }
     
@@ -1222,7 +1651,7 @@ public class UI {
                     if (i == 0) {
                         // Yes - quit to title
                         gp.gameState = gp.titleState;
-                        gp.restart();
+                        gp.resetGame(true);
                         gp.music.stop();
                     } else {
                         // No - back to options

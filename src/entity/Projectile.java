@@ -91,7 +91,7 @@ public class Projectile extends Entity {
                         
                     }
                     
-                    gp.player.damageMonster(monsterIndex, this.attack, this.knockBackPower);
+                    gp.player.damageMonster(monsterIndex, this, this.attack, this.knockBackPower);
                     this.alive = false;
                     return;
                 }

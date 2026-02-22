@@ -29,8 +29,14 @@ public class CollisionChecker {
         if (entityBottomRow >= gp.maxWorldRow) entityBottomRow = gp.maxWorldRow - 1;
         
         int tileNum1, tileNum2; 
+
+        // use temporal direction when it's being knockback
+        String Direction = entity.Direction;
+        if (entity.knockBack == true ) {
+            Direction = entity.knockbackDirection;
+        }
     
-        switch (entity.Direction) {
+        switch (Direction) {
             case "up":
                 entityTopRow = (entityTopWorldY - entity.speed) / gp.TileSize;
                 // Bounds check
@@ -120,7 +126,14 @@ public class CollisionChecker {
     }
     
     public int checkEntity(Entity entity, Entity[][] target) {
+
         int index = 999;
+
+        // use temporal direction when it's being knockback
+        String Direction = entity.Direction;
+        if (entity.knockBack == true ) {
+            Direction = entity.knockbackDirection;
+        }
     
         for (int i = 0; i < target[1].length; i++) {
             if(target[gp.currentMap][i] != null && target[gp.currentMap][i] != entity) {
@@ -139,7 +152,7 @@ public class CollisionChecker {
                     target[gp.currentMap][i].solidArea.height
                 );
     
-                switch (entity.Direction) {
+                switch (Direction) {
                     case "up": entitySolid.y -= entity.speed; break;
                     case "down": entitySolid.y += entity.speed; break;
                     case "left": entitySolid.x -= entity.speed; break;

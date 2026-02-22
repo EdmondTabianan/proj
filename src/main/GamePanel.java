@@ -8,6 +8,7 @@ import java.util.Comparator;
 import javax.swing.JPanel;
 
 import ai.PathFinder;
+import data.SaveLoad;
 import entity.Entity;
 import entity.NPC_blueboy;
 import entity.Player;
@@ -43,6 +44,7 @@ public class GamePanel extends JPanel implements Runnable {
     public eventHandler eHandler = new eventHandler(this);
     public Config config = new Config(this);
     public PathFinder pFinder = new PathFinder(this);
+    public SaveLoad saveLoad = new SaveLoad(this);
     public LoadingManager loadingManager;
     Thread gameThread;
 
@@ -72,6 +74,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public int monsterRespawnCounter = 0;
     private boolean loadingStarted = false;
+    private boolean loadingComplete = false;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(ScreenWidth, ScreenHeight));
@@ -80,18 +83,12 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(keyH);
         this.setFocusable(true);
 
-        // Initialize loading manager
         loadingManager = new LoadingManager(this);
-        
-        // Set initial game state to loading
         gameState = loadingState;
-        
-        // Initialize npc_blueboy
-        npc_blueboy = new NPC_blueboy(this);
     }
 
     public void setupGame() {
-        // This will be called by LoadingManager
+        
         if (aSetter != null) {
             aSetter.clearMapAssets(currentMap);
             aSetter.setObject(currentMap);
@@ -101,24 +98,18 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    public void retry() {
-        if (player != null) {
-            player.respawnAtMapEntrance(currentMap);
-            player.resetLifeAndMana();
-            if (aSetter != null) {
-                aSetter.setMonster(currentMap);
-            }
-            player.invincible = false;
-            player.transparent = false;
-            player.guarding = false;
-        }
-    }
+    public void resetGame(boolean restart) {
+        player.setDefaultValues();
+        player.resetLifeAndMana();
+        aSetter.setNPC(currentMap);
 
-    public void restart() {
-        if (player != null) {
+        if (restart == true) {
             player.setDefaultValues();
-            player.setItems();
+            aSetter.setObject(currentMap);
+            aSetter.setInteractiveTile(currentMap);
+            aSetter.resetAllPickedUpItems();
         }
+        
     }
 
     public void startGameThread() {
@@ -140,13 +131,14 @@ public class GamePanel extends JPanel implements Runnable {
         // Start loading ONLY ONCE
         if (!loadingStarted) {
             loadingStarted = true;
-            gameState = loadingState;
+            gameState = loadingState; // Keep in loading state
             
             // Start loading in a separate thread
             Thread loadingStarter = new Thread(() -> {
                 try {
                     Thread.sleep(100); // Give everything time to initialize
                     loadingManager.startLoading();
+                    loadingComplete = true; // Mark loading as complete
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -181,9 +173,8 @@ public class GamePanel extends JPanel implements Runnable {
             return;
         }
     
-        // Check if loading is complete and switch to title state
-        if (gameState == loadingState && loadingManager != null && !loadingManager.isLoading()) {
-            gameState = titleState;
+        if (gameState == loadingState && loadingComplete && loadingManager != null && !loadingManager.isLoading()) {
+            gameState = titleState; // Now show title screen
             return;
         }
     
@@ -242,13 +233,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
         
         else if (gameState == transitionState) {
-            // Don't update during transition
             return;
         }
        
-        if (gameState == pauseState) {
-            // Nothing updates when paused
-        }
+        if (gameState == pauseState) {}
     }
 
     public void paintComponent(Graphics g) {
@@ -263,6 +251,10 @@ public class GamePanel extends JPanel implements Runnable {
         if (loadingManager != null && loadingManager.isLoading()) {
             ui.drawLoadingScreen(g2);
         } 
+        // If loading is complete AND we're in loading state, show loading screen until transition
+        else if (gameState == loadingState) {
+            ui.drawLoadingScreen(g2);
+        }
         else if (gameState == titleState) {
             ui.draw(g2);
         }
@@ -272,7 +264,6 @@ public class GamePanel extends JPanel implements Runnable {
                  gameState == transitionState || gameState == tradeState ||
                  gameState == questState) {
             
-            // Only draw game world if player exists
             if (player != null) {
                 // Draw tile
                 tileM.draw(g2);
@@ -357,7 +348,7 @@ public class GamePanel extends JPanel implements Runnable {
             ui.drawLoadingScreen(g2);
         }
     
-        g2.dispose();
+        g2.dispose();  
     }
 
     public void playMusic(int i) {

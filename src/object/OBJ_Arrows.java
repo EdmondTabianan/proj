@@ -27,10 +27,10 @@ public class OBJ_Arrows extends Projectile {
     
         // --- SHRINK COLLISION BOX ---
         solidArea = new java.awt.Rectangle();
-        solidArea.x = 6;         // Offset from sprite edge
-        solidArea.y = 6;
-        solidArea.width = 12;    // Smaller than full tile
-        solidArea.height = 12;
+        solidArea.x = 12;         // Offset from sprite edge
+        solidArea.y = 12;
+        solidArea.width = 18;    // Smaller than full tile
+        solidArea.height = 18;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
     

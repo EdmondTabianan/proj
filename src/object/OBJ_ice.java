@@ -30,10 +30,10 @@ public class OBJ_ice extends Projectile {
     
         // --- SHRINK COLLISION BOX ---
         solidArea = new java.awt.Rectangle();
-        solidArea.x = 6;           // offset inside sprite
-        solidArea.y = 6;
-        solidArea.width = 12;      // smaller than full tile
-        solidArea.height = 12;
+        solidArea.x = 12;           // offset inside sprite
+        solidArea.y = 12;
+        solidArea.width = 18;      // smaller than full tile
+        solidArea.height = 18;
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
     

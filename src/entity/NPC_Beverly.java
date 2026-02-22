@@ -144,12 +144,9 @@ public class NPC_Beverly extends Entity {
         // if (targetSnake != null && targetSnake.isDead()) {
         //     return true;
         // }
-        
-        // Approach 2: Use a global kill counter for snakes
+   
         if (gp.player != null) {
-            // You would need a snakeKillCount variable in Player class
-            // return gp.player.snakeKillCount >= requiredSnakeKills;
-            
+
             // For now, let's check if there are any snakes alive on the map
             boolean snakeFound = false;
             for (int i = 0; i < gp.monster[gp.currentMap].length; i++) {

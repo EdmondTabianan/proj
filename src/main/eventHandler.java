@@ -58,13 +58,13 @@ public class eventHandler {
             
             else if(hit(1, 9, 29, "up") == true) {teleport(3, 24.0f, 35);}
             else if(hit(3, 24, 36, "down") == true) {teleport(1, 9, 29);}
-            else if(hit(3, 20, 22, "up") == true) {speak(gp.npc[3][1]);}
+            else if(hit(3, 20, 22, "up") == true) {  // Player below merchant
+                speak(gp.npc[3][0]);  // Or whatever index your merchant is at
+            }
             else if(hit(2, 4, 3, "any") == true) {teleport(4, 5, 3);}
             else if(hit(4, 4, 3, "any") == true) {teleport(2, 5.0f, 3);}
             else if(hit(4, 10, 10, "up") == true) {teleportToFinalStage(0, 25 , 35, gp.dialogueState);}            
-            else if(hit(0, 28, 17, "up") == true || hit(0, 29, 17, "up") == true) {
-                entrance(2, 24, 48, gp.dialogueState);
-            }
+
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28, 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29, 17);}
             else if(hit(4, 43, 44, "any") == true) {teleport(5, 42, 44);}
@@ -283,13 +283,9 @@ public class eventHandler {
             }
         }
     }
-    
+
     public void speak(Entity entity) {
         if(gp.keyH.enterPressed == true) {
-            if (entity == null) {
-                gp.ui.showMessage("Warning: Tried to speak with null NPC at map " + gp.currentMap);
-                return;
-            }
             gp.player.attackCanceled = true;
             entity.speak();
         }

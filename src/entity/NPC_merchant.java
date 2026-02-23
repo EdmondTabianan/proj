@@ -28,21 +28,22 @@ public class NPC_merchant extends Entity {
         setDialogue();
         setItem();
     }
+    
     public void getImage() {
-            up1 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
-            up2 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
-            down1 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
-            down2 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
-            left1 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
-            left2 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
-            right1 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
-            right2 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
+        up1 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+        up2 = setup("/npc/npc_3_back", gp.TileSize, gp.TileSize);
+        down1 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+        down2 = setup("/npc/npc_3_front", gp.TileSize, gp.TileSize);
+        left1 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+        left2 = setup("/npc/npc_3_left", gp.TileSize, gp.TileSize);
+        right1 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
+        right2 = setup("/npc/npc_3_right", gp.TileSize, gp.TileSize);
     }
+    
     public void setDialogue() {
-
         int i = 0;
-
-        dialogues[i][0] = "So you want to buy?";i++;
+        dialogues[i][0] = "So you want to buy?";
+        i++;
     }
 
     public void setItem() {
@@ -55,9 +56,35 @@ public class NPC_merchant extends Entity {
         inventory.add(new OBJ_bow_normal(gp));
     }
 
+    public void facePlayer() {
+        if (gp.player != null) {
+            switch (gp.player.Direction) {
+                case "up": Direction = "down"; break;
+                case "down": Direction = "up"; break;
+                case "left": Direction = "right"; break;
+                case "right": Direction = "left"; break;
+            }
+        }
+    }
+    
     public void speak() {
-        super.speak();
-        gp.gameState = gp.tradeState;
-        gp.ui.npc = this;
+        if (gp.keyH.enterPressed == true) {
+            // Face the player
+            facePlayer();
+
+            System.out.println("Current dialoguesIndex: " + dialoguesIndex);
+        System.out.println("Dialogue at index: " + (dialogues[dialoguesIndex] != null ? dialogues[dialoguesIndex][0] : "null"));
+            
+            // Set dialogue
+            gp.ui.currentDialogue = "So you want to buy?";
+            
+            // Enter trade state
+            gp.gameState = gp.tradeState;
+            gp.ui.npc = this;
+            
+            // Cancel attack
+            gp.player.attackCanceled = true;
+        
+        }
     }
 }

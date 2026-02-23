@@ -125,6 +125,7 @@ public class Entity {
     public final int type_door = 13;
     public final int type_obstacle = 14;
     public final int type_arrows = 15;
+    public final int type_torch = 16;
 
     public boolean isPickup;
 
@@ -260,6 +261,28 @@ public class Entity {
             gp.cChecker.checkEntity(this, gp.iTile);
         }
     }
+
+    public void torch_animation() {
+        actionLockCounter++;
+        
+        if (actionLockCounter > 8) {
+            // Pattern: 1 (mid) -> 2 (right) -> 1 (mid) -> 3 (left) -> repeat
+            if (spriteNum == 1) {
+                spriteNum = 2; // mid -> right
+            }
+            else if (spriteNum == 2) {
+                spriteNum = 1; // right -> mid
+            }
+            else if (spriteNum == 1) { // This won't work because spriteNum is already 1
+                spriteNum = 3; // This line never executes!
+            }
+            else if (spriteNum == 3) {
+                spriteNum = 1; // left -> mid
+            }
+            
+            actionLockCounter = 0;
+        }
+    }
     
     public void update() {
         if (Direction == null) {
@@ -371,6 +394,17 @@ public class Entity {
             } 
             else if (attacking == true) {
                 attacking();
+            }
+            else if (attacking == true && type == type_torch) {
+                // no hiting torch
+            }
+            else if (attacking == true) {
+                if (type == type_torch) {
+                    // Torches don't attack, just animate
+                    torch_animation();
+                } else {
+                    attacking();
+                }
             }
             
             else {

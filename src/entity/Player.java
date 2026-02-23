@@ -84,7 +84,7 @@ public class Player extends Entity {
         coin = 0;
         hasKey = 1; 
         hasTablet = false;
-        currentweapon = new OBJ_Axe(gp);
+        currentweapon = new OBJ_Sword_Normal(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         currentRange = new OBJ_ice_wand(gp);
         projectiles = new OBJ_ice(gp);
@@ -220,14 +220,27 @@ public class Player extends Entity {
             }
         }
         if (currentweapon.type == type_axe) {
-            attackUp1 = setup("/player/boy_axe_up_1", gp.TileSize, gp.TileSize*2);
-            attackUp2 = setup("/player/boy_axe_up_2", gp.TileSize, gp.TileSize*2);
-            attackDown1 = setup("/player/boy_axe_down_1", gp.TileSize, gp.TileSize*2);
-            attackDown2 = setup("/player/boy_axe_down_2", gp.TileSize, gp.TileSize*2);
-            attackLeft1 = setup("/player/boy_axe_left_1", gp.TileSize*2, gp.TileSize);
-            attackLeft2 = setup("/player/boy_axe_left_2", gp.TileSize*2, gp.TileSize);
-            attackRight1 = setup("/player/boy_axe_right_1", gp.TileSize*2, gp.TileSize);
-            attackRight2 = setup("/player/boy_axe_right_2", gp.TileSize*2, gp.TileSize);
+            if (characterused == 1) {
+                attackUp1 = setup("/player/boy_axe_up_1", gp.TileSize, gp.TileSize*2);
+                attackUp2 = setup("/player/boy_axe_up_2", gp.TileSize, gp.TileSize*2);
+                attackDown1 = setup("/player/boy_axe_down_1", gp.TileSize, gp.TileSize*2);
+                attackDown2 = setup("/player/boy_axe_down_2", gp.TileSize, gp.TileSize*2);
+                attackLeft1 = setup("/player/boy_axe_left_1", gp.TileSize*2, gp.TileSize);
+                attackLeft2 = setup("/player/boy_axe_left_2", gp.TileSize*2, gp.TileSize);
+                attackRight1 = setup("/player/boy_axe_right_1", gp.TileSize*2, gp.TileSize);
+                attackRight2 = setup("/player/boy_axe_right_2", gp.TileSize*2, gp.TileSize);
+            }
+            
+            if (characterused == 0) {
+                attackUp1 = setup("/xylo/boy_axe_up_1", gp.TileSize, gp.TileSize*2);
+                attackUp2 = setup("/xylo/boy_axe_up_2", gp.TileSize, gp.TileSize*2);
+                attackDown1 = setup("/xylo/boy_axe_down_1", gp.TileSize, gp.TileSize*2);
+                attackDown2 = setup("/xylo/boy_axe_down_2", gp.TileSize, gp.TileSize*2);
+                attackLeft1 = setup("/xylo/boy_axe_left_1", gp.TileSize*2, gp.TileSize);
+                attackLeft2 = setup("/xylo/boy_axe_left_2", gp.TileSize*2, gp.TileSize);
+                attackRight1 = setup("/xylo/boy_axe_right_1", gp.TileSize*2, gp.TileSize);
+                attackRight2 = setup("/xylo/boy_axe_right_2", gp.TileSize*2, gp.TileSize);
+            }
         }
         if (currentweapon.type == type_wand) {
             attackUp1 = setup("/player/boy_axe_up_1", gp.TileSize, gp.TileSize*2);
@@ -821,8 +834,8 @@ public class Player extends Entity {
                 mana += 1;
             }
              
-            if (level % 3 == 0) strength++;
-            if (level % 5 == 0) dexterity++;
+            if (level % 2 == 0) strength+=1;
+            if (level % 5 == 0) dexterity+=2;
     
             attack = getAttack();
             defense = getDefense();

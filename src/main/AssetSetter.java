@@ -17,8 +17,13 @@ import object.OBJ_Potion_Blue;
 import object.OBJ_Potion_Red;
 import object.OBJ_boat;
 import object.OBJ_bow_normal;
+import object.OBJ_torch;
+import object.OBJ_display_axe;
 import object.OBJ_ice_wand;
 import object.OBJ_tablet;
+import object.OBJ_display_bow;
+import object.OBJ_display_shield;
+import object.OBJ_display_sword;
 import tile_interactive.IT_Drytree;
 import tile_interactive.InteractiveTile;
 
@@ -50,12 +55,35 @@ public class AssetSetter {
         baseObjectConfigs = new Object[][] {
             {0, 46, 43, OBJ_boat.class, true},
             {0, 28, 15, OBJ_Doors.class, false},
-            {0, 46, 40, OBJ_Potion_Blue.class, true},
-            {0, 47, 40, OBJ_tablet.class, true},
-            {0, 47, 39, OBJ_Potion_Red.class, true},
             {0, 12, 17, OBJ_bow_normal.class, true},
             {1, 24, 43, OBJ_boat.class, true},
-            {1, 10, 8, OBJ_Key.class, true}
+            {1, 10, 8, OBJ_Key.class, true},
+
+            // shop
+            {3, 28, 24, OBJ_display_bow.class, false},
+            {3, 29, 24, OBJ_display_bow.class, false},
+            {3, 30, 24, OBJ_display_bow.class, false},
+            {3, 31, 24, OBJ_display_bow.class, false},
+            {3, 32, 24, OBJ_display_bow.class, false},
+
+            {3, 28, 26, OBJ_display_sword.class, false},
+            {3, 29, 26, OBJ_display_sword.class, false},
+            {3, 30, 26, OBJ_display_sword.class, false},
+            {3, 31, 26, OBJ_display_sword.class, false},
+            {3, 32, 26, OBJ_display_sword.class, false},
+
+            {3, 28, 28, OBJ_display_shield.class, false},
+            {3, 29, 28, OBJ_display_shield.class, false},
+            {3, 30, 28, OBJ_display_shield.class, false},
+            {3, 31, 28, OBJ_display_shield.class, false},
+            {3, 32, 28, OBJ_display_shield.class, false},
+
+            {3, 28, 30, OBJ_display_axe.class, false},
+            {3, 29, 30, OBJ_display_axe.class, false},
+            {3, 30, 30, OBJ_display_axe.class, false},
+            {3, 31, 30, OBJ_display_axe.class, false},
+            {3, 32, 30, OBJ_display_axe.class, false}
+
         };
         
         // Base NPC configurations
@@ -79,7 +107,8 @@ public class AssetSetter {
         
         // Map 0 - Always add snake
         configList.add(new Object[]{0, 35, 6, MON_Snake.class});
-        
+        configList.add(new Object[]{0, 44, 38, OBJ_torch.class});
+
         // Map 1 monsters
         configList.add(new Object[]{1, 22, 31, MON_Snake.class});
         configList.add(new Object[]{1, 10, 29, MON_Snake.class});

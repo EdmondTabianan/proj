@@ -3,26 +3,35 @@ package main;
 import java.awt.Image;
 import javax.imageio.ImageIO;
 
-import data.DataStorage;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-import entity.Entity;
-import entity.Player;
+import object.OBJ_Sword_Normal;
+import object.OBJ_Axe;
+import object.OBJ_Shield_Wood;
+import object.OBJ_ice_wand;
+import object.OBJ_bow_normal;
+import object.OBJ_Key;
+import object.OBJ_Potion_Blue;
+import object.OBJ_Potion_Red;
+import object.OBJ_boat;
+import object.OBJ_tablet;
 import object.OBJ_Coin_Bronze;
 import object.OBJ_Heart;
 import object.OBJ_ManaCrystal;
+import object.OBJ_Arrows;
+import object.OBJ_Doors;
+import object.OBJ_ice;
+
+import entity.Entity;
+import entity.Player;
 
 public class UI {
     GamePanel gp;
@@ -35,15 +44,21 @@ public class UI {
 
     public boolean gameFinished = false;
     
+    // NPC tracking for dialogue
+    public int npcIndex = 0; // Track which NPC we're talking to
+    
     // Dialogue animation variables
     public String currentDialogue = "";
     private String targetDialogue = ""; // Full dialogue to display
     private int displayedChars = 0; // Number of characters displayed so far
-    private int charCounter = 0; // Counter for animation timing
-    private final int CHAR_SPEED = 2; // Characters per frame (higher = faster)
     private boolean dialogueFinished = false;
     private long lastCharTime = 0;
-    private final long CHAR_DELAY = 30; // Milliseconds between characters
+    private final long CHAR_DELAY = 30; 
+
+    // Multi-page dialogue variables
+    private String[] dialoguePages; // Array of dialogue pages
+    private int currentPageIndex = 0; // Current page being displayed
+    private boolean dialogueActive = false;
     
     public int commandNum = 0;
     public int titleScreenState = 0; // 0 the first screen 1 second screen
@@ -372,8 +387,6 @@ public class UI {
         // Add null check at the beginning
         if (gp.player == null) return;
 
-        //gp.player.life = 5;
-
         int x = gp.TileSize/2;
         int y = gp.TileSize/2;
         int i = 0;
@@ -448,152 +461,6 @@ public class UI {
         }
     }
 
-    // public void drawTitleScreen() {
-    //     // ============ DRAWING SECTION ============
-    //     if (titleScreenState == 0) {
-    //         // Draw main menu
-    //         g2.setColor(new Color(0,0,0));
-    //         g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-    
-    //         // Title Name
-    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD,32F));
-    //         String text = "The Hunt: Lost Tomb of Cleopatra";
-    //         int x = getXforCenteredText(text);
-    //         int y = gp.TileSize*3;
-    
-    //         // shadow
-    //         g2.setColor(Color.GRAY);
-    //         g2.drawString(text, x+3, y+3);
-    //         // Main Color
-    //         g2.setColor(new Color(255, 215, 0));
-    //         g2.drawString(text, x, y);
-    
-    //         // Logo / Character Preview - Simplified
-    //         x = gp.ScreenWidth/2 - (gp.TileSize*2)/2;
-    //         y += gp.TileSize*2;
-                         
-    //         // Menu options
-    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD,48F));
-    
-    //         text = "New Game";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 0){
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-            
-    //         text = "Load Game";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize*2;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 1){
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-            
-    //         text = "Quit";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize*2;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 2){
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-    //     }
-    //     else if (titleScreenState == 1) {
-    //         // Draw character selection - SIMPLIFIED (NO PREVIEWS)
-    //         g2.setColor(new Color(0,0,0));
-    //         g2.fillRect(0, 0, gp.ScreenWidth, gp.ScreenHeight);
-            
-    //         g2.setColor(Color.white);
-    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
-    
-    //         String text = "Select Your Hunter";
-    //         int x = getXforCenteredText(text);
-    //         int y = gp.TileSize*3;
-    //         g2.drawString(text, x, y);
-    
-    //         // Character options - just text, no previews
-    //         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 42F));
-            
-    //         // Xylo option
-    //         text = "Xylo";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize*3;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 0) {
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-            
-    //         // Alexandria option
-    //         text = "Alexandria";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 1) {
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-            
-    //         // Back option
-    //         text = "Back";
-    //         x = getXforCenteredText(text);
-    //         y += gp.TileSize*2;
-    //         g2.drawString(text, x, y);
-    //         if (commandNum == 2) {
-    //             g2.drawString(">", x-gp.TileSize, y);
-    //         }
-    //     }
-    
-    //     // ============ INPUT HANDLING SECTION ============
-        
-    //     // Handle main menu selection
-    //     if (gp.keyH.enterPressed == true && titleScreenState == 0) {
-    //         if (commandNum == 0) {
-    //             // New Game - go to character selection
-    //             titleScreenState = 1;
-    //             commandNum = 0;
-    //         }
-    //         if (commandNum == 1) {
-    //             // Load Game - to be implemented
-    //         }
-    //         if (commandNum == 2) {
-    //             // Quit
-    //             System.exit(0);
-    //         }
-    //         gp.keyH.enterPressed = false;
-    //     }
-        
-    //     // Handle character selection
-    //     if (gp.keyH.enterPressed == true && titleScreenState == 1) {
-    //         // Prevent multiple selections
-    //         if (gp.gameState == gp.titleState && !gp.loadingManager.isLoading()) {
-    //             if (commandNum == 0) {
-                    
-    //                 // Use the loading manager method
-    //                 gp.loadingManager.startGameWithCharacter(0);
-                    
-    //                 // Set game to transition state to show loading screen
-    //                 gp.gameState = gp.transitionState;
-    //                 commandNum = 0;
-    //             }
-    //             else if (commandNum == 1) {
-                    
-    //                 // Use the loading manager method
-    //                 gp.loadingManager.startGameWithCharacter(1);
-                    
-    //                 // Set game to transition state to show loading screen
-    //                 gp.gameState = gp.transitionState;
-    //                 commandNum = 0;
-    //             }
-    //             else if (commandNum == 2) {
-    //                 // Back to main menu
-    //                 titleScreenState = 0;
-    //                 commandNum = 0;
-    //             }
-    //         }
-    //         gp.keyH.enterPressed = false;
-    //     }
-    // }
-    
     public void drawTitleScreen() {
         // ============ DRAWING SECTION ============
         if (titleScreenState == 0) {
@@ -847,28 +714,22 @@ public class UI {
     private void handleLoadGameSelection() {
         if (commandNum == 0) {
             // Load slot 1
-            loadGame(0);
-            gp.gameState = gp.playState;
-            titleScreenState = 0;
-            commandNum = 0;
+            gp.saveLoad.load(0);
+            afterLoad();
             showMessage("Game Loaded from Slot 1");
             gp.playMusic(0);
         }
         else if (commandNum == 1) {
             // Load slot 2
-            loadGame(1);
-            gp.gameState = gp.playState;
-            titleScreenState = 0;
-            commandNum = 0;
+            gp.saveLoad.load(1);
+            afterLoad();
             showMessage("Game Loaded from Slot 2");
             gp.playMusic(0);
         }
         else if (commandNum == 2) {
             // Load slot 3
-            loadGame(2);
-            gp.gameState = gp.playState;
-            titleScreenState = 0;
-            commandNum = 0;
+            gp.saveLoad.load(2);
+            afterLoad();
             showMessage("Game Loaded from Slot 3");
             gp.playMusic(0);
         }
@@ -879,101 +740,112 @@ public class UI {
         }
     }
 
-    private void loadGame(int slot) {
-        try {
-            String filename = "save_slot_" + (slot + 1) + ".dat";
-            ObjectInputStream ois = new ObjectInputStream(new java.io.FileInputStream(new File(filename)));
-            
-            DataStorage ds = (DataStorage) ois.readObject();
-            ois.close();
-            
-            // Load player stats
-            gp.player.level = ds.level;
-            gp.player.maxLife = ds.maxHP;
-            gp.player.life = ds.currentHP;
-            gp.player.maxMana = ds.maxMana;
-            gp.player.mana = ds.currentMana;
-            gp.player.strength = ds.strength;
-            gp.player.dexterity = ds.dexterity;
-            gp.player.exp = ds.exp;
-            gp.player.nextLevelExp = ds.nextLevelExp;
-            gp.player.coin = ds.coin;
-            
-            // Load player position and map
-            gp.player.worldX = ds.worldX;
-            gp.player.worldY = ds.worldY;
-            gp.currentMap = ds.currentMap;
-            
-            // LOAD PICKUP ITEMS STATUS into AssetSetter
-            if (gp.aSetter != null && ds.itemPickedUp != null) {
-                gp.aSetter.setItemPickedUp(ds.itemPickedUp);
-            }
-            
-            // Recalculate player stats
-            gp.player.attack = gp.player.getAttack();
-            gp.player.defense = gp.player.getDefense();
-            
-            // Refresh player images
-            gp.player.getImage();
-            gp.player.getAttackImage();
-            gp.player.getGuardImage();
-            
-            // Reset assets for the loaded map (this will use the loaded pickup status)
+    private void afterLoad() {
+        gp.gameState = gp.playState;
+        titleScreenState = 0;
+        commandNum = 0;
+        
+        // Reset assets for the loaded map
+        if (gp.aSetter != null) {
             gp.aSetter.clearMapAssets(gp.currentMap);
             gp.aSetter.setObject(gp.currentMap);
             gp.aSetter.setNPC(gp.currentMap);
             gp.aSetter.setMonster(gp.currentMap);
             gp.aSetter.setInteractiveTile(gp.currentMap);
-            
-            System.out.println("Game loaded from slot " + (slot + 1));
-            
-        } catch (Exception e) {
-            System.out.println("Load failed: " + e.getMessage());
-            e.printStackTrace();
-            showMessage("LOAD FAILED!");
         }
+        
+        // Reset player state to ensure smooth gameplay
+        if (gp.player != null) {
+            gp.player.collisionOn = false;
+            gp.player.attacking = false;
+            gp.player.guarding = false;
+            gp.player.knockBack = false;
+            gp.player.invincible = false;
+            gp.player.transparent = false;
+            gp.player.Direction = "down";
+            
+            // Recalculate stats
+            gp.player.attack = gp.player.getAttack();
+            gp.player.defense = gp.player.getDefense();
+            
+            // Refresh images
+            gp.player.getImage();
+            gp.player.getAttackImage();
+            gp.player.getGuardImage();
+        }
+    }
+
+    private void saveGame(int slot) {
+        gp.saveLoad.save(slot);
+        showMessage("GAME SAVED TO SLOT " + (slot + 1) + "!");
+    }
+
+    private String checkSaveSlotStatus(int slot) {
+        return gp.saveLoad.getSaveSlotStatus(slot);
     }
         
 
-    /**
-     * Set the dialogue text to be displayed with animation
-     * @param text The full dialogue text to display
-     */
-    public void setDialogue(String text) {
-        this.targetDialogue = text;
-        this.displayedChars = 0;
-        this.dialogueFinished = false;
-        this.charCounter = 0;
-        this.currentDialogue = ""; // Clear current display
-        this.lastCharTime = System.currentTimeMillis();
-    }
+    // ============ DIALOGUE METHODS ============
     
-    /**
-     * Update the dialogue animation - call this in your game loop
-     */
-    public void updateDialogueAnimation() {
-        if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
-            long currentTime = System.currentTimeMillis();
-            
-            // Time-based animation (smoother)
-            if (currentTime - lastCharTime > CHAR_DELAY) {
-                if (displayedChars < targetDialogue.length()) {
-                    displayedChars++;
-                    currentDialogue = targetDialogue.substring(0, displayedChars);
-                    lastCharTime = currentTime;
-                    
-                    // Optional: Play typing sound every few characters
-                    if (displayedChars % 3 == 0) {
-                        // gp.playSE(someSound); // Uncomment if you have a typing sound
-                    }
-                } else {
-                    dialogueFinished = true;
-                }
-            }
+    public void setDialogue(String[] pages) {
+        this.dialoguePages = pages;
+        this.currentPageIndex = 0;
+        this.dialogueActive = true;
+        
+        if (pages != null && pages.length > 0) {
+            setCurrentPage(pages[0]);
         }
     }
     
+    public void setDialogue(String text) {
+        setDialogue(new String[]{text});
+    }
+    
+    private void setCurrentPage(String text) {
+        this.targetDialogue = text;
+        this.displayedChars = 0;
+        this.dialogueFinished = false;
+        this.currentDialogue = "";
+        this.lastCharTime = System.currentTimeMillis();
+    }
 
+    /**
+     * Go to the next page of dialogue
+     * @return true if there are more pages, false if dialogue ended
+     */
+    public boolean nextPage() {
+        if (dialoguePages != null && currentPageIndex < dialoguePages.length - 1) {
+            // Move to next page
+            currentPageIndex++;
+            setCurrentPage(dialoguePages[currentPageIndex]);
+            return true; // There are more pages
+        } else {
+            // No more pages, end dialogue
+            dialogueActive = false;
+            return false; // Dialogue ended
+        }
+    }
+
+    /**
+     * Check if there's a next page
+     */
+    public boolean hasNextPage() {
+        return dialoguePages != null && currentPageIndex < dialoguePages.length - 1;
+    }
+
+    /**
+     * Get current page number for display
+     */
+    public String getPageIndicator() {
+        if (dialoguePages != null && dialoguePages.length > 1) {
+            return (currentPageIndex + 1) + "/" + dialoguePages.length;
+        }
+        return "";
+    }
+
+    /**
+     * Skip to the end of the current dialogue animation
+     */
     public void skipToEnd() {
         if (targetDialogue != null) {
             displayedChars = targetDialogue.length();
@@ -981,14 +853,37 @@ public class UI {
             dialogueFinished = true;
         }
     }
-    
+
     /**
      * Check if the current dialogue animation is finished
      */
     public boolean isDialogueFinished() {
         return dialogueFinished;
     }
+    
+    /**
+     * Update the dialogue animation (call in game loop)
+     */
+    public void updateDialogueAnimation() {
+        if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
+            long currentTime = System.currentTimeMillis();
+            
+            // Time-based animation
+            if (currentTime - lastCharTime > CHAR_DELAY) {
+                if (displayedChars < targetDialogue.length()) {
+                    displayedChars++;
+                    currentDialogue = targetDialogue.substring(0, displayedChars);
+                    lastCharTime = currentTime;
+                } else {
+                    dialogueFinished = true;
+                }
+            }
+        }
+    }
 
+    /**
+     * Draw the dialogue screen with multi-page support
+     */
     public void drawDialogueScreen() {
         // Add null check
         if (gp.player == null) return;
@@ -1016,11 +911,27 @@ public class UI {
             }
         }
         
+        // Draw page indicator if there are multiple pages
+        if (dialoguePages != null && dialoguePages.length > 1) {
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 18F));
+            g2.setColor(new Color(255, 255, 255, 150));
+            String pageInfo = getPageIndicator();
+            int infoX = x + width - 100;
+            int infoY = y + 10;
+            g2.drawString(pageInfo, infoX, infoY);
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN,28F)); // Reset font
+        }
+        
         // Draw a "next" indicator when dialogue is finished
         if (dialogueFinished) {
             g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
             g2.setColor(new Color(255, 255, 255, 200));
-            String nextIndicator = "▼ Press ENTER to continue";
+            String nextIndicator;
+            if (hasNextPage()) {
+                nextIndicator = "▼ Press ENTER for next page";
+            } else {
+                nextIndicator = "▼ Press ENTER to continue";
+            }
             int indicatorX = x + width - 250;
             int indicatorY = y + 10;
             g2.drawString(nextIndicator, indicatorX, indicatorY);
@@ -1447,11 +1358,11 @@ public class UI {
             
             // Add save status indicator
             if (i < 3) {
-                String status = checkSaveSlotStatus(i); // This returns a String
+                String status = checkSaveSlotStatus(i);
                 g2.setFont(g2.getFont().deriveFont(20f)); // Smaller font for status
                 g2.setColor(Color.LIGHT_GRAY);
                 
-                // Draw status text - properly as a String
+                // Draw status text
                 int statusX = textX - 150; // Position status to the left of slot name
                 g2.drawString(status, statusX, textY + 15);
                 
@@ -1477,87 +1388,6 @@ public class UI {
                 }
             }
             textY += gp.TileSize * 1.5;
-        }
-    }
-
-    private void saveGame(int slot) {
-        try {
-            String filename = "save_slot_" + (slot + 1) + ".dat";
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(filename)));
-            
-            DataStorage ds = new DataStorage();
-            
-            // Player stats
-            ds.level = gp.player.level;
-            ds.maxHP = gp.player.maxLife;
-            ds.currentHP = gp.player.life;
-            ds.maxMana = gp.player.maxMana;
-            ds.currentMana = gp.player.mana;
-            ds.strength = gp.player.strength;
-            ds.dexterity = gp.player.dexterity;
-            ds.exp = gp.player.exp;
-            ds.nextLevelExp = gp.player.nextLevelExp;
-            ds.coin = gp.player.coin;
-            
-            // Player position and map
-            ds.worldX = gp.player.worldX;
-            ds.worldY = gp.player.worldY;
-            ds.currentMap = gp.currentMap;
-            
-            // Save pickup items status
-            if (gp.aSetter != null) {
-                ds.itemPickedUp = gp.aSetter.getItemPickedUp();
-            }
-            
-            ds.saveTime = System.currentTimeMillis();
-            
-            oos.writeObject(ds);
-            oos.close();
-            
-            System.out.println("Game saved to slot " + (slot + 1));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            showMessage("SAVE FAILED!");
-        }
-    }
-
-    private String checkSaveSlotStatus(int slot) {
-        String filename = "save_slot_" + (slot + 1) + ".dat";
-        File saveFile = new File(filename);
-        
-        if (saveFile.exists()) {
-            try {
-                ObjectInputStream ois = new ObjectInputStream(new java.io.FileInputStream(saveFile));
-                DataStorage ds = (DataStorage) ois.readObject();
-                ois.close();
-                
-                // Format the save info (level and date)
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MM/dd HH:mm");
-                String date = sdf.format(new java.util.Date(ds.saveTime));
-                
-                // Count picked up items (optional)
-                int pickedUpCount = 0;
-                if (ds.itemPickedUp != null) {
-                    for (int map = 0; map < ds.itemPickedUp.length; map++) {
-                        if (ds.itemPickedUp[map] != null) {
-                            for (int i = 0; i < ds.itemPickedUp[map].length; i++) {
-                                if (ds.itemPickedUp[map][i] != null && ds.itemPickedUp[map][i][0]) {
-                                    pickedUpCount++;
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                return "Lv." + ds.level + " - " + date + " (" + pickedUpCount + " items)";
-                
-            } catch (Exception e) {
-                System.out.println("Save file corrupted: " + filename);
-                return "CORRUPTED";
-            }
-        } else {
-            return "EMPTY";
         }
     }
     

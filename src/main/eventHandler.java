@@ -75,6 +75,11 @@ public class eventHandler {
             else if(hit(0, 5, 19, "down") == true) {teleport(6, 13, 1);}
             else if(hit(6, 13, 1, "up") == true) {teleport(0, 5, 17);}
             else if(hit(6, 14, 1, "up" ) == true) {teleport(0, 5, 17);}
+            
+            // Damage Pit
+            else if(hit(1, 41, 39, "any") == true) {damagePit(gp.dialogueState);}
+            else if(hit(1, 42, 33, "any") == true) {damagePit(gp.dialogueState);}
+            else if(hit(1, 38, 27, "any") == true) {damagePit(gp.dialogueState);}
         }
     }
 
@@ -116,6 +121,43 @@ public class eventHandler {
             // Use LoadingManager for transition
             gp.loadingManager.startTransition(map, col, row);
             gp.playSE(13);
+    }
+
+    public void damagePit(int gameState) {
+        gp.gameState = gameState;
+        gp.player.attackCanceled = true;
+        gp.ui.currentDialogue = "You fell into a pit!\nYou lost some life.";
+        gp.player.life -= 1;
+        if (gp.player.life < 0) {
+            gp.player.life = 0;
+        }
+        
+        // Teleport player back based on their direction
+        switch (gp.player.Direction) {
+            case "up":
+                gp.player.worldY += gp.TileSize;
+                break;
+            case "down":
+                gp.player.worldY -= gp.TileSize;
+                break;
+            case "left":
+                gp.player.worldX += gp.TileSize;
+                break;
+            case "right":
+                gp.player.worldX -= gp.TileSize;
+                break;
+        }
+        
+        // Set invincibility briefly to prevent immediate re-triggering
+        gp.player.invincible = true;
+        gp.player.invincibleCounter = 0;
+        
+        // Play a sound effect
+        gp.playSE(6); // Hurt sound
+        
+        // Update previous event position to prevent immediate re-trigger
+        previouseEventX = gp.player.worldX;
+        previouseEventY = gp.player.worldY;
     }
     
     public void healingPool(int gameState) {

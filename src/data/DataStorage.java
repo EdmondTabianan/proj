@@ -1,11 +1,12 @@
 package data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class DataStorage implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    // Player stats - make these PUBLIC
+    // Player stats
     public int level;
     public int maxHP;
     public int currentHP;
@@ -23,6 +24,16 @@ public class DataStorage implements Serializable {
     public int currentMap;
     public long saveTime;
     
-    // PICKUP ITEMS STATUS - Make this PUBLIC
+    // Character choice
+    public int characterUsed = -1; // -1 = not set, 0 = Xylo, 1 = Alexandria
+    
+    // PICKUP ITEMS STATUS
     public boolean[][][] itemPickedUp;
+    
+    // INVENTORY ITEMS - FIX: Use consistent naming
+    public ArrayList<String> itemNames = new ArrayList<>();   
+    public ArrayList<Integer> itemAmounts = new ArrayList<>();
+    public int currentWeaponSlot = -1;
+    public int currentShieldSlot = -1;
+    public int currentRangeSlot = -1;
 }

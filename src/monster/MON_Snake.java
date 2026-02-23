@@ -91,6 +91,36 @@ public class MON_Snake extends Entity {
         }
     }
     
+    /**
+     * Override the dying behavior to track snake kills for quests
+     */
+    @Override
+    public void update() {
+        super.update();
+        
+        // Check if this snake just died
+        if (dying && alive == false) {
+            handleDeath();
+        }
+    }
+    
+    /**
+     * Handle death - track kills for quests
+     */
+    private void handleDeath() {
+        // Only count kills on map 6 (passage map) when quest progress is 2
+        if (gp.currentMap == 6 && gp.questProgress == 2) {
+            // Increment player's kill count
+            if (gp.player != null) {
+                gp.player.killCount++;
+                System.out.println("Snake killed! Total kills: " + gp.player.killCount);
+                
+                // If this was the 3rd snake, quest progress will update when talking to Beverly
+                // Beverly's dialogue will check and update questProgress when all snakes are dead
+            }
+        }
+    }
+    
     // =============================
     // Drop table
     // =============================
@@ -102,7 +132,7 @@ public class MON_Snake extends Entity {
         else if (roll < 75) dropItem(new OBJ_Arrows(gp));
         else if (roll < 85) dropItem(new OBJ_Heart(gp));
         else if (roll < 93) dropItem(new OBJ_ManaCrystal(gp));
-        else if (roll < 98) dropItem(new OBJ_Potion_Blue(gp));
-        else dropItem(new OBJ_Potion_Red(gp));
+        else if (roll < 98) dropItem(new OBJ_Coin_Bronze(gp)); // Changed to coin instead of potion blue
+        else dropItem(new OBJ_Coin_Bronze(gp)); // Changed to coin instead of potion red
     }
 }

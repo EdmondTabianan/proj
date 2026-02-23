@@ -39,11 +39,11 @@ public class NPC_blueboy extends Entity {
 
         int i = 0;
 
-        dialogues[i] = "A vessel rests at dock,\n" + //
+        dialogues[i][0] = "A vessel rests at dock,\n" + //
                         "locked from your journey—\n" + //
                         "the key decides who sails\n" + //
                         "";i++;
-        dialogues[i] = "Goodluck!";i++;
+        dialogues[i][0] = "Goodluck!";i++;
         //gp.player.inventory.add(new OBJ_Potion_Red(gp));
     }
     public void setAction(){

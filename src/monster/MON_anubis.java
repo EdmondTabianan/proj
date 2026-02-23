@@ -28,6 +28,7 @@ public class MON_anubis extends Entity {
         name = MONSTER_NAME;
         action = true;
         knockBackPower = 5;
+        sleep = true; // Start asleep, wakes when player is near
 
         defaultSpeed = 1;
         speed = defaultSpeed;
@@ -121,9 +122,13 @@ public class MON_anubis extends Entity {
         }
     }
 
-    // =============================
-    // AI Behavior - Using parent's methods
-    // =============================
+    public void setDialogue() {
+        dialogues = new String[10][10];
+        dialogues[0][0]= "The Anubis is a powerful guardian of the underworld.";
+        dialogues[0][1] = "The Anubis guards the tombs of the pharaohs.";
+        dialogues[0][2] = "It will attack anyone who dares to enter.";
+        dialogues[0][3] = "Defeat it to claim your reward!";
+    } 
     public void setAction() {
         if (gp.player == null) return;
     
@@ -163,10 +168,7 @@ public class MON_anubis extends Entity {
         }
     }
 
-    // No draw method - using parent's draw
-    // The parent's draw method will handle everything automatically
-    // with the images we loaded in getImage() and getAttackImage()
-
+    
     public void checkDrop() {
         int roll = random.nextInt(100) + 1;
 

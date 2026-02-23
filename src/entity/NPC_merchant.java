@@ -42,7 +42,7 @@ public class NPC_merchant extends Entity {
 
         int i = 0;
 
-        dialogues[i] = "So you want to buy?";i++;
+        dialogues[i][0] = "So you want to buy?";i++;
     }
 
     public void setItem() {

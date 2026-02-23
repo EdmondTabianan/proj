@@ -82,9 +82,9 @@ public class Player extends Entity {
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
-        hasKey = 0; 
+        hasKey = 1; 
         hasTablet = false;
-        currentweapon = new OBJ_Sword_Normal(gp);
+        currentweapon = new OBJ_Axe(gp);
         currentShield = new OBJ_Shield_Wood(gp);
         currentRange = new OBJ_ice_wand(gp);
         projectiles = new OBJ_ice(gp);
@@ -105,11 +105,11 @@ public class Player extends Entity {
                 worldX = gp.TileSize * 46;
                 worldY = gp.TileSize * 39;
                 break;
-            case 1: // Second map - boat arrival point (from your transport event)
+            case 1: // Second map - boat arrival point
                 worldX = gp.TileSize * 24;
                 worldY = gp.TileSize * 42;
                 break;
-            case 2: // Pyramid first floor - entrance (from your entrance event)
+            case 2: // Pyramid first floor - entrance
                 worldX = gp.TileSize * 24;
                 worldY = gp.TileSize * 48;
                 break;
@@ -135,9 +135,6 @@ public class Player extends Entity {
         mana = maxMana;
         invincible = true;
         invincibleCounter = 0;
-        
-        // RESET TRANSPARENT FLAG
-        transparent = false; 
         
         // Reset combat states
         attacking = false;

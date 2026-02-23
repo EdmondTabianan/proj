@@ -25,7 +25,7 @@ public class Entity {
     public int solidAreaDefaultX, solidAreaDefaultY, solidAreaDefaultWidth, solidAreaHeight;
     public int motion1_duration, motion2_duration;
     public boolean collision = false;
-    String dialogues[] = new String[20];
+    public String dialogues[][] = new String[20][20];
     public BufferedImage image, image2, image3;
     public Entity attacker;
     
@@ -34,7 +34,7 @@ public class Entity {
     public String Direction = "down";
     public int spriteNum = 1;
     public int mapnum = 0;
-    int dialoguesIndex = 0;
+    public int dialoguesIndex = 0;
     public boolean collisionOn = false;
     public boolean invincible = false;
     public boolean attacking = false;
@@ -51,6 +51,8 @@ public class Entity {
     public boolean guarding = false;
     public boolean transparent = false;
     public String knockbackDirection;
+
+    public boolean sleep = false;
 
     // counter 
     public int spriteCounter = 0;
@@ -205,12 +207,10 @@ public class Entity {
         if (dialogues[dialoguesIndex] == null) {
             dialoguesIndex = 0;
         }
-        gp.ui.currentDialogue = dialogues[dialoguesIndex];
+        gp.ui.currentDialogue = dialogues[dialoguesIndex][0];
         dialoguesIndex++;
     }
-    public void interact() {
-
-    }
+    public void interact() {}
     public void use(Entity entity) {}
     public void checkDrop() {}
     
@@ -262,183 +262,176 @@ public class Entity {
     }
     
     public void update() {
-        // FIX: Ensure Direction is never null at the VERY START
         if (Direction == null) {
             Direction = "down";
         }
-        
-        if (knockBack == true) {
-            // FIX: Add null check for player
-            if (gp.player == null) {
-                knockBack = false;
-                speed = defaultSpeed;
-                knockBackCounter = 0;
-                return;
-            }
-            
-            // STORE original position BEFORE moving
-            int originalX = worldX;
-            int originalY = worldY;
-    
-            // Calculate direction from attacker to this entity
-            int dx = 0;
-            int dy = 0;
-            
-            if (attacker != null) {
-                dx = worldX - attacker.worldX;
-                dy = worldY - attacker.worldY;
-            } else {
-                // Fallback to player position if attacker is null
-                dx = worldX - gp.player.worldX;
-                dy = worldY - gp.player.worldY;
-            }
-    
-            // Determine direction AWAY from attacker (for movement)
-            String moveDirection = "";
-            if (Math.abs(dx) > Math.abs(dy)) {
-                // Attacker is more left/right than up/down
-                moveDirection = (dx > 0) ? "right" : "left"; // Move AWAY from attacker
-            } else {
-                // Attacker is more up/down than left/right
-                moveDirection = (dy > 0) ? "down" : "up"; // Move AWAY from attacker
-            }
-    
-            // CRITICAL: Set knockbackDirection for CollisionChecker to use
-            knockbackDirection = moveDirection;
-    
-            // Set facing direction TOWARD attacker (look at who hit them)
-            if (attacker != null) {
-                int facingDx = attacker.worldX - worldX;
-                int facingDy = attacker.worldY - worldY;
+        if (sleep == false) {
+            if (knockBack == true) {
+                if (gp.player == null) {
+                    knockBack = false;
+                    speed = defaultSpeed;
+                    knockBackCounter = 0;
+                    return;
+                }
                 
-                if (Math.abs(facingDx) > Math.abs(facingDy)) {
-                    Direction = (facingDx > 0) ? "right" : "left";
-                } else {
-                    Direction = (facingDy > 0) ? "down" : "up";
-                }
-            } else {
-                // If no attacker, face opposite of movement direction
-                if (moveDirection.equals("up")) Direction = "down";
-                else if (moveDirection.equals("down")) Direction = "up";
-                else if (moveDirection.equals("left")) Direction = "right";
-                else if (moveDirection.equals("right")) Direction = "left";
-                else Direction = "down";
-            }
-    
-            // MOVE away from attacker using PURE knockBackPower
-            int moveDistance = knockBackPower;
-            
-            switch (moveDirection) {
-                case "up":
-                    worldY -= moveDistance;
-                    break;
-                case "down":
-                    worldY += moveDistance;
-                    break;
-                case "left":
-                    worldX -= moveDistance;
-                    break;
-                case "right":
-                    worldX += moveDistance;
-                    break;
-            }
-    
-            // CHECK collision AFTER moving
-            collisionOn = false;
-            gp.cChecker.checkTile(this);
-            gp.cChecker.checkObject(this, false);
-    
-            // Check for interactive tiles (for monsters)
-            if (this.type == type_monster) {
-                gp.cChecker.checkEntity(this, gp.iTile);
-            }
-    
-            // If collision detected with a solid tile or object, REVERT position
-            if (collisionOn == true) {
-                worldX = originalX;
-                worldY = originalY;
-            }
-    
-            // Check for collision with player during knockback (for monsters)
-            if (this.type == type_monster && collisionOn == false && gp.player != null) {
-                boolean contactPlayer = gp.cChecker.checkPlayer(this);
-                if (contactPlayer == true && gp.player.invincible == false) {
-                    damageplayer(attack);
-                }
-            }
-    
-            // Update knockback timer
-            knockBackCounter++;
-            if (knockBackCounter > 20) {
-                knockBack = false;
-                speed = defaultSpeed;
-                knockBackCounter = 0;
-                attacker = null;
-                knockbackDirection = null; // Clear knockback direction
-            }
-        } 
-        else if (attacking == true) {
-            attacking();
-        }
+                int originalX = worldX;
+                int originalY = worldY;
         
-        else {
-            // Normal movement when not in knockback
-            if (action == true) {
-                setAction();
-                checkCollision();
-    
-                if (collisionOn == false) {
-                    switch (Direction) {
-                        case "up":
-                            worldY -= speed;
-                            break;
-                        case "down":
-                            worldY += speed;
-                            break;
-                        case "left":
-                            worldX -= speed;
-                            break;
-                        case "right":
-                            worldX += speed;
-                            break;
-                    }   
+                int dx = 0;
+                int dy = 0;
+                
+                if (attacker != null) {
+                    dx = worldX - attacker.worldX;
+                    dy = worldY - attacker.worldY;
+                } else {
+                    dx = worldX - gp.player.worldX;
+                    dy = worldY - gp.player.worldY;
                 }
-                spriteCounter++;
-                if (spriteCounter > 24) {
-                    if (spriteNum == 1) {
-                        spriteNum = 2;
-                    } else if (spriteNum == 2) {
-                        spriteNum = 1;
+        
+                String moveDirection = "";
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    // Attacker is more left/right than up/down
+                    moveDirection = (dx > 0) ? "right" : "left"; // Move AWAY from attacker
+                } else {
+                    // Attacker is more up/down than left/right
+                    moveDirection = (dy > 0) ? "down" : "up"; // Move AWAY from attacker
+                }
+        
+                knockbackDirection = moveDirection;
+        
+                if (attacker != null) {
+                    int facingDx = attacker.worldX - worldX;
+                    int facingDy = attacker.worldY - worldY;
+                    
+                    if (Math.abs(facingDx) > Math.abs(facingDy)) {
+                        Direction = (facingDx > 0) ? "right" : "left";
+                    } else {
+                        Direction = (facingDy > 0) ? "down" : "up";
                     }
-                    spriteCounter = 0;
+                } else {
+                    // If no attacker, face opposite of movement direction
+                    if (moveDirection.equals("up")) Direction = "down";
+                    else if (moveDirection.equals("down")) Direction = "up";
+                    else if (moveDirection.equals("left")) Direction = "right";
+                    else if (moveDirection.equals("right")) Direction = "left";
+                    else Direction = "down";
                 }
-            } else {
-                idle();
+        
+                // MOVE away from attacker using PURE knockBackPower
+                int moveDistance = knockBackPower;
+                
+                switch (moveDirection) {
+                    case "up":
+                        worldY -= moveDistance;
+                        break;
+                    case "down":
+                        worldY += moveDistance;
+                        break;
+                    case "left":
+                        worldX -= moveDistance;
+                        break;
+                    case "right":
+                        worldX += moveDistance;
+                        break;
+                }
+        
+                // CHECK collision AFTER moving
+                collisionOn = false;
+                gp.cChecker.checkTile(this);
+                gp.cChecker.checkObject(this, false);
+        
+                // Check for interactive tiles (for monsters)
+                if (this.type == type_monster) {
+                    gp.cChecker.checkEntity(this, gp.iTile);
+                }
+        
+                // If collision detected with a solid tile or object, REVERT position
+                if (collisionOn == true) {
+                    worldX = originalX;
+                    worldY = originalY;
+                }
+        
+                // Check for collision with player during knockback (for monsters)
+                if (this.type == type_monster && collisionOn == false && gp.player != null) {
+                    boolean contactPlayer = gp.cChecker.checkPlayer(this);
+                    if (contactPlayer == true && gp.player.invincible == false) {
+                        damageplayer(attack);
+                    }
+                }
+        
+                // Update knockback timer
+                knockBackCounter++;
+                if (knockBackCounter > 20) {
+                    knockBack = false;
+                    speed = defaultSpeed;
+                    knockBackCounter = 0;
+                    attacker = null;
+                    knockbackDirection = null; // Clear knockback direction
+                }
+            } 
+            else if (attacking == true) {
+                attacking();
             }
-        }
-    
-        // Update invincibility timer
-        if (invincible == true) {
-            invincibleCounter++;
-            if (invincibleCounter > 60) {
-                invincible = false;
-                invincibleCounter = 0;
+            
+            else {
+                // Normal movement when not in knockback
+                if (action == true) {
+                    setAction();
+                    checkCollision();
+        
+                    if (collisionOn == false) {
+                        switch (Direction) {
+                            case "up":
+                                worldY -= speed;
+                                break;
+                            case "down":
+                                worldY += speed;
+                                break;
+                            case "left":
+                                worldX -= speed;
+                                break;
+                            case "right":
+                                worldX += speed;
+                                break;
+                        }   
+                    }
+                    spriteCounter++;
+                    if (spriteCounter > 24) {
+                        if (spriteNum == 1) {
+                            spriteNum = 2;
+                        } else if (spriteNum == 2) {
+                            spriteNum = 1;
+                        }
+                        spriteCounter = 0;
+                    }
+                } else {
+                    idle();
+                }
             }
-        }
-    
-        // SPRITE ANIMATION
-        // spriteCounter++;
-        // if (spriteCounter > 24) {
-        //     if (spriteNum == 1) {
-        //         spriteNum = 2;
-        //     } else if (spriteNum == 2) {
-        //         spriteNum = 1;
-        //     }
-        //     spriteCounter = 0;
-        // }
-    
-        if (shotAvailableCounter < 30) {
-            shotAvailableCounter++;
+        
+            // Update invincibility timer
+            if (invincible == true) {
+                invincibleCounter++;
+                if (invincibleCounter > 60) {
+                    invincible = false;
+                    invincibleCounter = 0;
+                }
+            }
+        
+            // SPRITE ANIMATION
+            // spriteCounter++;
+            // if (spriteCounter > 24) {
+            //     if (spriteNum == 1) {
+            //         spriteNum = 2;
+            //     } else if (spriteNum == 2) {
+            //         spriteNum = 1;
+            //     }
+            //     spriteCounter = 0;
+            // }
+        
+            if (shotAvailableCounter < 30) {
+                shotAvailableCounter++;
+            }
         }
     }
     

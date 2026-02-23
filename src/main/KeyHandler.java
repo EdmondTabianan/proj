@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import data.SaveLoad;
+import entity.NPC_vhong; // Add this import
 
 public class KeyHandler implements KeyListener {
 
@@ -93,15 +94,18 @@ public class KeyHandler implements KeyListener {
                 if(gp.ui.commandNum == 0) {
                     // New Game
                     gp.ui.titleScreenState = 1;
-                    gp.ui.commandNum = 0;
+                    gp.ui.commandNum = 0; // Reset commandNum for character selection
+                    // gp.aSetter.resetAllPickedUpItems();
                 }
                 if(gp.ui.commandNum == 1) {
                     // Load Game - go to load selection screen
                     gp.ui.titleScreenState = 2;
-                    gp.ui.commandNum = 0;
+                    gp.ui.commandNum = 0; // Reset commandNum for load screen
+                    // gp.aSetter.resetAllPickedUpItems();
                 }
                 if (gp.ui.commandNum == 2) {
                     // Quit
+                    System.out.println("Quit selected - exiting game");
                     System.exit(0);
                 }
                 enterPressed = false;
@@ -136,8 +140,9 @@ public class KeyHandler implements KeyListener {
                 }
                 if (gp.ui.commandNum == 2) {
                     // Back to main menu
+                    System.out.println("Back to main menu");
                     gp.ui.titleScreenState = 0;
-                    gp.ui.commandNum = 0;
+                    gp.ui.commandNum = 0; // Reset commandNum for main menu
                 }
                 enterPressed = false;
             }
@@ -178,7 +183,7 @@ public class KeyHandler implements KeyListener {
                     // Back to main menu
                     System.out.println("User selected: Back to Main Menu");
                     gp.ui.titleScreenState = 0;
-                    gp.ui.commandNum = 1; // Set cursor to "Load Game"
+                    gp.ui.commandNum = 0; 
                 }
                 enterPressed = false;
             }
@@ -187,7 +192,7 @@ public class KeyHandler implements KeyListener {
             if (code == KeyEvent.VK_ESCAPE) {
                 System.out.println("User pressed ESC - returning to main menu");
                 gp.ui.titleScreenState = 0;
-                gp.ui.commandNum = 1; // Set cursor to "Load Game"
+                gp.ui.commandNum = 1; // Set cursor to "Load Game" in main menu
                 enterPressed = false;
             }
         }
@@ -341,10 +346,10 @@ public class KeyHandler implements KeyListener {
 
     public void playState(int code) {
         if (code == KeyEvent.VK_Q) {
-            // gp.gameState = gp.questState;
+            gp.gameState = gp.questState;
             questkeyPressed = true;
         }
-
+    
         if (code == KeyEvent.VK_W) {
             upPressed = true;
          }
@@ -365,17 +370,20 @@ public class KeyHandler implements KeyListener {
          }
          if (code == KeyEvent.VK_C){
             gp.gameState = gp.characterState;
+            gp.ui.commandNum = 0; // Reset commandNum when entering character screen
          }
          if (code == KeyEvent.VK_F) {
             shotKeyPressed = true;
          }
          if (code == KeyEvent.VK_ESCAPE) {
             gp.gameState = gp.optionsState;
+            gp.ui.subState = 0; // Reset to main options
+            gp.ui.commandNum = 0; // Reset commandNum when opening options
          }
          if (code == KeyEvent.VK_SPACE) {
             spacePressed = true;
          }
- 
+    
          // Debug
          if (code == KeyEvent.VK_T) {
              if (showDebugText == false) {
@@ -391,21 +399,26 @@ public class KeyHandler implements KeyListener {
                 case 2: gp.tileM.loadMap("/map/first_floor.txt", 2);break;
                 case 3: gp.tileM.loadMap("/map/shop.txt", 3);break;
             }
-            // gp.tileM.loadMap("/map/main.txt", 0);
             gp.aSetter.setInteractiveTile(gp.currentMap);
          } 
     }
     
     public void pauseState(int code) {
         if (code == KeyEvent.VK_P) {
+            gp.stopMusic();
             gp.gameState = gp.playState;
         }
     }
     
     public void dialogueState(int code) {
         if(code == KeyEvent.VK_ENTER) {
+            if (gp.npc[gp.currentMap][gp.ui.npcIndex] instanceof NPC_vhong) {
+                NPC_vhong npc = (NPC_vhong) gp.npc[gp.currentMap][gp.ui.npcIndex];
+                npc.nextDialogue();
+            } else {
                 gp.gameState = gp.playState;
             }
+        }
     }
     
     public void characterState(int code) {
@@ -423,14 +436,45 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_ESCAPE) {
             if (gp.ui.subState == 0) {
                 gp.gameState = gp.playState;
+                gp.ui.commandNum = 0; // Reset commandNum when leaving options
             } else {
                 gp.ui.subState = 0; // Go back to main options
+                gp.ui.commandNum = 0; // Reset commandNum when going back to main options
             }
             enterPressed = false;
         }
         
         if(code == KeyEvent.VK_ENTER) {
             enterPressed = true;
+        }
+        
+        // Handle the Quit option in main options (subState 0, commandNum 5)
+        if (gp.ui.subState == 0 && gp.ui.commandNum == 5 && code == KeyEvent.VK_ENTER) {
+            gp.ui.subState = 3; // Go to quit confirmation
+            gp.ui.commandNum = 0; // Reset commandNum for quit confirmation
+            enterPressed = false;
+            return;
+        }
+        
+        // Handle quit confirmation (subState 3)
+        if (gp.ui.subState == 3) {
+            if (code == KeyEvent.VK_ENTER) {
+                if (gp.ui.commandNum == 0) { // Yes
+                    gp.gameState = gp.titleState;
+                    gp.ui.titleScreenState = 0; // Main title screen
+                    gp.ui.commandNum = 0; // Set to "New Game" (0)
+                    gp.ui.subState = 0; // Reset substate
+                    gp.aSetter.resetAllPickedUpItems();
+                    gp.stopMusic();
+                    enterPressed = false;
+                    return;
+                } else if (gp.ui.commandNum == 1) { // No
+                    gp.ui.subState = 0; // Back to main options
+                    gp.ui.commandNum = 0; // Reset to first option
+                    enterPressed = false;
+                    return;
+                }
+            }
         }
         
         // Set max command number based on substate
@@ -513,13 +557,19 @@ public class KeyHandler implements KeyListener {
             
         if (code == KeyEvent.VK_ENTER) {
             if(gp.ui.commandNum == 0) {
+                // Retry - keep items, just respawn
                 gp.gameState = gp.playState;
-                gp.resetGame(false);
+                gp.resetGame(false); // Pass false to keep items
+                gp.ui.commandNum = 0;
                 gp.playMusic(0);
             }
             else if (gp.ui.commandNum == 1) {
+                // Quit to title - full reset
                 gp.gameState = gp.titleState;
-                gp.resetGame(true);
+                gp.ui.titleScreenState = 0; // Main title screen
+                gp.ui.commandNum = 0; // Set to "New Game" (0)
+                gp.resetGame(true); // Pass true for full reset
+                gp.stopMusic();
             }
             enterPressed = false;
         }
@@ -656,6 +706,10 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_F) {
             shotKeyPressed = false;
+        }
+        if (code == KeyEvent.VK_Q) {
+            gp.gameState = gp.playState;
+            questkeyPressed = false;
         }
         if (code == KeyEvent.VK_SPACE) {
             spacePressed = false;

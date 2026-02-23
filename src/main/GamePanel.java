@@ -57,6 +57,7 @@ public class GamePanel extends JPanel implements Runnable {
     public InteractiveTile iTile[][] = new InteractiveTile[maxMap][50];
     public Entity projectile[][] = new Entity[maxMap][20];
     ArrayList<Entity> entityList = new ArrayList<>();
+    public boolean questSlimesSpawned = false;
 
     // GAME STATE
     public int gameState;
@@ -71,6 +72,8 @@ public class GamePanel extends JPanel implements Runnable {
     public final int transitionState = 8;
     public final int tradeState = 9;
     public final int questState = 10;
+
+    public int questProgress = 0; // Track quest progress
 
     public int monsterRespawnCounter = 0;
     private boolean loadingStarted = false;
@@ -97,19 +100,30 @@ public class GamePanel extends JPanel implements Runnable {
             aSetter.setInteractiveTile(currentMap);
         }
     }
-
     public void resetGame(boolean restart) {
-        player.setDefaultValues();
-        player.resetLifeAndMana();
-        aSetter.setNPC(currentMap);
-
         if (restart == true) {
+            // Full game reset (when quitting to title)
             player.setDefaultValues();
-            aSetter.setObject(currentMap);
-            aSetter.setInteractiveTile(currentMap);
+            player.resetLifeAndMana();
+            questProgress = 0; // Reset quest progress
+            
+            // Reset all assets
             aSetter.resetAllPickedUpItems();
+            aSetter.clearMapAssets(currentMap);
+            aSetter.setObject(currentMap);
+            aSetter.setNPC(currentMap);
+            aSetter.setMonster(currentMap);
+            aSetter.setInteractiveTile(currentMap);
+            
+            System.out.println("Game fully reset - New game started");
+        } else {
+            // Just retry from game over - keep items and progress
+            player.respawnAtMapEntrance(currentMap); // Respawn at safe location
+            player.resetLifeAndMana(); // Just restore health/mana
+            
+            // Keep all items and quest progress
+            System.out.println("Retry - Player respawned with items intact");
         }
-        
     }
 
     public void startGameThread() {
@@ -337,6 +351,7 @@ public class GamePanel extends JPanel implements Runnable {
                 // Draw UI
                 ui.draw(g2);
             } else {
+
                 gameState = titleState;
                 ui.draw(g2);
             }

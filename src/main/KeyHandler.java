@@ -559,7 +559,8 @@ public class KeyHandler implements KeyListener {
             if(gp.ui.commandNum == 0) {
                 // Retry - keep items, just respawn
                 gp.gameState = gp.playState;
-                gp.resetGame(false); // Pass false to keep items
+                gp.resetGame(false); 
+                gp.player.invincible = true; 
                 gp.ui.commandNum = 0;
                 gp.playMusic(0);
             }

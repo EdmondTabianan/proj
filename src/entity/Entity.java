@@ -54,6 +54,11 @@ public class Entity {
 
     public boolean sleep = false;
 
+    // slow effect
+    public BufferedImage slowEffectImage;
+    public int slowCounter = 0;
+    public final int SLOW_DURATION = 120;
+
     // counter 
     public int spriteCounter = 0;
     public int actionLockCounter = 0;
@@ -64,7 +69,6 @@ public class Entity {
     int knockBackCounter = 0;
     public int talkcounter = 0;
     public int killCount = 0;
-    public int slowCounter = 0;
 
     // character attri
     public int characterused; // 0 = alexandria 1 = xylo
@@ -1055,10 +1059,37 @@ public class Entity {
             // Reset alpha
             changeAlpha(g2, 1f);
     
-            // Draw slowed effect (use original position with scaled size)
+            // Draw slowed effect with image overlay
             if (slowed == true) {
-                g2.setColor(new Color(0, 0, 255, 100));
-                g2.fillRect(screenX, screenY, imageWidth, imageHeight);
+                // Increment slow counter
+                slowCounter++;
+                
+                // Calculate alpha for fade out effect (last 30 frames fade out)
+                float alpha = 0.5f; // Default 50% opacity
+                
+                // Fade out in the last 30 frames
+                if (slowCounter > SLOW_DURATION - 30) {
+                    alpha = 0.5f * (float)(SLOW_DURATION - slowCounter) / 30;
+                    if (alpha < 0) alpha = 0;
+                }
+                
+                // Apply transparency
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                
+                // Draw the slow effect image over the entity
+                if (slowEffectImage != null) {
+                    g2.drawImage(slowEffectImage, screenX, screenY, imageWidth, imageHeight, null);
+                }
+                
+                // Reset composite
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+                
+                // Auto-reset slow after duration
+                if (slowCounter >= SLOW_DURATION) {
+                    slowed = false;
+                    slowCounter = 0;
+                    speed = defaultSpeed; // Reset speed to default
+                }
             }
         }
     }   

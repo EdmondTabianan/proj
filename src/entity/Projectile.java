@@ -1,6 +1,7 @@
 package entity;
 
 import main.GamePanel;
+import java.awt.Color;
 
 public class Projectile extends Entity {
 
@@ -18,28 +19,26 @@ public class Projectile extends Entity {
         this.user = user;
         this.life = this.maxLife;
         
-        // IMPORTANT: Set the speed for the projectile
-        this.speed = 5; // Set a default speed (adjust as needed)
+        // Set the speed for the projectile
+        this.speed = 5;
         
         // Set attack damage if not already set
         if (this.attack == 0) {
-            this.attack = 2; // Default attack damage
+            this.attack = 2;
         }
         
         // Reset sprite animation when firing
         this.spriteCounter = 0;
         this.spriteNum = 1;
-        
     }
     
     public void update() {
-        // CRITICAL: Don't process dead projectiles
+        // Don't process dead projectiles
         if (alive == false) {
             return;
         }
         
-        // ===== MOVE PROJECTILE FIRST =====
-        // Move before checking collision to avoid hitting the shooter
+        // ===== MOVE PROJECTILE =====
         switch (Direction) {
             case "up": worldY -= speed; break;
             case "down": worldY += speed; break;
@@ -52,11 +51,10 @@ public class Projectile extends Entity {
         gp.cChecker.checkTile(this);
         if (collisionOn == true) {
             this.alive = false;
-            
             return;
         }
 
-        // ===== CHECK COLLISION AFTER MOVING =====
+        // ===== CHECK ENTITY COLLISION =====
         if (user != null && user == gp.player) {
             // Player-fired projectile - damage monsters
             int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
@@ -67,13 +65,12 @@ public class Projectile extends Entity {
                 
                 if (monster != null && monster.invincible == false) {
                     
-                    
-                    
                     // APPLY SLOW EFFECT for ice projectiles
                     if (this.name != null && this.name.equals("Ice")) {
+                        // Set slowed flag
                         monster.slowed = true;
                         monster.slowCounter = 0;
-                        monster.slowDuration = 180; // 3 seconds
+                        monster.slowDuration = 180; // 3 seconds at 60 FPS
                         
                         // Store original speed if not already stored
                         if (monster.defaultSpeed == 0) {
@@ -84,13 +81,13 @@ public class Projectile extends Entity {
                         monster.speed = monster.defaultSpeed / 2;
                         if (monster.speed < 1) monster.speed = 1;
                         
-                        // Set blue tint
-                        monster.tintColor = new java.awt.Color(100, 150, 255, 150);
+                        // Set blue tint as fallback (will be overridden by image if available)
+                        monster.tintColor = new Color(100, 150, 255, 150);
                         
                         gp.ui.showMessage("Monster slowed!");
-                        
                     }
                     
+                    // Damage the monster
                     gp.player.damageMonster(monsterIndex, this, this.attack, this.knockBackPower);
                     this.alive = false;
                     return;
@@ -107,7 +104,6 @@ public class Projectile extends Entity {
                     
                     gp.iTile[gp.currentMap][iTileIndex].life--;
                    
-                    
                     if (gp.iTile[gp.currentMap][iTileIndex].life <= 0) {
                         gp.iTile[gp.currentMap][iTileIndex] = gp.iTile[gp.currentMap][iTileIndex].getDestroyedForm();
                     }
@@ -117,11 +113,10 @@ public class Projectile extends Entity {
             }
         }
         else if (user != null && user != gp.player) {
-            // Monster-fired projectile - damage player WITH GUARD CHECK
+            // Monster-fired projectile - damage player
             boolean contactPlayer = gp.cChecker.checkPlayer(this);
             
             if (contactPlayer == true && gp.player.invincible == false) {
-                
                 damagePlayerWithGuard(this.attack);
                 this.alive = false;
                 return;
@@ -132,7 +127,6 @@ public class Projectile extends Entity {
         life--;
         if (life <= 0) {
             alive = false;
-            
             return;
         }
         
@@ -143,6 +137,9 @@ public class Projectile extends Entity {
                 spriteNum = 2;
             }
             else if (spriteNum == 2) {
+                spriteNum = 3;
+            }
+            else if (spriteNum == 3) {
                 spriteNum = 1;
             }
             spriteCounter = 0;
@@ -170,7 +167,7 @@ public class Projectile extends Entity {
                 // Check if player is facing the projectile
                 if (gp.player.Direction.equals(oppositeDirection)) {
                     // SUCCESSFULLY GUARDED - TAKE ZERO DAMAGE!
-                    if (gp.se != null) gp.playSE(15); // Guard sound
+                    gp.playSE(15); // Guard sound
                     gp.ui.showMessage("Perfect Guard! No damage!");
                     
                     // Set invincibility but take NO damage
@@ -182,7 +179,7 @@ public class Projectile extends Entity {
                     
                 } else {
                     // Guard failed - wrong direction
-                    if (gp.se != null) gp.playSE(6); // Hurt sound
+                    gp.playSE(6); // Hurt sound
                     gp.ui.showMessage(damage + " damage from projectile!");
                     
                     // Apply damage
@@ -190,7 +187,7 @@ public class Projectile extends Entity {
                 }
             } else {
                 // Not guarding
-                if (gp.se != null) gp.playSE(6); // Hurt sound
+                gp.playSE(6); // Hurt sound
                 gp.ui.showMessage(damage + " damage from projectile!");
                 
                 // Apply damage
@@ -243,12 +240,10 @@ public class Projectile extends Entity {
             if (this instanceof object.OBJ_Arrows) {
                 user.arrow -= this.useCost;
                 if (user.arrow < 0) user.arrow = 0;
-                
             }
             else if (this instanceof object.OBJ_ice) {
                 user.mana -= this.useCost;
                 if (user.mana < 0) user.mana = 0;
-                
             }
         }
     }

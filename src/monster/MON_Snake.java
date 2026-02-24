@@ -59,6 +59,7 @@ public class MON_Snake extends Entity {
         left2 = setup("/monster/snik_left_2", gp.TileSize, gp.TileSize);
         right1 = setup("/monster/snik_righ_1", gp.TileSize, gp.TileSize);
         right2 = setup("/monster/snik_righ_2", gp.TileSize, gp.TileSize);
+        slowEffectImage = setup("/effects/slow_effect", gp.TileSize, gp.TileSize);
     }
 
     public void setAction() {

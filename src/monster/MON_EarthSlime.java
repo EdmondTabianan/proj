@@ -55,7 +55,7 @@ public class MON_EarthSlime extends Entity {
         left2 = setup("/monster/greenslime_down_2", gp.TileSize, gp.TileSize);
         right1 = setup("/monster/greenslime_down_1", gp.TileSize, gp.TileSize);
         right2 = setup("/monster/greenslime_down_2", gp.TileSize, gp.TileSize);
-        
+        slowEffectImage = setup("/effects/slow_effect", gp.TileSize, gp.TileSize);
     }
 
     public void setAction() {

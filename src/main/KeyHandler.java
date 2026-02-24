@@ -105,7 +105,6 @@ public class KeyHandler implements KeyListener {
                 }
                 if (gp.ui.commandNum == 2) {
                     // Quit
-                    System.out.println("Quit selected - exiting game");
                     System.exit(0);
                 }
                 enterPressed = false;
@@ -140,7 +139,6 @@ public class KeyHandler implements KeyListener {
                 }
                 if (gp.ui.commandNum == 2) {
                     // Back to main menu
-                    System.out.println("Back to main menu");
                     gp.ui.titleScreenState = 0;
                     gp.ui.commandNum = 0; // Reset commandNum for main menu
                 }
@@ -166,22 +164,18 @@ public class KeyHandler implements KeyListener {
             if (code == KeyEvent.VK_ENTER){
                 if(gp.ui.commandNum == 0) {
                     // Load Slot 1
-                    System.out.println("User selected: Load Slot 1");
                     loadGameFromSlot(0);
                 }
                 else if(gp.ui.commandNum == 1) {
                     // Load Slot 2
-                    System.out.println("User selected: Load Slot 2");
                     loadGameFromSlot(1);
                 }
                 else if(gp.ui.commandNum == 2) {
                     // Load Slot 3
-                    System.out.println("User selected: Load Slot 3");
                     loadGameFromSlot(2);
                 }
                 else if(gp.ui.commandNum == 3) {
                     // Back to main menu
-                    System.out.println("User selected: Back to Main Menu");
                     gp.ui.titleScreenState = 0;
                     gp.ui.commandNum = 0; 
                 }
@@ -190,7 +184,6 @@ public class KeyHandler implements KeyListener {
             
             // Allow ESC to go back
             if (code == KeyEvent.VK_ESCAPE) {
-                System.out.println("User pressed ESC - returning to main menu");
                 gp.ui.titleScreenState = 0;
                 gp.ui.commandNum = 1; // Set cursor to "Load Game" in main menu
                 enterPressed = false;
@@ -204,40 +197,33 @@ public class KeyHandler implements KeyListener {
         
         if (!saveFile.exists()) {
             gp.ui.showMessage("No save file in Slot " + (slot + 1));
-            System.out.println("LOAD ERROR: Save file not found: " + filename);
             return;
         }
         
         try {
             // STEP 1: CRITICAL - Initialize GamePanel components if needed
             if (gp.cChecker == null) {
-                System.out.println("Initializing collision checker...");
                 gp.cChecker = new CollisionChecker(gp);
             }
             
             if (gp.aSetter == null) {
-                System.out.println("Initializing asset setter...");
                 gp.aSetter = new AssetSetter(gp);
             }
             
             if (gp.ui == null) {
-                System.out.println("Initializing UI...");
                 gp.ui = new UI(gp);
             }
             
             if (gp.eHandler == null) {
-                System.out.println("Initializing event handler...");
                 gp.eHandler = new eventHandler(gp);
             }
             
             // STEP 2: Create player if it doesn't exist
             if (gp.player == null) {
-                System.out.println("Player is null - creating new player...");
                 // CRITICAL: Pass 'this' (KeyHandler) to the player constructor
                 gp.player = new entity.Player(gp, this, 0);
                 
                 // Initialize equipment
-                System.out.println("Initializing player equipment...");
                 gp.player.currentweapon = new object.OBJ_Sword_Normal(gp);
                 gp.player.currentShield = new object.OBJ_Shield_Wood(gp);
                 gp.player.currentRange = new object.OBJ_ice_wand(gp);
@@ -254,15 +240,12 @@ public class KeyHandler implements KeyListener {
                 gp.player.getAttackImage();
                 gp.player.getGuardImage();
                 
-                System.out.println("Player created successfully");
             } else {
                 // Ensure existing player has KeyHandler reference
-                System.out.println("Player exists - ensuring KeyHandler is set...");
                 gp.player.keyH = this;
             }
             
             // STEP 3: Load the save data
-            System.out.println("Loading game from slot " + (slot + 1) + "...");
             SaveLoad saveLoad = new SaveLoad(gp);
             saveLoad.load(slot);
             
@@ -299,7 +282,6 @@ public class KeyHandler implements KeyListener {
             shotKeyPressed = false;
             
             // STEP 9: Reset assets for the loaded map
-            System.out.println("Resetting assets for map " + gp.currentMap + "...");
             gp.aSetter.clearMapAssets(gp.currentMap);
             gp.aSetter.setObject(gp.currentMap);
             gp.aSetter.setNPC(gp.currentMap);
@@ -320,25 +302,11 @@ public class KeyHandler implements KeyListener {
             gp.gameState = gp.playState;
             gp.ui.titleScreenState = 0;
             gp.ui.commandNum = 0;
-            
-            // Show success message
-            String successMsg = "✓ Game Loaded from Slot " + (slot + 1);
-            gp.ui.showMessage(successMsg);
-            System.out.println(successMsg);
-            
+                        
             // Play background music
             gp.playMusic(0);
             
-            // Debug info
-            System.out.println("=== LOAD COMPLETE ===");
-            System.out.println("Player world: (" + gp.player.worldX + ", " + gp.player.worldY + ")");
-            System.out.println("KeyHandler set: " + (gp.player.keyH != null));
-            System.out.println("Current map: " + gp.currentMap);
-            System.out.println("Game state: " + gp.gameState);
-            
         } catch (Exception e) {
-            System.out.println("!!! LOAD EXCEPTION !!!");
-            System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
             gp.ui.showMessage("LOAD FAILED!");
         }

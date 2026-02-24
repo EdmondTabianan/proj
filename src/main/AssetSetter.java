@@ -330,14 +330,13 @@ public class AssetSetter {
                 createMonster(currentMap, index, loc[0], loc[1], monsterClass);
                 index++;
             } catch (Exception e) {
-                System.out.println("Failed to spawn quest monster at " + loc[0] + "," + loc[1]);
+                e.printStackTrace();
             }
         }
     }
     
     private void createMonster(int currentMap, int slot, int x, int y, Class<?> monsterClass) throws Exception {
         if (slot >= gp.monster[currentMap].length) {
-            System.out.println("Warning: Monster slot " + slot + " out of bounds");
             return;
         }
         

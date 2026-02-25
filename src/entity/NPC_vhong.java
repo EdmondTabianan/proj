@@ -96,7 +96,6 @@
                 spawnSlimes();
                 slimesSpawned = true;
                 gp.questProgress = 1; // Set quest progress to 1 after spawning
-                System.out.println("Quest progress set to 1 - Slimes spawned!");
             }
             
             // Start with first page
@@ -117,10 +116,9 @@
             if (gp.questProgress == 0) {
                 // First meeting - multiple pages
                 dialoguePages = new String[] {
-                    "Ah, a brave adventurer!",
+                    "Ah, a brave hunter!",
                     "I have a task for you.",
-                    "Three slimes have been causing trouble in the forest.",
-                    "They appeared at (32,32), (30,30), and (34,28).",
+                    "Three slimes have been causing trouble in the dessert.",
                     "Defeat them and return to me!"
                 };
                 if (gp.player != null) {
@@ -135,7 +133,7 @@
                     dialoguePages = new String[] {
                         "You've killed " + gp.player.killCount + " out of 3 slimes.",
                         "You still need to defeat " + remaining + " more.",
-                        "They're lurking in the forest nearby.",
+                        "They're lurking in the desert nearby.",
                         "Come back when you're done!"
                     };
                 } else if (gp.player != null && gp.player.killCount >= 3) {
@@ -143,7 +141,7 @@
                     dialoguePages = new String[] {
                         "Excellent work! You've defeated all the slimes!",
                         "As promised, here's your reward.",
-                        "Take this clue tablet - it will guide you.",
+                        "Take this ancient tablet - it will guide you.",
                         "Also, I've unlocked the passage to the east.",
                         "You'll find dangerous snakes there, be careful!"
                     };
@@ -153,12 +151,11 @@
                         gp.player.killCount = 0; // RESET killCount to 0 for the next quest
                     }
                     questState = 2;
-                    System.out.println("Quest progress set to 2 - Passage snakes unlocked! KillCount reset to 0");
                 } else {
                     // Fallback dialogue
                     dialoguePages = new String[] {
                         "Come back when you've defeated the slimes!",
-                        "They're in the forest nearby."
+                        "They're in the desert nearby."
                     };
                 }
             }
@@ -184,7 +181,7 @@
             else {
                 // Default dialogue for any other state
                 dialoguePages = new String[] {
-                    "Keep exploring, adventurer!",
+                    "Keep exploring, hunter!",
                     "There's always more to discover.",
                     "Farewell for now!"
                 };
@@ -211,16 +208,13 @@
             
             int slimeCount = 0;
             
-            System.out.println("Attempting to spawn slimes immediately on map " + currentMap);
             
             // Check if monster array exists
             if (gp.monster == null) {
-                System.out.println("ERROR: gp.monster is null!");
                 return;
             }
             
             if (gp.monster[currentMap] == null) {
-                System.out.println("ERROR: gp.monster[" + currentMap + "] is null!");
                 return;
             }
             
@@ -240,24 +234,17 @@
                         gp.monster[currentMap][i] = slime;
                         slimeCount++;
                         slotFound = true;
-                        System.out.println("✓ Spawned slime at slot " + i + " location (" + location[0] + ", " + location[1] + ")");
                         break;
                     }
                 }
                 if (!slotFound) {
-                    System.out.println("✗ No empty slot found for location (" + location[0] + ", " + location[1] + ")");
                 }
             }
             
-            System.out.println("Spawned " + slimeCount + " slimes immediately for the quest!");
             
             if (slimeCount == 0) {
-                System.out.println("⚠ WARNING: No slimes were spawned! Monster array might be full.");
-                // Print current monster slots to debug
-                System.out.println("Current monster slots on map " + currentMap + ":");
                 for (int i = 0; i < gp.monster[currentMap].length; i++) {
                     if (gp.monster[currentMap][i] != null) {
-                        System.out.println("  Slot " + i + ": " + gp.monster[currentMap][i].name);
                     }
                 }
             }
@@ -270,7 +257,6 @@
         public void nextDialogue() {
             // Safety check - if dialoguePages is null, prepare dialogue again
             if (dialoguePages == null) {
-                System.out.println("WARNING: dialoguePages is null in nextDialogue() - preparing dialogue again");
                 prepareDialoguePages();
                 
                 // If still null, close dialogue
@@ -325,7 +311,6 @@
                     gp.obj[currentMap][i] = new OBJ_tablet(gp);
                     gp.obj[currentMap][i].worldX = gp.TileSize * tabletX;
                     gp.obj[currentMap][i].worldY = gp.TileSize * tabletY;
-                    System.out.println("Tablet spawned beside Vhong at (" + tabletX + ", " + tabletY + ")");
                     break;
                 }
             }

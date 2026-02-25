@@ -59,14 +59,15 @@ public class Player extends Entity {
     }
     public void startPosition() {
         gp.currentMap = 0;
-        worldX = gp.TileSize * 46;
-        worldY = gp.TileSize * 39;
+        // worldX = gp.TileSize * 46;
+        // worldY = gp.TileSize * 39;
+        
         Direction = "down"; // Set direction
         collisionOn = false; // Reset collision
     }
     public void setDefaultValues() {
         startPosition();
-        defaultSpeed = 4;
+        defaultSpeed = 3;
         speed = defaultSpeed;
         Direction = "down";
 
@@ -995,31 +996,33 @@ public class Player extends Entity {
             } else {
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
             }
-        } else {
-            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
-        }
+        } 
+
+        if (drawing == true) {
+            g2.drawImage(image, tempScreenX, tempScreenY, null);  
+            
+            if (type == 0) {
+                double oneScale = (double)gp.TileSize / maxLife;
+                double hpBarValue = oneScale * life;
+                double manaScale = (double)gp.TileSize / maxMana;
+                double mpBarValue = manaScale * mana;
         
-        g2.drawImage(image, tempScreenX, tempScreenY, null);
+                g2.setColor(new Color(35, 35, 35));
+                g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
+        
+                g2.setColor(new Color(255, 0, 30));
+                g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
+    
+                g2.setColor(new Color(35, 35, 35));
+                g2.fillRect(screenX, screenY - 5, gp.TileSize + 2, 4);
+                g2.setColor(new Color(0, 0, 255));
+                g2.fillRect(screenX, screenY - 5, (int) mpBarValue, 3);
+            }
+        }
         
         // Reset composite
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
         
-        if (type == 0) {
-            double oneScale = (double)gp.TileSize / maxLife;
-            double hpBarValue = oneScale * life;
-            double manaScale = (double)gp.TileSize / maxMana;
-            double mpBarValue = manaScale * mana;
-    
-            g2.setColor(new Color(35, 35, 35));
-            g2.fillRect(screenX - 1, screenY - 15, gp.TileSize + 2, 12);
-    
-            g2.setColor(new Color(255, 0, 30));
-            g2.fillRect(screenX, screenY - 15, (int) hpBarValue, 10);
-
-            g2.setColor(new Color(35, 35, 35));
-            g2.fillRect(screenX, screenY - 5, gp.TileSize + 2, 4);
-            g2.setColor(new Color(0, 0, 255));
-            g2.fillRect(screenX, screenY - 5, (int) mpBarValue, 3);
-        }
+        
     }    
 }

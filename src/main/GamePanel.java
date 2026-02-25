@@ -14,6 +14,7 @@ import entity.NPC_blueboy;
 import entity.Player;
 import tile.TileManager;
 import tile_interactive.InteractiveTile;
+import main.CutsceneManager;
 
 public class GamePanel extends JPanel implements Runnable {
     final int OriginalTileSize = 16; // 16x16 tile
@@ -30,6 +31,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int maxWorldRow = 50;
     public final int maxMap = 10;
     public int currentMap = 0;
+    public int mapNum;
     
     //FPS
     int FPS = 60;
@@ -45,8 +47,12 @@ public class GamePanel extends JPanel implements Runnable {
     public Config config = new Config(this);
     public PathFinder pFinder = new PathFinder(this);
     public SaveLoad saveLoad = new SaveLoad(this);
+    public CutsceneManager csManager = new CutsceneManager(this);
     public LoadingManager loadingManager;
     Thread gameThread;
+
+    // npc Direction
+    public String npcDirection = "";
 
     // Entity and Object
     public Player player;
@@ -72,6 +78,11 @@ public class GamePanel extends JPanel implements Runnable {
     public final int transitionState = 8;
     public final int tradeState = 9;
     public final int questState = 10;
+    public final int cutsceneState = 11;
+    public final int sleepState = 12;
+
+    // others 
+    public boolean bossBattleOn = false;
 
     public int questProgress = 0; // Track quest progress
 
@@ -105,6 +116,8 @@ public class GamePanel extends JPanel implements Runnable {
             // Full game reset (when quitting to title)
             player.setDefaultValues();
             player.resetLifeAndMana();
+            removeTempEntity(); // Remove temporary entities like boss doors
+            bossBattleOn = false;
             questProgress = 0; // Reset quest progress
             
             // Reset all assets
@@ -115,14 +128,11 @@ public class GamePanel extends JPanel implements Runnable {
             aSetter.setMonster(currentMap);
             aSetter.setInteractiveTile(currentMap);
             
-            System.out.println("Game fully reset - New game started");
         } else {
             // Just retry from game over - keep items and progress
             player.respawnAtMapEntrance(currentMap); // Respawn at safe location
             player.resetLifeAndMana(); // Just restore health/mana
             
-            // Keep all items and quest progress
-            System.out.println("Retry - Player respawned with items intact");
         }
     }
 
@@ -276,7 +286,7 @@ public class GamePanel extends JPanel implements Runnable {
                  gameState == dialogueState || gameState == characterState ||
                  gameState == optionsState || gameState == gameOverState ||
                  gameState == transitionState || gameState == tradeState ||
-                 gameState == questState) {
+                 gameState == questState || gameState == cutsceneState) {
             
             if (player != null) {
                 // Draw tile
@@ -347,6 +357,8 @@ public class GamePanel extends JPanel implements Runnable {
                 
                 // Empty entities list
                 entityList.clear();
+
+                csManager.draw(g2);
     
                 // Draw UI
                 ui.draw(g2);
@@ -380,6 +392,13 @@ public class GamePanel extends JPanel implements Runnable {
         if (loadingManager != null && !loadingManager.isLoading()) {
             se.setFile(i);
             se.play();
+        }
+    }
+    public void removeTempEntity() {
+        for(int i = 0; i < obj[1].length; i++) {
+            if (obj[mapNum][i] != null && obj[mapNum][i].temp == true) {
+                obj[mapNum][i] = null;
+            }
         }
     }
 }

@@ -10,6 +10,7 @@ import main.GamePanel;
 import object.OBJ_Arrows;
 import object.OBJ_Coin_Bronze;
 import object.OBJ_Heart;
+import object.OBJ_IronDoor;
 import object.OBJ_ManaCrystal;
 import object.OBJ_Potion_Blue;
 import object.OBJ_Potion_Red;
@@ -65,6 +66,7 @@ public class MON_anubis extends Entity {
 
         getImage();
         getAttackImage();
+        setDialogue();
         
         // Set spawn point
         setSpawnPoint(worldX, worldY);
@@ -80,6 +82,7 @@ public class MON_anubis extends Entity {
         left2 = setup("/monster/anubis_left_2", gp.TileSize * i, gp.TileSize * i);
         right1 = setup("/monster/anubis_right_1", gp.TileSize * i, gp.TileSize * i);
         right2 = setup("/monster/anubis_right_2", gp.TileSize * i, gp.TileSize * i);
+        slowEffectImage = setup("/effects/slow_effect", gp.TileSize * i, gp.TileSize * i);
     }
     
     public void getAttackImage() {
@@ -122,13 +125,27 @@ public class MON_anubis extends Entity {
         }
     }
 
+    // public void setDialogue() {
+    //     // dialogues = new String[10][10];
+    //     dialogues[5][0] = "Anong gentle gentle?";
+    //     dialogues[5][1] = "Ilalabas ko ang aking dragon.";
+    //     dialogues[5][2] = "Dragon na maliit na may tatong sisiw.";
+    //     dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
+    // } 
     public void setDialogue() {
-        dialogues = new String[10][10];
-        dialogues[0][0]= "The Anubis is a powerful guardian of the underworld.";
-        dialogues[0][1] = "The Anubis guards the tombs of the pharaohs.";
-        dialogues[0][2] = "It will attack anyone who dares to enter.";
-        dialogues[0][3] = "Defeat it to claim your reward!";
-    } 
+        System.out.println("MON_anubis.setDialogue() CALLED!");
+        
+        dialogues[5][0] = "Anong gentle gentle?";
+        dialogues[5][1] = "Ilalabas ko ang aking dragon.";
+        dialogues[5][2] = "Dragon na maliit na may tatong sisiw.";
+        dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
+        
+        System.out.println("Dialogues set at index 5:");
+        System.out.println("  [5][0]: " + dialogues[5][0]);
+        System.out.println("  [5][1]: " + dialogues[5][1]);
+        System.out.println("  [5][2]: " + dialogues[5][2]);
+        System.out.println("  [5][3]: " + dialogues[5][3]);
+    }
     public void setAction() {
         if (gp.player == null) return;
     
@@ -170,6 +187,21 @@ public class MON_anubis extends Entity {
 
     
     public void checkDrop() {
+
+        gp.bossBattleOn = false; // End boss battle when Anubis is defeated
+
+        // restore the prevois music
+        gp.stopMusic();
+        gp.playMusic(0);
+
+        // remove the iron door
+        for (int i = 0; i < gp.obj[1].length; i++) {
+            if (gp.obj[gp.currentMap][i] != null && gp.obj[gp.currentMap][i].name.equals(OBJ_IronDoor.objName)) {
+                gp.playSE(3);
+                gp.obj[gp.currentMap][i] = null;
+            }
+        }
+
         int roll = random.nextInt(100) + 1;
 
         if (roll < 40) {

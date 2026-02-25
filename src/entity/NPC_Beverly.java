@@ -68,13 +68,16 @@ public class NPC_Beverly extends Entity {
     public void speak() {
         facePlayer();
         
+        // Set the current NPC index in UI
+        gp.ui.npcIndex = getIndex();
+        
         // Prepare dialogue pages based on quest state
         prepareDialoguePages();
         
         // Start with first page
         if (dialoguePages != null && dialoguePages.length > 0) {
             currentPage = 0;
-            gp.ui.setDialogue(dialoguePages); // Pass entire array, not just first page
+            gp.ui.setDialogue(dialoguePages);
         } else {
             // Fallback dialogue if something went wrong
             dialoguePages = new String[] {"..."};
@@ -89,7 +92,7 @@ public class NPC_Beverly extends Entity {
         if (questState == 0) {
             // First meeting - give quest
             dialoguePages = new String[] {
-                "Hello there, adventurer!",
+                "Hello there, hunter!",
                 "There are dangerous snakes in the passage.",
                 "Clear all 3 snakes in the passage for me.",
                 "I'll reward you with a key when you're done."
@@ -97,7 +100,7 @@ public class NPC_Beverly extends Entity {
             questState = 1; // Quest active
         }
         else if (questState == 1) {
-            // Check if all snakes in passage map are killed using player's killCount
+            // Check if all snakes are killed using player's killCount
             int killCount = (gp.player != null) ? gp.player.killCount : 0;
             
             if (killCount == 0) {
@@ -120,6 +123,7 @@ public class NPC_Beverly extends Entity {
                 };
             }
             else if (killCount >= requiredSnakeKills) {
+                // UPDATE: If killcount is 3, increment questprogress by 3
                 // All snakes killed - quest complete
                 dialoguePages = new String[] {
                     "You cleared all the snakes! Thank you so much!",
@@ -128,17 +132,19 @@ public class NPC_Beverly extends Entity {
                     "Good luck on your journey!"
                 };
                 
-                // Spawn the key on the main map (map 0) at (7, 10)
+                // UPDATE: Increment questProgress by 3 when snakes are killed
                 if (!keySpawned) {
+                    // Spawn the key first
                     spawnKey(7, 10, 0); // Spawn at col 7, row 10 on map 0
                     keySpawned = true;
-                    gp.questProgress = 3; // Update global quest progress
+                    
+                    // Increment questProgress by 3
+                    gp.questProgress += 3;
                     
                     // Reset kill count for future quests
                     if (gp.player != null) {
                         gp.player.killCount = 0;
                     }
-                    System.out.println("Quest progress set to 3 - Key spawned on map 0 at (7, 10)! KillCount reset to 0");
                 }
                 
                 questState = 2; // Quest completed
@@ -155,14 +161,27 @@ public class NPC_Beverly extends Entity {
             questState = 3; // Final state
         }
         else if (questState == 3) {
-            // Final repeated dialogue
+            // UPDATE: If questprogress is done, thank the player
+            // Final repeated dialogue - thanking the player
             int killCount = (gp.player != null) ? gp.player.killCount : 0;
-            dialoguePages = new String[] {
-                "Remember, the key opens the ancient door.",
-                "You've killed " + killCount + " snakes in total.",
-                "You're becoming quite the hunter!",
-                "Farewell, brave adventurer!"
-            };
+            
+            if (gp.questProgress >= 3) {
+                // Quest is completed, thank the player
+                dialoguePages = new String[] {
+                    "Thank you so much for your help!",
+                    "The key I gave you is very special.",
+                    "It will open the ancient door.",
+                    "May the gods watch over your journey!"
+                };
+            } else {
+                // Default dialogue
+                dialoguePages = new String[] {
+                    "Remember, the key opens the ancient door.",
+                    "You've killed " + killCount + " snakes in total.",
+                    "You're becoming quite the hunter!",
+                    "Farewell, brave hunter!"
+                };
+            }
         }
         
         // Safety check - ensure dialoguePages is never null
@@ -200,7 +219,6 @@ public class NPC_Beverly extends Entity {
                 gp.obj[map][i].worldY = worldY;
                 gp.obj[map][i].isPickup = true; // Mark as pickup
                 
-                System.out.println("Key spawned on map " + map + " at col " + col + ", row " + row);
                 break;
             }
         }
@@ -212,7 +230,6 @@ public class NPC_Beverly extends Entity {
     public void nextDialogue() {
         // Safety check - if dialoguePages is null, prepare dialogue again
         if (dialoguePages == null) {
-            System.out.println("WARNING: dialoguePages is null in nextDialogue() - preparing dialogue again");
             prepareDialoguePages();
             
             // If still null, close dialogue
@@ -232,8 +249,11 @@ public class NPC_Beverly extends Entity {
             
             if (currentPage < dialoguePages.length) {
                 // Show next page
-                gp.ui.setDialogue(dialoguePages[currentPage]);
-                // Keep the game state as dialogueState
+                String[] remainingPages = new String[dialoguePages.length - currentPage];
+                for (int i = 0; i < remainingPages.length; i++) {
+                    remainingPages[i] = dialoguePages[currentPage + i];
+                }
+                gp.ui.setDialogue(remainingPages);
                 gp.gameState = gp.dialogueState;
             } else {
                 // No more pages, close dialogue
@@ -241,6 +261,20 @@ public class NPC_Beverly extends Entity {
                 currentPage = 0; // Reset for next conversation
             }
         }
+    }
+    
+    /**
+     * Helper method to find this NPC's index in the npc array
+     */
+    private int getIndex() {
+        if (gp.npc == null || gp.npc[gp.currentMap] == null) return 0;
+        
+        for (int i = 0; i < gp.npc[gp.currentMap].length; i++) {
+            if (gp.npc[gp.currentMap][i] == this) {
+                return i;
+            }
+        }
+        return 0;
     }
     
     public void facePlayer() {

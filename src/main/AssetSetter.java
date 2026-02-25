@@ -11,7 +11,9 @@ import monster.MON_MOMMY;
 import monster.MON_Snake;
 import monster.MON_anubis;
 import object.OBJ_Axe;
+import object.OBJ_Cleopatra_tomb;
 import object.OBJ_Doors;
+import object.OBJ_IronDoor;
 import object.OBJ_Key;
 import object.OBJ_Potion_Blue;
 import object.OBJ_Potion_Red;
@@ -82,8 +84,11 @@ public class AssetSetter {
             {3, 29, 30, OBJ_display_axe.class, false},
             {3, 30, 30, OBJ_display_axe.class, false},
             {3, 31, 30, OBJ_display_axe.class, false},
-            {3, 32, 30, OBJ_display_axe.class, false}
+            {3, 32, 30, OBJ_display_axe.class, false},
 
+            {5, 24, 4, OBJ_Cleopatra_tomb.class, false},
+            // {5, 25, 40, OBJ_IronDoor.class, false},
+            {5, 25, 15, OBJ_IronDoor.class, false}
         };
         
         // Base NPC configurations
@@ -203,7 +208,7 @@ public class AssetSetter {
         configList.add(new Object[]{4, 33, 36, MON_MOMMY.class});
         
         // last stage 
-        configList.add(new Object[]{5, 25, 23, MON_anubis.class});
+        configList.add(new Object[]{5, 23, 23, MON_anubis.class});
         
         baseMonsterConfigs = configList.toArray(new Object[0][]);
     }

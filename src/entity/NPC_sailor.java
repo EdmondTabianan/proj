@@ -29,7 +29,7 @@ public class NPC_sailor extends Entity {
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
         solidArea.width = 32;
-        solidArea.height = 32; 
+        solidArea.height = 38; 
     }
     
     public void getImage() {
@@ -88,6 +88,9 @@ public class NPC_sailor extends Entity {
     public void speak() {
         facePlayer();
         
+        // Set the current NPC index in UI so KeyHandler knows which NPC we're talking to
+        gp.ui.npcIndex = getIndex();
+        
         // Prepare dialogue pages based on quest state
         prepareDialoguePages();
         
@@ -103,50 +106,62 @@ public class NPC_sailor extends Entity {
     
     private void prepareDialoguePages() {
         if (questState == 0) {
-            // First meeting - welcome
+            // 1. GREETINGS - First meeting
             dialoguePages = new String[] {
                 "Ahoy there, adventurer!",
-                "Welcome to the island!",
-                "If you want to sail to other islands,",
-                "you'll need to find the special key.",
-                "It's hidden somewhere on this island."
+                "Welcome to dessert!",
+                "You look like you're on a quest.",
+                "If you need passage on my ship,",
+                "you'll need to prove yourself first.",
+                "Talk to Vhong in the village.",
+                "He'll tell you what needs to be done."
             };
             questState = 1;
         }
         else if (questState == 1) {
-            // Check if player has the key in inventory
-            if (checkPlayerHasKey()) {
-                // Player has found the key
+            // Check if player has talked to Vhong and completed snake quest
+            if (gp.player != null && gp.player.hasKey == 1) {
+                // 3. IF HAS KEY - Player has the key from snakes
                 dialoguePages = new String[] {
-                    "You found the key! Well done!",
-                    "Now you can sail to other islands.",
-                    "My boat is ready when you are.",
-                    "Just step aboard whenever you're ready!"
+                    "Ah, I see you have the key!",
+                    "You must have defeated those dangerous snakes.",
+                    "Vhong told me about your bravery.",
+                    "My ship is ready for you.",
+                    "Where would you like to sail?",
+                    "We can reach the mainland or the ancient ruins.",
+                    "Just step aboard when you're ready to depart!"
                 };
                 questState = 2;
             } else {
-                // Still looking for key
+                // 2. TALK TO VHONG - Player hasn't completed quest yet
                 dialoguePages = new String[] {
-                    "Still looking for that key?",
-                    "Keep searching! It's somewhere on this island.",
-                    "Check behind rocks and in hidden areas."
+                    "Have you spoken to Vhong yet?",
+                    "He's the elder in the village center.",
+                    "He mentioned something about snakes",
+                    "blocking the path to an ancient key.",
+                    "Defeat the snakes and bring back the key.",
+                    "Then we can talk about sailing."
                 };
             }
         }
         else if (questState == 2) {
-            // Player has key and can travel
+            // 4. IF HAS KEY (repeated) - Ready to sail with destination options
             dialoguePages = new String[] {
-                "Ready to set sail?",
-                "My boat will take you to new lands.",
-                "Just step aboard when you're ready!"
+                "Ready to set sail, key bearer?",
+                "The wind is good today.",
+                "We can head to the mainland,",
+                "or to the ancient ruins across the sea.",
+                "Just let me know when you're ready!",
+                "Step aboard whenever you want to depart."
             };
         }
         else if (questState == 3) {
-            // After traveling
+            // After sailing somewhere - return dialogue
             dialoguePages = new String[] {
-                "Welcome back!",
+                "Welcome back, brave traveler!",
                 "Did you find what you were looking for?",
-                "I can take you to other islands anytime."
+                "Vhong will be happy to see you returned safely.",
+                "If you need to sail again, just let me know."
             };
         }
     }
@@ -182,7 +197,9 @@ public class NPC_sailor extends Entity {
             
             if (dialoguePages != null && currentPage < dialoguePages.length) {
                 // Show next page - still in dialogue state
-                gp.ui.setDialogue(dialoguePages[currentPage]);
+                // Need to set just the current page, not the whole array
+                String[] singlePage = new String[]{dialoguePages[currentPage]};
+                gp.ui.setDialogue(singlePage);
                 gp.gameState = gp.dialogueState;
             } else {
                 // No more pages, close dialogue
@@ -190,6 +207,20 @@ public class NPC_sailor extends Entity {
                 currentPage = 0;
             }
         }
+    }
+    
+    /**
+     * Helper method to find this NPC's index in the npc array
+     */
+    private int getIndex() {
+        if (gp.npc == null || gp.npc[gp.currentMap] == null) return 0;
+        
+        for (int i = 0; i < gp.npc[gp.currentMap].length; i++) {
+            if (gp.npc[gp.currentMap][i] == this) {
+                return i;
+            }
+        }
+        return 0;
     }
     
     public void spawnTablet() {
@@ -200,7 +231,6 @@ public class NPC_sailor extends Entity {
                 gp.obj[currentMap][i] = new OBJ_tablet(gp);
                 gp.obj[currentMap][i].worldX = gp.TileSize * 11;
                 gp.obj[currentMap][i].worldY = gp.TileSize * 24;
-                System.out.println("Tablet spawned at (11, 24)");
                 break;
             }
         }

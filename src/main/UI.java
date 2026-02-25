@@ -53,10 +53,10 @@ public class UI {
     private int displayedChars = 0; // Number of characters displayed so far
     private boolean dialogueFinished = false;
     private long lastCharTime = 0;
-    private final long CHAR_DELAY = 30; 
+    private final long CHAR_DELAY = 40; 
 
     // Multi-page dialogue variables
-    private String[] dialoguePages; // Array of dialogue pages
+    public String[] dialoguePages; // Array of dialogue pages
     private int currentPageIndex = 0; // Current page being displayed
     private boolean dialogueActive = false;
     
@@ -788,6 +788,9 @@ public class UI {
     // ============ DIALOGUE METHODS ============
     
     public void setDialogue(String[] pages) {
+        System.out.println("UI.setDialogue() called with " + (pages != null ? pages.length : 0) + " pages");
+        System.out.println("First page: \"" + (pages != null && pages.length > 0 ? pages[0] : "null") + "\"");
+        
         this.dialoguePages = pages;
         this.currentPageIndex = 0;
         this.dialogueActive = true;
@@ -802,12 +805,17 @@ public class UI {
     }
     
     private void setCurrentPage(String text) {
+        System.out.println("setCurrentPage() called with text: \"" + text + "\"");
+        
         this.targetDialogue = text;
-        this.displayedChars = 0;
-        this.dialogueFinished = false;
-        this.currentDialogue = "";
+        this.displayedChars = text.length(); // Show ALL characters immediately
+        this.dialogueFinished = false; // IMPORTANT: Not finished yet!
+        this.currentDialogue = text; // Set full text
         this.lastCharTime = System.currentTimeMillis();
+        
+        System.out.println("  currentDialogue set to: \"" + currentDialogue + "\"");
     }
+
 
     /**
      * Go to the next page of dialogue
@@ -864,18 +872,36 @@ public class UI {
     /**
      * Update the dialogue animation (call in game loop)
      */
+    // public void updateDialogueAnimation() {
+    //     if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
+    //         long currentTime = System.currentTimeMillis();
+            
+    //         // Time-based animation
+    //         if (currentTime - lastCharTime > CHAR_DELAY) {
+    //             if (displayedChars < targetDialogue.length()) {
+    //                 displayedChars++;
+    //                 currentDialogue = targetDialogue.substring(0, displayedChars);
+    //                 lastCharTime = currentTime;
+    //             } else {
+    //                 dialogueFinished = true;
+    //             }
+    //         }
+    //     }
+    // }
+
     public void updateDialogueAnimation() {
         if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
             long currentTime = System.currentTimeMillis();
             
-            // Time-based animation
-            if (currentTime - lastCharTime > CHAR_DELAY) {
-                if (displayedChars < targetDialogue.length()) {
+            if (displayedChars < targetDialogue.length()) {
+                if (currentTime - lastCharTime > CHAR_DELAY) {
                     displayedChars++;
                     currentDialogue = targetDialogue.substring(0, displayedChars);
                     lastCharTime = currentTime;
-                } else {
-                    dialogueFinished = true;
+                    
+                    if (displayedChars == targetDialogue.length()) {
+                        dialogueFinished = true;
+                    }
                 }
             }
         }
@@ -884,59 +910,260 @@ public class UI {
     /**
      * Draw the dialogue screen with multi-page support
      */
+    // public void drawDialogueScreen() {
+    //     // Add null check
+    //     if (gp.player == null) return;
+        
+    //     // Update animation
+    //     updateDialogueAnimation();
+        
+    //     // Window
+    //     int x = gp.TileSize*2;
+    //     int y = gp.TileSize/2;
+    //     int width = gp.ScreenWidth - (gp.TileSize*4);
+    //     int height = gp.TileSize*4;
+
+    //     drawSubWindow(x, y, width, height);
+
+    //     g2.setFont(g2.getFont().deriveFont(Font.PLAIN,28F));
+    //     x += gp.TileSize;
+    //     y += gp.TileSize;
+
+    //     // Draw the animated dialogue
+    //     if (currentDialogue != null && !currentDialogue.isEmpty()) {
+    //         for (String line : currentDialogue.split("\n")) {
+    //             g2.drawString(line, x, y);
+    //             y += 40;
+    //         }
+    //     }
+        
+    //     // Draw page indicator if there are multiple pages
+    //     if (dialoguePages != null && dialoguePages.length > 1) {
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 18F));
+    //         g2.setColor(new Color(255, 255, 255, 150));
+    //         String pageInfo = getPageIndicator();
+    //         int infoX = x + width - 100;
+    //         int infoY = y + 10;
+    //         g2.drawString(pageInfo, infoX, infoY);
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN,28F)); // Reset font
+    //     }
+        
+    //     // Draw a "next" indicator when dialogue is finished
+    //     if (dialogueFinished) {
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
+    //         g2.setColor(new Color(255, 255, 255, 200));
+    //         String nextIndicator;
+    //         if (hasNextPage()) {
+    //             nextIndicator = "▼ Press ENTER for next page";
+    //         } else {
+    //             nextIndicator = "▼ Press ENTER to continue";
+    //         }
+    //         int indicatorX = x + width - 250;
+    //         int indicatorY = y + 10;
+    //         g2.drawString(nextIndicator, indicatorX, indicatorY);
+    //     }
+    // }
+    
     public void drawDialogueScreen() {
-        // Add null check
+
+        // Safety check
         if (gp.player == null) return;
-        
-        // Update animation
+    
+        // Update typewriter animation
         updateDialogueAnimation();
-        
-        // Window
-        int x = gp.TileSize*2;
-        int y = gp.TileSize/2;
-        int width = gp.ScreenWidth - (gp.TileSize*4);
-        int height = gp.TileSize*4;
-
+    
+        // ================= WINDOW =================
+        int x = gp.TileSize * 2;
+        int y = gp.TileSize / 2;
+        int width = gp.ScreenWidth - (gp.TileSize * 4);
+        int height = gp.TileSize * 4;
+    
         drawSubWindow(x, y, width, height);
-
-        g2.setFont(g2.getFont().deriveFont(Font.PLAIN,28F));
-        x += gp.TileSize;
-        y += gp.TileSize;
-
-        // Draw the animated dialogue
+    
+        // ================= TEXT =================
+        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+        int textX = x + gp.TileSize;
+        int textY = y + gp.TileSize;
+    
+        // Draw animated dialogue text
         if (currentDialogue != null && !currentDialogue.isEmpty()) {
             for (String line : currentDialogue.split("\n")) {
-                g2.drawString(line, x, y);
-                y += 40;
+                g2.drawString(line, textX, textY);
+                textY += 40;
             }
         }
-        
-        // Draw page indicator if there are multiple pages
+    
+        // ================= PAGE INDICATOR =================
         if (dialoguePages != null && dialoguePages.length > 1) {
+    
             g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 18F));
             g2.setColor(new Color(255, 255, 255, 150));
+    
             String pageInfo = getPageIndicator();
-            int infoX = x + width - 100;
-            int infoY = y + 10;
+            int infoX = x + width - 120;
+            int infoY = y + height - 20;
+    
             g2.drawString(pageInfo, infoX, infoY);
-            g2.setFont(g2.getFont().deriveFont(Font.PLAIN,28F)); // Reset font
+    
+            // reset font
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+            g2.setColor(Color.white);
         }
-        
-        // Draw a "next" indicator when dialogue is finished
+    
+        // ================= NEXT INDICATOR =================
         if (dialogueFinished) {
+    
             g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
             g2.setColor(new Color(255, 255, 255, 200));
+    
             String nextIndicator;
+    
             if (hasNextPage()) {
                 nextIndicator = "▼ Press ENTER for next page";
             } else {
                 nextIndicator = "▼ Press ENTER to continue";
             }
-            int indicatorX = x + width - 250;
-            int indicatorY = y + 10;
+    
+            int indicatorX = x + width - 260;
+            int indicatorY = y + height - 45;
+    
             g2.drawString(nextIndicator, indicatorX, indicatorY);
+    
+            // reset font
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+            g2.setColor(Color.white);
         }
+    
+        // =====================================================
+        // ⚠️ IMPORTANT DESIGN RULE
+        // UI DOES NOT CONTROL GAME FLOW
+        // CutsceneManager and KeyHandler handle progression
+        // =====================================================
     }
+
+    // public void drawDialogueScreen() {
+
+    //     // Safety check
+    //     if (gp.player == null) return;
+    
+    //     System.out.println("drawDialogueScreen() called - gameState: " + gp.gameState);
+    //     System.out.println("  currentDialogue: \"" + currentDialogue + "\"");
+    //     System.out.println("  dialogueFinished: " + dialogueFinished);
+    //     System.out.println("  displayedChars: " + displayedChars);
+    //     System.out.println("  targetDialogue length: " + (targetDialogue != null ? targetDialogue.length() : 0));
+    
+    //     // Update typewriter animation
+    //     updateDialogueAnimation();
+    
+    //     // ================= WINDOW =================
+    //     int x = gp.TileSize * 2;
+    //     int y = gp.TileSize / 2;
+    //     int width = gp.ScreenWidth - (gp.TileSize * 4);
+    //     int height = gp.TileSize * 4;
+    
+    //     drawSubWindow(x, y, width, height);
+    
+    //     // ================= TEXT =================
+    //     g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+    //     g2.setColor(Color.white);
+    //     int textX = x + gp.TileSize;
+    //     int textY = y + gp.TileSize;
+    
+    //     // Draw animated dialogue text
+    //     if (currentDialogue != null && !currentDialogue.isEmpty()) {
+    //         // Split by newline to handle multi-line text
+    //         String[] lines = currentDialogue.split("\n");
+    //         for (String line : lines) {
+    //             g2.drawString(line, textX, textY);
+    //             textY += 40;
+    //         }
+            
+    //         // ================= BLINKING CURSOR =================
+    //         // Show blinking cursor at the end of text when animation is finished
+    //         if (dialogueFinished) {
+    //             long time = System.currentTimeMillis();
+    //             if (time % 1000 < 500) { // Blink every 500ms
+    //                 g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+    //                 g2.setColor(Color.YELLOW);
+    //                 String cursor = "_";
+    //                 // Get the last line's width for cursor positioning
+    //                 String lastLine = lines[lines.length - 1];
+    //                 int cursorX = textX + g2.getFontMetrics().stringWidth(lastLine);
+    //                 int cursorY = textY - 40; // Position after last line
+    //                 g2.drawString(cursor, cursorX, cursorY);
+    //             }
+    //         }
+    //     } else {
+    //         // Debug: Draw placeholder if no dialogue
+    //         g2.drawString("...", textX, textY);
+    //     }
+    
+    //     // ================= PAGE INDICATOR =================
+    //     if (dialoguePages != null && dialoguePages.length > 1) {
+    
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 18F));
+    //         g2.setColor(new Color(255, 255, 255, 150));
+    
+    //         String pageInfo = (currentPageIndex + 1) + "/" + dialoguePages.length;
+    //         int infoX = x + width - 80;
+    //         int infoY = y + height - 20;
+    
+    //         g2.drawString(pageInfo, infoX, infoY);
+    
+    //         // reset font
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+    //         g2.setColor(Color.white);
+    //     }
+    
+    //     // ================= NEXT INDICATOR =================
+    //     if (dialogueFinished) {
+    
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 20F));
+            
+    //         // Pulsing effect for the indicator
+    //         long time = System.currentTimeMillis();
+    //         int alpha = (int)(Math.sin(time * 0.003) * 100 + 155); // Pulsing between 55-255
+    //         alpha = Math.min(255, Math.max(55, alpha));
+    //         g2.setColor(new Color(255, 255, 255, alpha));
+    
+    //         String nextIndicator;
+    
+    //         if (hasNextPage()) {
+    //             nextIndicator = "▼ Press ENTER for next page";
+    //         } else {
+    //             nextIndicator = "▼ Press ENTER to continue";
+    //         }
+    
+    //         int indicatorX = x + width - 260;
+    //         int indicatorY = y + height - 45;
+    
+    //         g2.drawString(nextIndicator, indicatorX, indicatorY);
+    
+    //         // Draw a second smaller arrow for emphasis
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 16F));
+    //         g2.setColor(new Color(255, 255, 100, alpha - 50));
+    //         g2.drawString("▼", indicatorX - 25, indicatorY - 2);
+    
+    //         // reset font
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28F));
+    //         g2.setColor(Color.white);
+    //     }
+    
+    //     // ================= DEBUG INFO =================
+    //     // Debug info (remove after fixing)
+    //     g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 16F));
+    //     g2.setColor(Color.YELLOW);
+    //     g2.drawString("Page: " + (currentPageIndex + 1) + "/" + 
+    //                   (dialoguePages != null ? dialoguePages.length : 0), 
+    //                   x + 20, y + height - 60);
+        
+    //     // Draw a small "PRESS ENTER" reminder at the bottom
+    //     if (!dialogueFinished) {
+    //         g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 14F));
+    //         g2.setColor(new Color(200, 200, 200, 150));
+    //         g2.drawString("(ENTER to skip)", x + width - 150, y + height - 10);
+    //     }
+    // }
     
     public void drawCharacterScreen() {
         // Add null check

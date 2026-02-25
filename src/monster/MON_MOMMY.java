@@ -77,6 +77,7 @@ public class MON_MOMMY extends Entity {
             left2 = setup("/monster/mummy_left_2", gp.TileSize, gp.TileSize);
             right1 = setup("/monster/mummy_right_1", gp.TileSize, gp.TileSize);
             right2 = setup("/monster/mummy_right_2", gp.TileSize, gp.TileSize);
+            slowEffectImage = setup("/effects/slow_effect", gp.TileSize, gp.TileSize);
         } catch (Exception e) {
             System.err.println("Error loading mummy images: " + e.getMessage());
         }

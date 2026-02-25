@@ -71,9 +71,6 @@ public class NPC_merchant extends Entity {
         if (gp.keyH.enterPressed == true) {
             // Face the player
             facePlayer();
-
-            System.out.println("Current dialoguesIndex: " + dialoguesIndex);
-        System.out.println("Dialogue at index: " + (dialogues[dialoguesIndex] != null ? dialogues[dialoguesIndex][0] : "null"));
             
             // Set dialogue
             gp.ui.currentDialogue = "So you want to buy?";

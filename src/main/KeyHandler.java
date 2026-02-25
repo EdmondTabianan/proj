@@ -44,7 +44,7 @@ public class KeyHandler implements KeyListener {
             pauseState(code);
         }
         // Dialgue state
-        else if (gp.gameState == gp.dialogueState) {
+        else if (gp.gameState == gp.dialogueState || gp.gameState == gp.cutsceneState) {
             dialogueState(code);
         }
         // character State
@@ -131,11 +131,13 @@ public class KeyHandler implements KeyListener {
                     // Xylo selected
                     gp.loadingManager.startGameWithCharacter(0);
                     gp.gameState = gp.transitionState;
+                    gp.playMusic(0);
                 }
                 if(gp.ui.commandNum == 1) {
                     // Alexandria selected
                     gp.loadingManager.startGameWithCharacter(1);
                     gp.gameState = gp.transitionState;
+                    gp.playMusic(0);
                 }
                 if (gp.ui.commandNum == 2) {
                     // Back to main menu
@@ -378,17 +380,101 @@ public class KeyHandler implements KeyListener {
         }
     }
     
+    // public void dialogueState(int code) {
+
+    //     if (code == KeyEvent.VK_ENTER) {
+    
+    //         // ================= SPECIAL NPC (VHONG) =================
+    //         if (gp.npc[gp.currentMap][gp.ui.npcIndex] instanceof NPC_vhong) {
+    
+    //             NPC_vhong npc =
+    //                 (NPC_vhong) gp.npc[gp.currentMap][gp.ui.npcIndex];
+    
+    //             npc.nextDialogue();
+    //             return;
+    //         }
+    
+    //         // ================= NORMAL DIALOGUE =================
+    
+    //         // If typewriter still animating → finish instantly
+    //         if (!gp.ui.isDialogueFinished()) {
+    //             gp.ui.skipToEnd();
+    //             return;
+    //         }
+    
+    //         // If more pages exist → go next
+    //         if (gp.ui.hasNextPage()) {
+    //             gp.ui.nextPage();
+    //             return;
+    //         }
+    
+    //         // ================= DIALOGUE FINISHED =================
+    //         // 🔥 THIS IS THE IMPORTANT PART
+    
+    //         if (gp.gameState == gp.cutsceneState) {
+    //             // Continue the cutscene instead of exiting to play
+    //             gp.csManager.scenePhase++;
+    //         } else {
+    //             // Normal gameplay dialogue closes normally
+    //             gp.gameState = gp.playState;
+    //         }
+    //     }
+    // }
+    
     public void dialogueState(int code) {
-        if(code == KeyEvent.VK_ENTER) {
-            if (gp.npc[gp.currentMap][gp.ui.npcIndex] instanceof NPC_vhong) {
+        if (code == KeyEvent.VK_ENTER) {
+            
+            // ================= SPECIAL NPC (VHONG) =================
+            if (gp.npc != null && gp.npc[gp.currentMap] != null && 
+                gp.ui.npcIndex >= 0 && gp.ui.npcIndex < gp.npc[gp.currentMap].length &&
+                gp.npc[gp.currentMap][gp.ui.npcIndex] instanceof NPC_vhong) {
+                
                 NPC_vhong npc = (NPC_vhong) gp.npc[gp.currentMap][gp.ui.npcIndex];
                 npc.nextDialogue();
-            } else {
-                gp.gameState = gp.playState;
+                return;
             }
+            
+            // ================= CUTSCENE MONSTER DIALOGUE =================
+            if (gp.gameState == gp.cutsceneState) {
+                // For cutscene dialogue, just use the normal page handling
+                if (!gp.ui.isDialogueFinished()) {
+                    gp.ui.skipToEnd();
+                    return;
+                }
+                
+                if (gp.ui.hasNextPage()) {
+                    System.out.println("Moving to next page");
+                    gp.ui.nextPage();
+                    return;
+                }
+                
+                // No more pages, advance cutscene
+                System.out.println("All pages done, advancing cutscene");
+                gp.csManager.scenePhase++;
+                return;
+            }
+            
+            // ================= NORMAL DIALOGUE =================
+            
+            // If typewriter still animating → finish instantly
+            if (!gp.ui.isDialogueFinished()) {
+                gp.ui.skipToEnd();
+                return;
+            }
+            
+            // If more pages exist → go next
+            if (gp.ui.hasNextPage()) {
+                System.out.println("Moving to next page");
+                gp.ui.nextPage();
+                return;
+            }
+            
+            // ================= DIALOGUE FINISHED =================
+            System.out.println("All pages done, closing dialogue");
+            gp.gameState = gp.playState;
         }
     }
-    
+
     public void characterState(int code) {
         if(code == KeyEvent.VK_C) {
             gp.gameState = gp.playState;

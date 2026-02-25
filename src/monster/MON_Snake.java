@@ -114,8 +114,7 @@ public class MON_Snake extends Entity {
             // Increment player's kill count
             if (gp.player != null) {
                 gp.player.killCount++;
-                System.out.println("Snake killed! Total kills: " + gp.player.killCount);
-                
+                                
                 // If this was the 3rd snake, quest progress will update when talking to Beverly
                 // Beverly's dialogue will check and update questProgress when all snakes are dead
             }

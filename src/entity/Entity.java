@@ -25,9 +25,12 @@ public class Entity {
     public int solidAreaDefaultX, solidAreaDefaultY, solidAreaDefaultWidth, solidAreaHeight;
     public int motion1_duration, motion2_duration;
     public boolean collision = false;
-    public String dialogues[][] = new String[20][20];
+    public String dialogues[][] = new String[30][30];
     public BufferedImage image, image2, image3;
     public Entity attacker;
+    public boolean temp = false;
+
+    public int dialogueIndex = 0;
     
     // State
     public int worldX, worldY;
@@ -53,6 +56,7 @@ public class Entity {
     public String knockbackDirection;
 
     public boolean sleep = false;
+    public boolean drawing = true;
 
     // slow effect
     public BufferedImage slowEffectImage;
@@ -110,6 +114,9 @@ public class Entity {
     public int amount = 1;
     public int slowDuration = 0;
     public int slowAmount = 0;
+
+    // npc direction
+    public String npcDirection = "";
 
     // type
     public int type;
@@ -209,11 +216,66 @@ public class Entity {
     public void damageReaction() {}
     
     public void speak() {
-        if (dialogues[dialoguesIndex] == null) {
+        facePlayer();
+        
+        // Check if we have dialogues
+        if (dialogues == null || dialogues.length == 0) {
+            // Fallback dialogue
+            String[] fallbackDialogue = new String[] {"..."};
+            gp.ui.setDialogue(fallbackDialogue);
+            gp.gameState = gp.dialogueState;
+            return;
+        }
+        
+        // Check if the current dialogue page exists
+        if (dialogues[dialoguesIndex] == null || dialogues[dialoguesIndex][0] == null) {
+            dialoguesIndex = 0;
+            
+            // If still null after reset, use fallback
+            if (dialogues[dialoguesIndex] == null || dialogues[dialoguesIndex][0] == null) {
+                String[] fallbackDialogue = new String[] {"..."};
+                gp.ui.setDialogue(fallbackDialogue);
+                gp.gameState = gp.dialogueState;
+                return;
+            }
+        }
+        
+        // Count how many non-null dialogue lines in the current page
+        int lineCount = 0;
+        while (lineCount < dialogues[dialoguesIndex].length && 
+               dialogues[dialoguesIndex][lineCount] != null) {
+            lineCount++;
+        }
+        
+        // Create a properly sized array for this dialogue page
+        String[] dialoguePage = new String[lineCount];
+        for (int i = 0; i < lineCount; i++) {
+            dialoguePage[i] = dialogues[dialoguesIndex][i];
+        }
+        
+        // Set the dialogue
+        gp.ui.setDialogue(dialoguePage);
+        
+        // Move to next dialogue index for next time
+        dialoguesIndex++;
+        
+        // Wrap around if we've reached the end
+        if (dialoguesIndex >= dialogues.length || dialogues[dialoguesIndex] == null) {
             dialoguesIndex = 0;
         }
-        gp.ui.currentDialogue = dialogues[dialoguesIndex][0];
-        dialoguesIndex++;
+        
+        // Enter dialogue state
+        gp.gameState = gp.dialogueState;
+    }
+    public void facePlayer() {
+        if (gp.player != null) {
+            switch (gp.player.Direction) {
+                case "up": Direction = "down"; break;
+                case "down": Direction = "up"; break;
+                case "left": Direction = "right"; break;
+                case "right": Direction = "left"; break;
+            }
+        }
     }
     public void interact() {}
     public void use(Entity entity) {}
@@ -1093,6 +1155,7 @@ public class Entity {
             }
         }
     }   
+    
     public void dyingAnimation(Graphics2D g2) {
         dyingCounter++;
 

@@ -67,7 +67,7 @@ public class Player extends Entity {
     }
     public void setDefaultValues() {
         startPosition();
-        defaultSpeed = 3;
+        defaultSpeed = 4;
         speed = defaultSpeed;
         Direction = "down";
 
@@ -78,7 +78,7 @@ public class Player extends Entity {
         maxMana = 4;
         mana = maxMana;
         arrow = 10;
-        strength = 1; // the higher the strength, higher the damage.
+        strength = 10; // the higher the strength, higher the damage.
         dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
@@ -126,9 +126,12 @@ public class Player extends Entity {
                 worldX = gp.TileSize * 43;
                 worldY = gp.TileSize * 44;
                 break;
+            case 6:
+                worldX = gp.TileSize * 48;
+                worldY = gp.TileSize * 18;
             default:
-                worldX = gp.TileSize * 10;
-                worldY = gp.TileSize * 10;
+                worldX = gp.TileSize * 48;
+                worldY = gp.TileSize * 18;
         }
         
         Direction = "down";
@@ -158,6 +161,7 @@ public class Player extends Entity {
         inventory.add(currentweapon);
         inventory.add(currentShield);
         inventory.add(currentRange);
+        inventory.add(new OBJ_Axe(gp));
     }
     public int getAttack() {
         attackArea = currentweapon.attackArea;
@@ -624,29 +628,13 @@ public class Player extends Entity {
     public void interactNPC(int i) {
         if(gp.keyH.enterPressed == true) {
             if (i != 999) {
-                    attackCanceled = true;
-                    gp.gameState = gp.dialogueState;
-                    gp.npc[gp.currentMap][i].speak();
+                attackCanceled = true;
+                gp.npc[gp.currentMap][i].speak();
+                gp.keyH.enterPressed = false; 
             }   
         }
     }
 
-    // public void contactMonster(int i) {
-
-    //     if(i != 999) {
-    //         if (invincible == false && gp.monster[gp.currentMap][i].dying == false) {
-    //             gp.playSE(6);
-
-    //             int damage = attack - (gp.monster[gp.currentMap][i].attack - defense);
-    //             if(damage <= 0) {
-    //                 damage = 0;
-    //             }
-    //             life -= damage;
-    //             invincible = true;
-    //         }
-    //     }
-    // }
-    
     public void contactMonster(int i, Entity monster) {
         if(i != 999 && monster != null) {
             
@@ -666,14 +654,13 @@ public class Player extends Entity {
                 
                 // CHECK GUARD HERE!
                 if (guarding == true) {
+                    // Check if monster is attacking from the EXACT direction player is facing
                     // Get the direction the attack is coming from (monster's direction)
                     String attackDirection = monster.Direction;
                     
-                    // Check if player is facing the attack (opposite direction)
-                    String oppositeDirection = getOppositeDirection(attackDirection);
-                    
-                    // FIX: Add null check for Direction
-                    if (Direction != null && Direction.equals(oppositeDirection)) {
+                    // Check if player is facing the exact same direction as monster (blocking)
+                    // Player guards in their Direction, so if monster is in that direction, guard works
+                    if (Direction != null && Direction.equals(attackDirection)) {
                         // PERFECT GUARD - NO DAMAGE! + KNOCKBACK MONSTER
                         gp.playSE(15); // Guard sound
                         gp.ui.showMessage("Perfect Guard! No damage!");
@@ -693,9 +680,16 @@ public class Player extends Entity {
                         return; // Exit without applying damage or invincibility
                         
                     } else {
-                        // Guard failed - wrong direction
+                        // Guard failed - monster attacking from wrong direction
                         gp.playSE(6); // Hurt sound
                         gp.ui.showMessage(damage + " damage!");
+                        
+                        // Apply knockback to PLAYER when guard fails
+                        int knockbackPower = 3;
+                        if (monster.knockBackPower > 0) {
+                            knockbackPower = monster.knockBackPower;
+                        }
+                        setKnockBack(this, monster, knockbackPower);
                         
                         // Apply damage
                         life -= damage;
@@ -708,6 +702,13 @@ public class Player extends Entity {
                     // Not guarding
                     gp.playSE(6); // Hurt sound
                     gp.ui.showMessage(damage + " damage!");
+                    
+                    // Apply knockback to PLAYER when not guarding
+                    int knockbackPower = 3;
+                    if (monster.knockBackPower > 0) {
+                        knockbackPower = monster.knockBackPower;
+                    }
+                    setKnockBack(this, monster, knockbackPower);
                         
                     // Apply damage
                     life -= damage;
@@ -719,37 +720,7 @@ public class Player extends Entity {
             }
         }
     }
-    // public void damageMonster(int i, int attack, int knockBackPower) {
-    //     if (i != 999) {
-    //         if (gp.monster[gp.currentMap][i].invincible == false) {
-    //             gp.playSE(5);
 
-    //             if (knockBackPower > 0) {
-    //                 knockBack(gp.monster[gp.currentMap][i], knockBackPower);
-    //             }
-            
-    //             int damage = attack - gp.monster[gp.currentMap][i].defense;
-    //             if(damage < 0) {
-    //                 damage = 1; // Minimum 1 damage
-    //             }
-    //             gp.monster[gp.currentMap][i].life -= damage;
-    //             gp.ui.showMessage(damage + " damage!");
-    //             gp.monster[gp.currentMap][i].invincible = true;
-    //             gp.monster[gp.currentMap][i].invincibleCounter = 0; // Reset monster's invincibility counter
-    //             gp.monster[gp.currentMap][i].hpBarOn = true;
-    //             gp.monster[gp.currentMap][i].hpBarCounter = 0;
-    //             gp.monster[gp.currentMap][i].damageReaction();
-
-    //             if (gp.monster[gp.currentMap][i].life <= 0) {
-    //                 gp.monster[gp.currentMap][i].dying = true;
-    //                 gp.ui.showMessage("Killed the " + gp.monster[gp.currentMap][i].name + "!");
-    //                 gp.ui.showMessage("exp + " + gp.monster[gp.currentMap][i].exp);
-    //                 exp += gp.monster[gp.currentMap][i].exp;
-    //                 checkLevelUp();
-    //             }
-    //         }
-    //     }
-    // }
     public void damageMonster(int i, Entity attacker, int attack, int knockBackPower) {
         if (i != 999) {
             if (gp.monster[gp.currentMap][i].invincible == false) {

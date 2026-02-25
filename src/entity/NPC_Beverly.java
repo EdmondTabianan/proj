@@ -1,35 +1,26 @@
 package entity;
 
 import java.util.Random;
-
 import main.GamePanel;
 import object.OBJ_Key;
+import monster.MON_EarthSlime;
 
 public class NPC_Beverly extends Entity {
 
-    // Quest state tracking
-    private int questState = 0; // 0: quest not started, 1: quest active, 2: quest complete
-    private String[] dialoguePages;
-    private int currentPage = 0;
-    
-    // Snake kill tracking
-    private boolean keySpawned = false;
-    private int passageMap = 6; // Map ID for the passage map (where snakes are)
-    private int keyMap = 0; // Map ID for where the key spawns (main map)
-    private int requiredSnakeKills = 3; // Need to kill 3 snakes
+    private int questState = 0;
+    private boolean slimesSpawned = false;
+    private boolean snakeQuestCompleted = false;
 
     public NPC_Beverly(GamePanel gp) {
         super(gp);
 
         Direction = "down";
         speed = 1;
+        type = type_npc;
+        name = "Beverly";
 
         getImage();
         
-        // Initialize dialogues array
-        dialogues = new String[10][10];
-        setDialogue();
-
         solidArea.x = 8;
         solidArea.y = 16;
         solidAreaDefaultX = solidArea.x;
@@ -49,234 +40,277 @@ public class NPC_Beverly extends Entity {
         right2 = setup("/npc/npc_2_right", gp.TileSize, gp.TileSize);
     }
     
-    public void setDialogue() {
-        int i = 0;
-        dialogues[i][0] = "Kill that snake, please"; i++;
-        dialogues[i][1] = "Thanks for killing the snake"; i++;
-        dialogues[i][1] = "Take this key"; i++;
-    }
-    
     public void setAction() {
-        // NPC stands still - no movement
-        // You can add patrol patterns here if needed
+        if (onPath) {
+            int goalCol = 7;
+            int goalRow = 10;
+            searchPath(goalCol, goalRow);
+        } else {
+            actionLockCounter++;
+
+            if (collisionOn) {
+                Random random = new Random();
+                int i = random.nextInt(4);
+                switch (i) {
+                    case 0: Direction = "up"; break;
+                    case 1: Direction = "down"; break;
+                    case 2: Direction = "left"; break;
+                    case 3: Direction = "right"; break;
+                }
+                collisionOn = false;
+                actionLockCounter = 0;
+                return;
+            }
+
+            if (actionLockCounter == 120) {
+                Random random = new Random();
+                int i = random.nextInt(100) + 1;
+                
+                if (i <= 25) {
+                    Direction = "up";
+                } else if (i <= 50) {
+                    Direction = "down";
+                } else if (i <= 75) {
+                    Direction = "left";
+                } else {
+                    Direction = "right";
+                }
+                actionLockCounter = 0;
+            }
+        }
     }
     
-    public void idle() {
-        //nothing
+    @Override
+    public void prepareDialoguePages() {
+        if (gp.questProgress == 0) {
+            // First meeting - give quest for slimes
+            dialoguePages = new String[] {
+                "Hello, I'm Beverly!",
+                "I need your help with some creatures.",
+                "Three slimes have been causing trouble nearby.",
+                "Defeat them and I'll reward you!"
+            };
+            if (gp.player != null) {
+                gp.player.killCount = 0;
+            }
+            questState = 1;
+        }
+        else if (gp.questProgress == 1) {
+            if (gp.player != null && gp.player.killCount < 3) {
+                // Quest in progress - kill slimes
+                int remaining = 3 - gp.player.killCount;
+                dialoguePages = new String[] {
+                    "You've killed " + gp.player.killCount + " out of 3 slimes.",
+                    "You still need to defeat " + remaining + " more.",
+                    "They're nearby, keep looking!",
+                    "Come back when you're done!"
+                };
+            } else if (gp.player != null && gp.player.killCount >= 3) {
+                // Quest complete - reward dialogue
+                dialoguePages = new String[] {
+                    "Amazing! You've defeated all the slimes!",
+                    "You've proven yourself to be quite capable.",
+                    "Take this key as your reward.",
+                    "It might unlock something important!",
+                    "Good luck on your continued journey!"
+                };
+                questState = 2;
+            } else {
+                // Fallback dialogue
+                dialoguePages = new String[] {
+                    "Come back when you've defeated the slimes!",
+                    "I'll be waiting here."
+                };
+            }
+        }
+        else if (gp.questProgress == 2) {
+            // Key reward given - second quest starts (snakes)
+            dialoguePages = new String[] {
+                "That key will open many doors.",
+                "But I have another task for you...",
+                "Dangerous snakes have been terrorizing the area.",
+                "Defeat three of them and I'll have another reward!"
+            };
+            // Don't reset killCount here - let afterDialogue handle it
+            questState = 2;
+        }
+        else if (gp.questProgress == 3) {
+            // Snake quest in progress
+            if (gp.player != null && gp.player.killCount < 3) {
+                int remaining = 3 - gp.player.killCount;
+                dialoguePages = new String[] {
+                    "You've defeated " + gp.player.killCount + " out of 3 snakes.",
+                    "You still need to defeat " + remaining + " more.",
+                    "They're lurking in the eastern areas.",
+                    "Return when you've completed the task!"
+                };
+            } else if (gp.player != null && gp.player.killCount >= 3) {
+                // Snake quest complete - spawn key
+                dialoguePages = new String[] {
+                    "Outstanding! You've defeated all the snakes!",
+                    "You're truly a hero!",
+                    "Here's your final reward.",
+                    "May it serve you well on your journey!"
+                };
+                // Spawn key immediately when killCount >= 3
+                if (!snakeQuestCompleted) {
+                    spawnKey(0, 7, 10); // Spawn key at map 0, col=7, row=10
+                    snakeQuestCompleted = true;
+                }
+                questState = 3;
+            } else {
+                dialoguePages = new String[] {
+                    "Come back when you've defeated the snakes!",
+                    "The area is safer now because of you."
+                };
+            }
+        }
+        else if (gp.questProgress == 4) {
+            // Post-quest dialogue after snake reward
+            dialoguePages = new String[] {
+                "You have proven yourself, adventurer!",
+                "There's always more to discover.",
+                "Farewell!"
+            };
+            questState = 3;
+        }
+        else if (gp.questProgress >= 5) {
+            // Final state - "ding"
+            dialoguePages = new String[] {
+                "You have become a true legend!",
+                "Your legend grows with each victory.",
+                "May your journey be glorious!"
+            };
+            questState = 3;
+        }
+        else {
+            // Default dialogue fallback
+            dialoguePages = new String[] {
+                "Keep exploring, adventurer!",
+                "There's always more to discover.",
+                "Farewell!"
+            };
+        }
+        
+        // Safety check
+        if (dialoguePages == null) {
+            dialoguePages = new String[] {"..."};
+        }
     }
     
+    @Override
     public void speak() {
         facePlayer();
         
-        // Set the current NPC index in UI
-        gp.ui.npcIndex = getIndex();
+        // Store whether this is the first meeting
+        boolean firstMeeting = (gp.questProgress == 0 && !slimesSpawned);
         
-        // Prepare dialogue pages based on quest state
-        prepareDialoguePages();
-        
-        // Start with first page
-        if (dialoguePages != null && dialoguePages.length > 0) {
-            currentPage = 0;
-            gp.ui.setDialogue(dialoguePages);
-        } else {
-            // Fallback dialogue if something went wrong
-            dialoguePages = new String[] {"..."};
-            gp.ui.setDialogue(dialoguePages);
+        // Spawn slimes if first meeting
+        if (firstMeeting) {
+            spawnSlimes();
+            slimesSpawned = true;
         }
         
-        // Enter dialogue state
+        findMyIndex();
+        prepareDialoguePages();
+        
+        if (dialoguePages != null && dialoguePages.length > 0) {
+            gp.ui.setDialogue(dialoguePages);
+        } else {
+            gp.ui.setDialogue(new String[]{"..."});
+        }
+        
         gp.gameState = gp.dialogueState;
     }
     
-    private void prepareDialoguePages() {
-        if (questState == 0) {
-            // First meeting - give quest
-            dialoguePages = new String[] {
-                "Hello there, hunter!",
-                "There are dangerous snakes in the passage.",
-                "Clear all 3 snakes in the passage for me.",
-                "I'll reward you with a key when you're done."
-            };
-            questState = 1; // Quest active
+    @Override
+    public void afterDialogue() {
+        // Update quest progress AFTER dialogue finishes
+        
+        // Case 1: First meeting completed - move to quest active (0 → 1)
+        if (gp.questProgress == 0 && slimesSpawned) {
+            gp.questProgress = 1;
+            // Reset kill count for slime quest
+            if (gp.player != null) {
+                gp.player.killCount = 0;
+            }
         }
-        else if (questState == 1) {
-            // Check if all snakes are killed using player's killCount
-            int killCount = (gp.player != null) ? gp.player.killCount : 0;
+        
+        // Case 2: Slime quest completed (killCount >= 3) - move to snake quest (1 → 2)
+        if (questState == 2 && gp.questProgress == 1 && gp.player != null && gp.player.killCount >= 3) {
+            gp.questProgress = 2; // Move to reward state
+            gp.playSE(1); // Play reward sound
             
-            if (killCount == 0) {
-                // No snakes killed yet
-                dialoguePages = new String[] {
-                    "You haven't killed any snakes yet!",
-                    "Please go to the passage and kill the 3 snakes.",
-                    "They're lurking somewhere in there.",
-                    "Come back when you're done!"
-                };
+            // Reset kill count for snake quest
+            if (gp.player != null) {
+                gp.player.killCount = 0;
             }
-            else if (killCount < requiredSnakeKills) {
-                // Some snakes killed, but not all
-                int remaining = requiredSnakeKills - killCount;
-                dialoguePages = new String[] {
-                    "You've killed " + killCount + " out of " + requiredSnakeKills + " snakes.",
-                    "Keep going! You still need to kill " + remaining + " more.",
-                    "They're waiting for you in the passage.",
-                    "Come back when they're all gone!"
-                };
+        }
+        
+        // Case 3: Snake quest completed (killCount >= 3) - move to final state (3 → 4)
+        if (questState == 3 && gp.questProgress == 3 && gp.player != null && gp.player.killCount >= 3) {
+            // Key already spawned in prepareDialoguePages, just advance quest
+            gp.questProgress = 4; // Move to final reward state
+            gp.playSE(1); // Play reward sound
+            
+            // Reset kill count
+            if (gp.player != null) {
+                gp.player.killCount = 0;
             }
-            else if (killCount >= requiredSnakeKills) {
-                // UPDATE: If killcount is 3, increment questprogress by 3
-                // All snakes killed - quest complete
-                dialoguePages = new String[] {
-                    "You cleared all the snakes! Thank you so much!",
-                    "Here's your reward - a special key.",
-                    "This key will open the ancient door.",
-                    "Good luck on your journey!"
-                };
-                
-                // UPDATE: Increment questProgress by 3 when snakes are killed
-                if (!keySpawned) {
-                    // Spawn the key first
-                    spawnKey(7, 10, 0); // Spawn at col 7, row 10 on map 0
-                    keySpawned = true;
-                    
-                    // Increment questProgress by 3
-                    gp.questProgress += 3;
-                    
-                    // Reset kill count for future quests
-                    if (gp.player != null) {
-                        gp.player.killCount = 0;
-                    }
+        }
+        
+        // Case 4: Final completion "ding" (4 → 5)
+        if (gp.questProgress == 4 && questState == 3) {
+            gp.questProgress = 5;
+        }
+    }
+    
+    private void spawnSlimes() {
+        int currentMap = gp.currentMap;
+        
+        // Spawn 3 slimes around Beverly's location
+        int[][] slimeLocations = {
+            {32, 32},
+            {30, 30},
+            {34, 28}
+        };
+        
+        int slimesSpawnedCount = 0;
+        for (int[] location : slimeLocations) {
+            for (int i = 0; i < gp.monster[currentMap].length; i++) {
+                if (gp.monster[currentMap][i] == null) {
+                    MON_EarthSlime slime = new MON_EarthSlime(gp);
+                    slime.worldX = gp.TileSize * location[0];
+                    slime.worldY = gp.TileSize * location[1];
+                    slime.setSpawnPoint(slime.worldX, slime.worldY);
+                    gp.monster[currentMap][i] = slime;
+                    slimesSpawnedCount++;
+                    break;
                 }
-                
-                questState = 2; // Quest completed
-            }
-        }
-        else if (questState == 2) {
-            // After receiving reward
-            dialoguePages = new String[] {
-                "Thank you again for your help!",
-                "That key will open the ancient door.",
-                "I heard it leads to great treasure.",
-                "Good luck on your journey!"
-            };
-            questState = 3; // Final state
-        }
-        else if (questState == 3) {
-            // UPDATE: If questprogress is done, thank the player
-            // Final repeated dialogue - thanking the player
-            int killCount = (gp.player != null) ? gp.player.killCount : 0;
-            
-            if (gp.questProgress >= 3) {
-                // Quest is completed, thank the player
-                dialoguePages = new String[] {
-                    "Thank you so much for your help!",
-                    "The key I gave you is very special.",
-                    "It will open the ancient door.",
-                    "May the gods watch over your journey!"
-                };
-            } else {
-                // Default dialogue
-                dialoguePages = new String[] {
-                    "Remember, the key opens the ancient door.",
-                    "You've killed " + killCount + " snakes in total.",
-                    "You're becoming quite the hunter!",
-                    "Farewell, brave hunter!"
-                };
             }
         }
         
-        // Safety check - ensure dialoguePages is never null
-        if (dialoguePages == null) {
-            dialoguePages = new String[] {"..."};
+        if (slimesSpawnedCount > 0) {
+            gp.ui.showMessage("Slimes have appeared nearby!");
         }
     }
     
-    /**
-     * Count how many snakes have been killed in the passage map
-     * This is kept for backward compatibility but now uses player.killCount
-     */
-    private int countSnakesKilledInPassage() {
-        if (gp.player != null) {
-            return gp.player.killCount;
-        }
-        return 0;
-    }
-    
-    /**
-     * Spawn a key at the specified grid position on the specified map
-     * @param col Grid column
-     * @param row Grid row
-     * @param map The map ID to spawn the key on
-     */
-    public void spawnKey(int col, int row, int map) {
-        int worldX = col * gp.TileSize;
-        int worldY = row * gp.TileSize;
+    public void spawnKey(int map, int col, int row) {
+        int currentMap = gp.currentMap;
         
-        // Find an empty slot in the objects array for the specified map
-        for (int i = 0; i < gp.obj[map].length; i++) {
-            if (gp.obj[map][i] == null) {
-                gp.obj[map][i] = new OBJ_Key(gp);
-                gp.obj[map][i].worldX = worldX;
-                gp.obj[map][i].worldY = worldY;
-                gp.obj[map][i].isPickup = true; // Mark as pickup
-                
+        // Spawn key at specified location
+        for (int i = 0; i < gp.obj[currentMap].length; i++) {
+            if (gp.obj[currentMap][i] == null) {
+                gp.obj[currentMap][i] = new OBJ_Key(gp);
+                gp.obj[currentMap][i].worldX = gp.TileSize * col;
+                gp.obj[currentMap][i].worldY = gp.TileSize * row;
+                gp.ui.showMessage("A key has appeared!");
                 break;
             }
         }
-    }
+    }    
     
-    /**
-     * Call this method when player presses ENTER during dialogue
-     */
-    public void nextDialogue() {
-        // Safety check - if dialoguePages is null, prepare dialogue again
-        if (dialoguePages == null) {
-            prepareDialoguePages();
-            
-            // If still null, close dialogue
-            if (dialoguePages == null) {
-                gp.gameState = gp.playState;
-                currentPage = 0;
-                return;
-            }
-        }
-        
-        if (!gp.ui.isDialogueFinished()) {
-            // If animation isn't finished, skip to the end
-            gp.ui.skipToEnd();
-        } else {
-            // Move to next page or close dialogue
-            currentPage++;
-            
-            if (currentPage < dialoguePages.length) {
-                // Show next page
-                String[] remainingPages = new String[dialoguePages.length - currentPage];
-                for (int i = 0; i < remainingPages.length; i++) {
-                    remainingPages[i] = dialoguePages[currentPage + i];
-                }
-                gp.ui.setDialogue(remainingPages);
-                gp.gameState = gp.dialogueState;
-            } else {
-                // No more pages, close dialogue
-                gp.gameState = gp.playState;
-                currentPage = 0; // Reset for next conversation
-            }
-        }
-    }
-    
-    /**
-     * Helper method to find this NPC's index in the npc array
-     */
-    private int getIndex() {
-        if (gp.npc == null || gp.npc[gp.currentMap] == null) return 0;
-        
-        for (int i = 0; i < gp.npc[gp.currentMap].length; i++) {
-            if (gp.npc[gp.currentMap][i] == this) {
-                return i;
-            }
-        }
-        return 0;
-    }
-    
+    @Override
     public void facePlayer() {
         if (gp.player != null) {
             switch (gp.player.Direction) {

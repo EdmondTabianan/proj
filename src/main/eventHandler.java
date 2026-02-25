@@ -65,8 +65,8 @@ public class eventHandler {
             else if(hit(4, 4, 3, "any") == true) {teleport(2, 5.0f, 3);}
             else if(hit(4, 10, 10, "up") == true) {teleportToFinalStage(0, 25 , 35, gp.dialogueState);}            
 
-            else if(hit(0, 28, 17, "up") == true) {entrance(4, 10 , 10, gp.dialogueState);}
-            else if(hit(0, 28, 17, "up") == true) {entrance(4, 10 , 10, gp.dialogueState);}
+            else if(hit(0, 28, 17, "up") == true) {entrance(2, 24 , 48, gp.dialogueState);}
+            else if(hit(0, 29, 17, "up") == true) {entrance(2, 25 , 48, gp.dialogueState);}
             else if(hit(2, 24, 48, "down") == true) {teleport(0, 28, 17);}
             else if(hit(2, 25, 48, "down") == true) {teleport(0, 29, 17);}
             else if(hit(4, 43, 44, "any") == true) {teleport(5, 42, 44);}
@@ -129,7 +129,16 @@ public class eventHandler {
     public void damagePit(int gameState) {
         gp.gameState = gameState;
         gp.player.attackCanceled = true;
-        gp.ui.currentDialogue = "You fell into a pit!\nYou lost some life.";
+        
+        // Create proper dialogue array for multi-page support
+        String[] dialoguePages = new String[] {
+            "You fell into a pit!",
+            "You lost some life."
+        };
+        
+        // Use the UI's setDialogue method
+        gp.ui.setDialogue(dialoguePages);
+        
         gp.player.life -= 1;
         if (gp.player.life < 0) {
             gp.player.life = 0;
@@ -179,11 +188,11 @@ public class eventHandler {
             // Set game state to dialogue state
             gp.gameState = gp.dialogueState;
             
-            // Heal the player
+            // Heal the player immediately (current behavior)
             gp.player.life = gp.player.maxLife;
             gp.player.mana = gp.player.maxMana;
             
-            // Optional: Play a healing sound effect
+            // Play a healing sound effect
             gp.playSE(1); // Assuming index 1 is a healing sound
         }
     }
@@ -205,14 +214,13 @@ public class eventHandler {
                 // Set game state to dialogue state
                 gp.gameState = gp.dialogueState;
                 
-                // Store transition info for after dialogue
-                gp.eHandler.tempMap = map;
-                gp.eHandler.tempColFloat = col;
-                gp.eHandler.tempRow = row;
-                
                 // Play sounds
                 gp.playSE(2);
                 gp.playSE(13);
+                
+                // TELEPORT DIRECTLY - just like in transport()
+                teleport(map, col, row);
+                
             } 
             else if (gp.player.hasKey == 1) {
                 // Create proper dialogue array for having 1 key
@@ -278,12 +286,44 @@ public class eventHandler {
                 gp.gameState = gp.dialogueState;
                 gp.playSE(10); // Denied sound
             }
+            // IF HAS KEY - Player has the key from snakes (hasKey == 1)
+            else if (gp.player.hasKey == 1) {
+                // Teleport to the destination map specified in the event
+                gp.player.Direction = "down"; // Face down to show readiness to board
+                
+                // Determine which map we're going to based on current map
+                if (gp.currentMap == 0) {
+                    // On first map, going to second map
+                    dialoguePages = new String[] {
+                        "You have the key! You've proven yourself!",
+                        "The sailor unties the ropes.",
+                        "The ship sets sail across the sea...",
+                        "Arriving at the second map!"
+                    };
+                } else {
+                    // On second map, returning to first map
+                    dialoguePages = new String[] {
+                        "Welcome back, brave traveler!",
+                        "Ready to return to the main island?",
+                        "The sailor unties the ropes.",
+                        "Returning to first map..."
+                    };
+                }
+                
+                gp.ui.setDialogue(dialoguePages);
+                gp.gameState = gp.dialogueState;
+                
+                // Teleport to the destination map using the parameters from the event
+                teleport(map, col, row);
+                
+                gp.playSE(13); // Ship sailing sound
+            }
             // TALK TO VHONG - Player hasn't completed quest yet (questProgress 1, no key)
-            else if (gp.questProgress == 1 && (gp.player == null || gp.player.hasKey == 0)) {
+            else if (gp.player.hasKey == 0 && gp.questProgress == 1) {
                 dialoguePages = new String[] {
                     "The sailor leans on his ship.",
                     "Have you spoken to Vhong yet?",
-                    "He's the elder in the desert village .",
+                    "He's the elder in the desert village.",
                     "He mentioned something about snakes",
                     "blocking the path to an ancient key.",
                     "Defeat the snakes and bring back the key.",
@@ -302,35 +342,12 @@ public class eventHandler {
                     "But there's someone else you should meet.",
                     "Talk to Beverly in the village.",
                     "She has a task involving snakes.",
-                    "Complete her quest, before sailing."
+                    "Complete her quest before sailing."
                 };
                 
                 gp.ui.setDialogue(dialoguePages);
                 gp.gameState = gp.dialogueState;
                 gp.playSE(10); // Denied sound
-            }
-            // IF HAS KEY - Player has the key from snakes (questProgress 3, has key)
-            else if (gp.questProgress == 3 && gp.player != null && gp.player.hasKey == 1) {
-                dialoguePages = new String[] {
-                    "The sailor's eyes light up.",
-                    "Ah, I see, you have the key!",
-                    "You must have defeated those dangerous snakes.",
-                    "Vhong told me about your bravery.",
-                    "My ship is ready for you.",
-                    "Where would you like to sail?",
-                    "We can reach the mainland or the ancient ruins.",
-                    "Just step aboard when you're ready to depart!"
-                };
-                
-                gp.ui.setDialogue(dialoguePages);
-                gp.gameState = gp.dialogueState;
-                
-                // Update quest progress to show sailor quest is complete
-                gp.questProgress = 4; // Move to next quest stage
-                gp.player.Direction = "down"; // Face down to show readiness to board
-                
-                // Call teleport directly
-                teleport(map, col, row);
             }
             // READY TO SAIL - Player has completed all quests (questProgress >= 4)
             else if (gp.questProgress >= 4) {

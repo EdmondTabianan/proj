@@ -2,6 +2,7 @@ package main;
 
 import entity.Entity;
 import entity.NPC_Beverly;
+import entity.NPC_Ding;
 import entity.NPC_blueboy;
 import entity.NPC_merchant;
 import entity.NPC_sailor;
@@ -59,7 +60,7 @@ public class AssetSetter {
             {0, 28, 15, OBJ_Doors.class, false},
             {0, 12, 17, OBJ_bow_normal.class, true},
             {1, 24, 43, OBJ_boat.class, true},
-            {1, 10, 8, OBJ_Key.class, true},
+            // {1, 10, 8, OBJ_Key.class, true},
 
             // shop
             {3, 28, 24, OBJ_display_bow.class, false},
@@ -96,6 +97,7 @@ public class AssetSetter {
             {0, 39, 30, NPC_vhong.class},
             {0, 8, 10, NPC_Beverly.class},
             {0, 45, 42, NPC_sailor.class},
+            {1, 23, 28, NPC_Ding.class},
             {3, 20, 20, NPC_merchant.class}
         };
         
@@ -112,13 +114,13 @@ public class AssetSetter {
         
         // Map 0 - Always add snake
         configList.add(new Object[]{0, 35, 6, MON_Snake.class});
-        configList.add(new Object[]{0, 44, 38, OBJ_torch.class});
+        // configList.add(new Object[]{0, 44, 38, OBJ_torch.class});
 
         // Map 1 monsters
         configList.add(new Object[]{1, 22, 31, MON_Snake.class});
-        configList.add(new Object[]{1, 10, 29, MON_Snake.class});
+        configList.add(new Object[]{1, 10, 33, MON_Snake.class});
         configList.add(new Object[]{1, 38, 27, MON_Snake.class});
-        configList.add(new Object[]{1, 37, 26, MON_Snake.class});
+        configList.add(new Object[]{1, 37, 25, MON_Snake.class});
         configList.add(new Object[]{1, 7, 42, MON_Snake.class});
         configList.add(new Object[]{1, 43, 43, MON_Snake.class});
         configList.add(new Object[]{1, 26, 32, MON_Snake.class});
@@ -132,9 +134,9 @@ public class AssetSetter {
         configList.add(new Object[]{1, 32, 30, MON_EarthSlime.class});
         configList.add(new Object[]{1, 20, 20, MON_EarthSlime.class});
         configList.add(new Object[]{1, 12, 38, MON_EarthSlime.class});
-        configList.add(new Object[]{1, 2, 28, MON_EarthSlime.class});
+        configList.add(new Object[]{1, 5, 30, MON_EarthSlime.class});
         configList.add(new Object[]{1, 23, 24, MON_EarthSlime.class});
-        configList.add(new Object[]{1, 6, 24, MON_EarthSlime.class});
+        configList.add(new Object[]{1, 6, 23, MON_EarthSlime.class});
         configList.add(new Object[]{1, 8, 31, MON_EarthSlime.class});
         configList.add(new Object[]{1, 34, 35, MON_EarthSlime.class});
         configList.add(new Object[]{1, 33, 23, MON_EarthSlime.class});
@@ -208,7 +210,7 @@ public class AssetSetter {
         configList.add(new Object[]{4, 33, 36, MON_MOMMY.class});
         
         // last stage 
-        configList.add(new Object[]{5, 23, 23, MON_anubis.class});
+        configList.add(new Object[]{5, 23, 20, MON_anubis.class});
         
         baseMonsterConfigs = configList.toArray(new Object[0][]);
     }

@@ -443,7 +443,6 @@ public class KeyHandler implements KeyListener {
                 }
                 
                 if (gp.ui.hasNextPage()) {
-                    System.out.println("Moving to next page");
                     gp.ui.nextPage();
                     return;
                 }
@@ -464,13 +463,11 @@ public class KeyHandler implements KeyListener {
             
             // If more pages exist → go next
             if (gp.ui.hasNextPage()) {
-                System.out.println("Moving to next page");
                 gp.ui.nextPage();
                 return;
             }
             
             // ================= DIALOGUE FINISHED =================
-            System.out.println("All pages done, closing dialogue");
             gp.gameState = gp.playState;
         }
     }

@@ -47,12 +47,14 @@ public class MON_anubis extends Entity {
         defense = 3 + playerLevel / 3;
         exp = 50 + playerLevel;
 
-        // Solid area for collision
-        int size = gp.TileSize*5;
-        solidArea.x = 40;
-        solidArea.y = 40;
-        solidArea.width = size - 48*2;
-        solidArea.height = size - 48*2;
+        int spriteSize = gp.TileSize * 5;
+
+        // 🎯 Foot-centered hitbox
+        solidArea.x = spriteSize / 3;          // centered horizontally
+        solidArea.y = spriteSize - gp.TileSize * 2; // bottom area (feet zone)
+        solidArea.width = spriteSize / 3;      // narrower body
+        solidArea.height = gp.TileSize * 2;    // short vertical box
+
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
 
@@ -133,18 +135,11 @@ public class MON_anubis extends Entity {
     //     dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
     // } 
     public void setDialogue() {
-        System.out.println("MON_anubis.setDialogue() CALLED!");
         
         dialogues[5][0] = "Anong gentle gentle?";
         dialogues[5][1] = "Ilalabas ko ang aking dragon.";
         dialogues[5][2] = "Dragon na maliit na may tatong sisiw.";
         dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
-        
-        System.out.println("Dialogues set at index 5:");
-        System.out.println("  [5][0]: " + dialogues[5][0]);
-        System.out.println("  [5][1]: " + dialogues[5][1]);
-        System.out.println("  [5][2]: " + dialogues[5][2]);
-        System.out.println("  [5][3]: " + dialogues[5][3]);
     }
     public void setAction() {
         if (gp.player == null) return;

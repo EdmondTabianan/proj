@@ -288,6 +288,7 @@ public class GamePanel extends JPanel implements Runnable {
                  gameState == transitionState || gameState == tradeState ||
                  gameState == questState || gameState == cutsceneState) {
             
+            ui.updateDialogueAnimation();
             if (player != null) {
                 // Draw tile
                 tileM.draw(g2);

@@ -15,7 +15,7 @@ public class OBJ_Shield_Wood extends Entity {
         price = 150;
         
         // Optional: Add these if you want more shield functionality
-        knockBackPower = 1;      // Small knockback when blocking
+        knockBackPower = 10;      // Small knockback when blocking
         stackable = false;       // Shields shouldn't stack
     }
 }

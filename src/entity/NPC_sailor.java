@@ -8,8 +8,6 @@ import object.OBJ_tablet;
 public class NPC_sailor extends Entity {
 
     private int questState = 0; // 0: not started, 1: quest active, 2: key found, 3: completed
-    private String[] dialoguePages;
-    private int currentPage = 0;
     private boolean keySpawned = false;
     private boolean hasKey = false;
 
@@ -85,31 +83,13 @@ public class NPC_sailor extends Entity {
         }
     }
     
-    public void speak() {
-        facePlayer();
-        
-        // Set the current NPC index in UI so KeyHandler knows which NPC we're talking to
-        gp.ui.npcIndex = getIndex();
-        
-        // Prepare dialogue pages based on quest state
-        prepareDialoguePages();
-        
-        // Start with first page
-        if (dialoguePages != null && dialoguePages.length > 0) {
-            currentPage = 0;
-            gp.ui.setDialogue(dialoguePages);
-        }
-        
-        // Enter dialogue state
-        gp.gameState = gp.dialogueState;
-    }
-    
-    private void prepareDialoguePages() {
+    @Override
+    public void prepareDialoguePages() {
         if (questState == 0) {
             // 1. GREETINGS - First meeting
             dialoguePages = new String[] {
                 "Ahoy there, adventurer!",
-                "Welcome to dessert!",
+                "Welcome to the desert!",
                 "You look like you're on a quest.",
                 "If you need passage on my ship,",
                 "you'll need to prove yourself first.",
@@ -120,7 +100,7 @@ public class NPC_sailor extends Entity {
         }
         else if (questState == 1) {
             // Check if player has talked to Vhong and completed snake quest
-            if (gp.player != null && gp.player.hasKey == 1) {
+            if (gp.player != null && gp.player.hasKey >= 1) {
                 // 3. IF HAS KEY - Player has the key from snakes
                 dialoguePages = new String[] {
                     "Ah, I see you have the key!",
@@ -131,7 +111,6 @@ public class NPC_sailor extends Entity {
                     "We can reach the mainland or the ancient ruins.",
                     "Just step aboard when you're ready to depart!"
                 };
-                questState = 2;
             } else {
                 // 2. TALK TO VHONG - Player hasn't completed quest yet
                 dialoguePages = new String[] {
@@ -164,50 +143,35 @@ public class NPC_sailor extends Entity {
                 "If you need to sail again, just let me know."
             };
         }
-    }
-    
-    /**
-     * Check if player has the key in their inventory
-     */
-    private boolean checkPlayerHasKey() {
-        if (gp.player == null) return false;
         
-        // Check if player has key in inventory
-        for (int i = 0; i < gp.player.inventory.size(); i++) {
-            if (gp.player.inventory.get(i) != null) {
-                String itemName = gp.player.inventory.get(i).name;
-                if (itemName != null && itemName.contains("Key")) {
-                    return true;
-                }
-            }
+        // Safety check
+        if (dialoguePages == null) {
+            dialoguePages = new String[] {"..."};
         }
-        return false;
     }
     
-    /**
-     * Call this method when player presses ENTER during dialogue
-     */
-    public void nextDialogue() {
-        if (!gp.ui.isDialogueFinished()) {
-            // If animation isn't finished, skip to the end
-            gp.ui.skipToEnd();
-        } else {
-            // Move to next page
-            currentPage++;
-            
-            if (dialoguePages != null && currentPage < dialoguePages.length) {
-                // Show next page - still in dialogue state
-                // Need to set just the current page, not the whole array
-                String[] singlePage = new String[]{dialoguePages[currentPage]};
-                gp.ui.setDialogue(singlePage);
-                gp.gameState = gp.dialogueState;
-            } else {
-                // No more pages, close dialogue
-                gp.gameState = gp.playState;
-                currentPage = 0;
-            }
+    @Override
+    public void speak() {
+        facePlayer();
+        
+        // Set the current NPC index in UI so KeyHandler knows which NPC we're talking to
+        gp.ui.npcIndex = getIndex();
+        
+        // Prepare dialogue pages based on quest state
+        prepareDialoguePages();
+        
+        // Set dialogue in UI
+        if (dialoguePages != null && dialoguePages.length > 0) {
+            gp.ui.setDialogue(dialoguePages);
         }
+        
+        // Enter dialogue state
+        gp.gameState = gp.dialogueState;
     }
+    
+    // REMOVED custom nextDialogue() - using parent class version
+    
+    // REMOVED afterDialogue() - no quest progression
     
     /**
      * Helper method to find this NPC's index in the npc array
@@ -236,6 +200,7 @@ public class NPC_sailor extends Entity {
         }
     }    
     
+    @Override
     public void facePlayer() {
         if (gp.player != null) {
             switch (gp.player.Direction) {

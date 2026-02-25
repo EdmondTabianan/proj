@@ -788,8 +788,6 @@ public class UI {
     // ============ DIALOGUE METHODS ============
     
     public void setDialogue(String[] pages) {
-        System.out.println("UI.setDialogue() called with " + (pages != null ? pages.length : 0) + " pages");
-        System.out.println("First page: \"" + (pages != null && pages.length > 0 ? pages[0] : "null") + "\"");
         
         this.dialoguePages = pages;
         this.currentPageIndex = 0;
@@ -805,15 +803,12 @@ public class UI {
     }
     
     private void setCurrentPage(String text) {
-        System.out.println("setCurrentPage() called with text: \"" + text + "\"");
         
         this.targetDialogue = text;
-        this.displayedChars = text.length(); // Show ALL characters immediately
-        this.dialogueFinished = false; // IMPORTANT: Not finished yet!
-        this.currentDialogue = text; // Set full text
+        this.displayedChars = 0; // ← CHANGE THIS TO 0
+        this.dialogueFinished = false;
+        this.currentDialogue = ""; // Start with empty string
         this.lastCharTime = System.currentTimeMillis();
-        
-        System.out.println("  currentDialogue set to: \"" + currentDialogue + "\"");
     }
 
 
@@ -841,9 +836,6 @@ public class UI {
         return dialoguePages != null && currentPageIndex < dialoguePages.length - 1;
     }
 
-    /**
-     * Get current page number for display
-     */
     public String getPageIndicator() {
         if (dialoguePages != null && dialoguePages.length > 1) {
             return (currentPageIndex + 1) + "/" + dialoguePages.length;
@@ -862,32 +854,9 @@ public class UI {
         }
     }
 
-    /**
-     * Check if the current dialogue animation is finished
-     */
     public boolean isDialogueFinished() {
         return dialogueFinished;
     }
-    
-    /**
-     * Update the dialogue animation (call in game loop)
-     */
-    // public void updateDialogueAnimation() {
-    //     if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
-    //         long currentTime = System.currentTimeMillis();
-            
-    //         // Time-based animation
-    //         if (currentTime - lastCharTime > CHAR_DELAY) {
-    //             if (displayedChars < targetDialogue.length()) {
-    //                 displayedChars++;
-    //                 currentDialogue = targetDialogue.substring(0, displayedChars);
-    //                 lastCharTime = currentTime;
-    //             } else {
-    //                 dialogueFinished = true;
-    //             }
-    //         }
-    //     }
-    // }
 
     public void updateDialogueAnimation() {
         if (!dialogueFinished && targetDialogue != null && !targetDialogue.isEmpty()) {
@@ -1044,13 +1013,7 @@ public class UI {
     // public void drawDialogueScreen() {
 
     //     // Safety check
-    //     if (gp.player == null) return;
-    
-    //     System.out.println("drawDialogueScreen() called - gameState: " + gp.gameState);
-    //     System.out.println("  currentDialogue: \"" + currentDialogue + "\"");
-    //     System.out.println("  dialogueFinished: " + dialogueFinished);
-    //     System.out.println("  displayedChars: " + displayedChars);
-    //     System.out.println("  targetDialogue length: " + (targetDialogue != null ? targetDialogue.length() : 0));
+    //     if (gp.player == null) return
     
     //     // Update typewriter animation
     //     updateDialogueAnimation();
@@ -1171,9 +1134,9 @@ public class UI {
 
         // Create a Name
         final int frameX = gp.TileSize;
-        final int frameY = gp.TileSize;
+        final int frameY = gp.TileSize-10;
         final int framewidth = gp.TileSize*5;
-        final int frameHeight = gp.TileSize*10;
+        final int frameHeight = gp.TileSize*11;
         drawSubWindow(frameX, frameY, framewidth, frameHeight);
 
         //text 
@@ -1195,6 +1158,7 @@ public class UI {
         g2.drawString("Defense", textX, textY); textY += lineHeight;
         g2.drawString("Exp", textX, textY); textY += lineHeight;
         g2.drawString("Next Level", textX, textY); textY += lineHeight;
+        g2.drawString("Key", textX, textY); textY += lineHeight;
         g2.drawString("Coin", textX, textY); textY += lineHeight + 10;
         g2.drawString("Weapon", textX, textY); textY += lineHeight + 15;
         g2.drawString("Shield", textX, textY); textY += lineHeight;
@@ -1246,6 +1210,11 @@ public class UI {
         textY += lineHeight;
 
         value = String.valueOf(gp.player.nextLevelExp);
+        textX = getXforAlignToRightText(value, tailX);
+        g2.drawString(value, textX, textY);
+        textY += lineHeight;
+
+        value = String.valueOf(gp.player.hasKey);
         textX = getXforAlignToRightText(value, tailX);
         g2.drawString(value, textX, textY);
         textY += lineHeight;
@@ -1945,31 +1914,97 @@ public class UI {
         int frameX = gp.TileSize * 2;
         int frameY = gp.TileSize;
         int frameWidth = gp.ScreenWidth - (gp.TileSize * 4);
-        int frameHeight = gp.TileSize * 6;
-    
+        int frameHeight = gp.TileSize * 10;
+        
         drawSubWindow(frameX, frameY, frameWidth, frameHeight);
     
         g2.setColor(Color.white);
-        g2.setFont(g2.getFont().deriveFont(36f));
+        g2.setFont(g2.getFont().deriveFont(32f));
     
         int textX = frameX + gp.TileSize;
         int textY = frameY + gp.TileSize;
     
         g2.drawString("QUEST LOG", textX, textY);
+        textY += gp.TileSize;
     
-        textY += gp.TileSize * 2;
-    
-        // Example slime quest
-        if (gp.player.killCount < 3) {
-            g2.drawString("Kill 3 Slimes: "
-                    + gp.player.killCount + " / 3", textX, textY);
-        } else {
-            g2.drawString("Kill 3 Slimes: COMPLETED", textX, textY);
+        // ===== SLIME QUEST (VHONG) =====
+        // Show only if questProgress >= 0 (always available)
+        if (gp.questProgress >= 0) {
+            g2.setFont(g2.getFont().deriveFont(28f));
+            g2.drawString("1. Slime Hunt", textX, textY);
+            textY += 30;
+            
+            if (gp.questProgress == 0) {
+                g2.drawString("   Talk to Vhong to start", textX + 20, textY);
+            }
+            else if (gp.questProgress == 1) {
+                if (gp.player.killCount < 3) {
+                    g2.drawString("   Kill 3 Slimes: " + gp.player.killCount + " / 3", textX + 20, textY);
+                } else {
+                    g2.drawString("   Kill 3 Slimes: COMPLETED", textX + 20, textY);
+                    textY += 25;
+                    g2.drawString("   Return to Vhong for your reward!", textX + 20, textY);
+                }
+            }
+            else if (gp.questProgress >= 2) {
+                g2.drawString("   Kill 3 Slimes: COMPLETED", textX + 20, textY);
+            }
+        
+            textY += 50;
         }
     
-        textY += gp.TileSize * 2;
-        g2.drawString("Release Q to close", textX, textY);
-    }    
+        // ===== SNAKE QUEST (BEVERLY) =====
+        // Show only if questProgress >= 2 (unlocked after slime quest)
+        if (gp.questProgress >= 2) {
+            g2.setFont(g2.getFont().deriveFont(28f));
+            g2.drawString("2. Snake Hunt", textX, textY);
+            textY += 30;
+            
+            if (gp.questProgress == 2) {
+                g2.drawString("   Talk to Beverly in the shop", textX + 20, textY);
+            }
+            else if (gp.questProgress == 3) {
+                if (gp.player.killCount < 3) {
+                    g2.drawString("   Kill 3 Snakes: " + gp.player.killCount + " / 3", textX + 20, textY);
+                } else {
+                    g2.drawString("   Kill 3 Snakes: COMPLETED", textX + 20, textY);
+                    textY += 25;
+                    g2.drawString("   Return to Beverly for your key!", textX + 20, textY);
+                }
+            }
+            else if (gp.questProgress >= 4) {
+                g2.drawString("   Kill 3 Snakes: COMPLETED", textX + 20, textY);
+            }
+        
+            textY += 50;
+        }
+    
+        // ===== FINAL QUEST (DING) =====
+        // Show only if questProgress >= 3 (unlocked after snake quest)
+        if (gp.questProgress >= 3) {
+            g2.setFont(g2.getFont().deriveFont(28f));
+            g2.drawString("3. Final Challenge", textX, textY);
+            textY += 30;
+            
+            if (gp.questProgress == 3) {
+                g2.drawString("   Talk to Ding in the village", textX + 20, textY);
+                textY += 25;
+                int totalKills = (gp.player != null) ? gp.player.killCount : 0;
+                g2.drawString("   Total Kills: " + totalKills + " / 6", textX + 20, textY);
+            }
+            else if (gp.questProgress >= 4) {
+                g2.drawString("   Defeat 6 Monsters: COMPLETED", textX + 20, textY);
+                textY += 25;
+                g2.drawString("   ALL QUESTS COMPLETE!", textX + 20, textY);
+            }
+        
+            textY += 50;
+        }
+    
+        // ===== INSTRUCTIONS =====
+        g2.setFont(g2.getFont().deriveFont(22f));
+        g2.drawString("Press Q to close", textX, textY);
+    }
 
     public int getItemIndexOnSlot(int slotCol, int slotRow) {
         int itemIndex = slotCol + (slotRow*5);

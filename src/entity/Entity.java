@@ -30,14 +30,18 @@ public class Entity {
     public Entity attacker;
     public boolean temp = false;
 
+    // Dialogue tracking - SINGLE variable (removed duplicate)
     public int dialogueIndex = 0;
+    
+    // Multi-page dialogue support
+    public String[] dialoguePages;
+    public int currentPage = 0;
     
     // State
     public int worldX, worldY;
     public String Direction = "down";
     public int spriteNum = 1;
     public int mapnum = 0;
-    public int dialoguesIndex = 0;
     public boolean collisionOn = false;
     public boolean invincible = false;
     public boolean attacking = false;
@@ -115,8 +119,14 @@ public class Entity {
     public int slowDuration = 0;
     public int slowAmount = 0;
 
+    public int questProgress = 0;
+    public int questStatus; // 0 - inactive 1 - active
+
     // npc direction
     public String npcDirection = "";
+
+    // dialogue
+    public boolean phase3DialogueStarted = false;
 
     // type
     public int type;
@@ -215,58 +225,117 @@ public class Entity {
     public void setAction() {}
     public void damageReaction() {}
     
-    public void speak() {
-        facePlayer();
-        
-        // Check if we have dialogues
-        if (dialogues == null || dialogues.length == 0) {
-            // Fallback dialogue
-            String[] fallbackDialogue = new String[] {"..."};
-            gp.ui.setDialogue(fallbackDialogue);
-            gp.gameState = gp.dialogueState;
-            return;
-        }
-        
-        // Check if the current dialogue page exists
-        if (dialogues[dialoguesIndex] == null || dialogues[dialoguesIndex][0] == null) {
-            dialoguesIndex = 0;
-            
-            // If still null after reset, use fallback
-            if (dialogues[dialoguesIndex] == null || dialogues[dialoguesIndex][0] == null) {
-                String[] fallbackDialogue = new String[] {"..."};
-                gp.ui.setDialogue(fallbackDialogue);
-                gp.gameState = gp.dialogueState;
-                return;
+    // ============ UNIFIED DIALOGUE SYSTEM ============
+    
+    /**
+     * Find this entity's index in the npc or monster array
+     */
+    public void findMyIndex() {
+        // Check in NPC array first
+        if (gp.npc != null && gp.npc[gp.currentMap] != null) {
+            for (int i = 0; i < gp.npc[gp.currentMap].length; i++) {
+                if (gp.npc[gp.currentMap][i] == this) {
+                    gp.ui.npcIndex = i;
+                    return;
+                }
             }
         }
         
-        // Count how many non-null dialogue lines in the current page
-        int lineCount = 0;
-        while (lineCount < dialogues[dialoguesIndex].length && 
-               dialogues[dialoguesIndex][lineCount] != null) {
-            lineCount++;
+        // Check in monster array
+        if (gp.monster != null && gp.monster[gp.currentMap] != null) {
+            for (int i = 0; i < gp.monster[gp.currentMap].length; i++) {
+                if (gp.monster[gp.currentMap][i] == this) {
+                    gp.ui.npcIndex = i;
+                    return;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Prepare dialogue pages - can be overridden by subclasses
+     */
+    public void prepareDialoguePages() {
+        // Default implementation - load from dialogues array at dialogueIndex
+        if (dialogues != null && dialogues[dialogueIndex] != null) {
+            // Count non-null dialogues
+            int count = 0;
+            while (count < dialogues[dialogueIndex].length && dialogues[dialogueIndex][count] != null) {
+                count++;
+            }
+            
+            if (count > 0) {
+                dialoguePages = new String[count];
+                for (int i = 0; i < count; i++) {
+                    dialoguePages[i] = dialogues[dialogueIndex][i];
+                }
+            }
         }
         
-        // Create a properly sized array for this dialogue page
-        String[] dialoguePage = new String[lineCount];
-        for (int i = 0; i < lineCount; i++) {
-            dialoguePage[i] = dialogues[dialoguesIndex][i];
+        // Fallback if no dialogue
+        if (dialoguePages == null) {
+            dialoguePages = new String[] {"..."};
         }
+    }
+    
+    /**
+     * Main speak method - handles dialogue for all entities
+     */
+    public void speak() {
+        facePlayer();
         
-        // Set the dialogue
-        gp.ui.setDialogue(dialoguePage);
+        // Find this entity's index in the npc/monster array
+        findMyIndex();
         
-        // Move to next dialogue index for next time
-        dialoguesIndex++;
+        // Prepare dialogue pages (can be overridden)
+        prepareDialoguePages();
         
-        // Wrap around if we've reached the end
-        if (dialoguesIndex >= dialogues.length || dialogues[dialoguesIndex] == null) {
-            dialoguesIndex = 0;
+        // Start with first page
+        if (dialoguePages != null && dialoguePages.length > 0) {
+            currentPage = 0;
+            gp.ui.setDialogue(dialoguePages);
         }
         
         // Enter dialogue state
         gp.gameState = gp.dialogueState;
     }
+    
+    /**
+     * Go to next dialogue page - called by KeyHandler
+     */
+    public void nextDialogue() {
+        if (dialoguePages == null) {
+            gp.gameState = gp.playState;
+            return;
+        }
+        
+        if (!gp.ui.isDialogueFinished()) {
+            gp.ui.skipToEnd();
+        } else {
+            currentPage++;
+            
+            if (currentPage < dialoguePages.length) {
+                // Show next page
+                gp.ui.setDialogue(new String[]{dialoguePages[currentPage]});
+                gp.gameState = gp.dialogueState;
+            } else {
+                // No more pages
+                gp.gameState = gp.playState;
+                currentPage = 0;
+                
+                // Optional: Trigger any post-dialogue actions
+                afterDialogue();
+            }
+        }
+    }
+    
+    /**
+     * Hook for subclasses to add post-dialogue actions
+     */
+    public void afterDialogue() {
+        // Override in subclasses if needed
+    }
+    
     public void facePlayer() {
         if (gp.player != null) {
             switch (gp.player.Direction) {
@@ -277,6 +346,7 @@ public class Entity {
             }
         }
     }
+    
     public void interact() {}
     public void use(Entity entity) {}
     public void checkDrop() {}
@@ -306,9 +376,21 @@ public class Entity {
         if (this.type == type_monster) {
             // Check collision with player only if player exists
             if (gp.player != null) {
-                boolean contactPlayer = gp.cChecker.checkPlayer(this);
-                if (contactPlayer == true) {
-                    damageplayer(attack);
+                // If player is guarding, don't let monster collide - apply knockback instead
+                if (gp.player.guarding == true) {
+                    // Check if in contact and push monster back
+                    boolean contactPlayer = gp.cChecker.checkPlayer(this);
+                    if (contactPlayer == true) {
+                        // Knockback the monster away from player
+                        int knockbackPower = 2;
+                        setKnockBack(this, gp.player, knockbackPower);
+                    }
+                } else {
+                    // Normal collision when player is not guarding
+                    boolean contactPlayer = gp.cChecker.checkPlayer(this);
+                    if (contactPlayer == true) {
+                        damageplayer(attack);
+                    }
                 }
             }
             
@@ -332,20 +414,11 @@ public class Entity {
         actionLockCounter++;
         
         if (actionLockCounter > 8) {
-            // Pattern: 1 (mid) -> 2 (right) -> 1 (mid) -> 3 (left) -> repeat
             if (spriteNum == 1) {
-                spriteNum = 2; // mid -> right
+                spriteNum = 2;
+            } else if (spriteNum == 2) {
+                spriteNum = 1;
             }
-            else if (spriteNum == 2) {
-                spriteNum = 1; // right -> mid
-            }
-            else if (spriteNum == 1) { // This won't work because spriteNum is already 1
-                spriteNum = 3; // This line never executes!
-            }
-            else if (spriteNum == 3) {
-                spriteNum = 1; // left -> mid
-            }
-            
             actionLockCounter = 0;
         }
     }
@@ -379,11 +452,9 @@ public class Entity {
         
                 String moveDirection = "";
                 if (Math.abs(dx) > Math.abs(dy)) {
-                    // Attacker is more left/right than up/down
-                    moveDirection = (dx > 0) ? "right" : "left"; // Move AWAY from attacker
+                    moveDirection = (dx > 0) ? "right" : "left";
                 } else {
-                    // Attacker is more up/down than left/right
-                    moveDirection = (dy > 0) ? "down" : "up"; // Move AWAY from attacker
+                    moveDirection = (dy > 0) ? "down" : "up";
                 }
         
                 knockbackDirection = moveDirection;
@@ -398,7 +469,6 @@ public class Entity {
                         Direction = (facingDy > 0) ? "down" : "up";
                     }
                 } else {
-                    // If no attacker, face opposite of movement direction
                     if (moveDirection.equals("up")) Direction = "down";
                     else if (moveDirection.equals("down")) Direction = "up";
                     else if (moveDirection.equals("left")) Direction = "right";
@@ -406,41 +476,28 @@ public class Entity {
                     else Direction = "down";
                 }
         
-                // MOVE away from attacker using PURE knockBackPower
                 int moveDistance = knockBackPower;
                 
                 switch (moveDirection) {
-                    case "up":
-                        worldY -= moveDistance;
-                        break;
-                    case "down":
-                        worldY += moveDistance;
-                        break;
-                    case "left":
-                        worldX -= moveDistance;
-                        break;
-                    case "right":
-                        worldX += moveDistance;
-                        break;
+                    case "up": worldY -= moveDistance; break;
+                    case "down": worldY += moveDistance; break;
+                    case "left": worldX -= moveDistance; break;
+                    case "right": worldX += moveDistance; break;
                 }
         
-                // CHECK collision AFTER moving
                 collisionOn = false;
                 gp.cChecker.checkTile(this);
                 gp.cChecker.checkObject(this, false);
         
-                // Check for interactive tiles (for monsters)
                 if (this.type == type_monster) {
                     gp.cChecker.checkEntity(this, gp.iTile);
                 }
         
-                // If collision detected with a solid tile or object, REVERT position
                 if (collisionOn == true) {
                     worldX = originalX;
                     worldY = originalY;
                 }
         
-                // Check for collision with player during knockback (for monsters)
                 if (this.type == type_monster && collisionOn == false && gp.player != null) {
                     boolean contactPlayer = gp.cChecker.checkPlayer(this);
                     if (contactPlayer == true && gp.player.invincible == false) {
@@ -448,51 +505,29 @@ public class Entity {
                     }
                 }
         
-                // Update knockback timer
                 knockBackCounter++;
                 if (knockBackCounter > 20) {
                     knockBack = false;
                     speed = defaultSpeed;
                     knockBackCounter = 0;
                     attacker = null;
-                    knockbackDirection = null; // Clear knockback direction
+                    knockbackDirection = null;
                 }
             } 
             else if (attacking == true) {
                 attacking();
             }
-            else if (attacking == true && type == type_torch) {
-                // no hiting torch
-            }
-            else if (attacking == true) {
-                if (type == type_torch) {
-                    // Torches don't attack, just animate
-                    torch_animation();
-                } else {
-                    attacking();
-                }
-            }
-            
             else {
-                // Normal movement when not in knockback
                 if (action == true) {
                     setAction();
                     checkCollision();
         
                     if (collisionOn == false) {
                         switch (Direction) {
-                            case "up":
-                                worldY -= speed;
-                                break;
-                            case "down":
-                                worldY += speed;
-                                break;
-                            case "left":
-                                worldX -= speed;
-                                break;
-                            case "right":
-                                worldX += speed;
-                                break;
+                            case "up": worldY -= speed; break;
+                            case "down": worldY += speed; break;
+                            case "left": worldX -= speed; break;
+                            case "right": worldX += speed; break;
                         }   
                     }
                     spriteCounter++;
@@ -509,7 +544,6 @@ public class Entity {
                 }
             }
         
-            // Update invincibility timer
             if (invincible == true) {
                 invincibleCounter++;
                 if (invincibleCounter > 60) {
@@ -518,222 +552,16 @@ public class Entity {
                 }
             }
         
-            // SPRITE ANIMATION
-            // spriteCounter++;
-            // if (spriteCounter > 24) {
-            //     if (spriteNum == 1) {
-            //         spriteNum = 2;
-            //     } else if (spriteNum == 2) {
-            //         spriteNum = 1;
-            //     }
-            //     spriteCounter = 0;
-            // }
-        
             if (shotAvailableCounter < 30) {
                 shotAvailableCounter++;
             }
         }
     }
-    
-    // public void update(){
-    //     if (knockBack == true) {    
-    //         // FIX: Add null check for player
-    //         if (gp.player == null) {
-    //             knockBack = false;
-    //             speed = defaultSpeed;
-    //             knockBackCounter = 0;
-    //             return;
-    //         }
-    //         else {
-    //             if (action == true) {
-    //                 // CRITICAL FIX: Only call setAction() if NOT on a path
-    //                 // This prevents overwriting the pathfinding direction
-    //                 if (!onPath) {
-    //                     setAction();
-    //                 }
-                    
-    //                 checkCollision();
-        
-    //                 if (collisionOn == false) {
-    //                     switch (Direction) {
-    //                         case "up": worldY -= speed; break;
-    //                         case "down": worldY += speed; break;
-    //                         case "left": worldX -= speed; break;
-    //                         case "right": worldX += speed; break;
-    //                         case "idle": break; // Don't move when idle
-    //                     }
-    //                 } else {
-    //                     // If we hit something while pathfinding, recalculate path
-    //                     if (onPath) {
-                            
-    //                     }
-    //                 }
-    //             } else {
-    //                 idle();
-    //             }
-    //         }
-            
-    //         // STORE original position BEFORE moving
-    //         int originalX = worldX;
-    //         int originalY = worldY;
-            
-    //         // Calculate knockback force (decreases over time)
-    //         float knockbackForce = knockBackPower * (1 - (knockBackCounter / 20f));
-    //         if (knockbackForce < 1) knockbackForce = 1;
-            
-    //         int moveDistance = (int)(speed + knockbackForce);
-            
-    //         // Determine direction AWAY from player
-    //         String knockbackDirection = "";
-            
-    //         // Calculate direction from monster to player
-    //         int dx = gp.player.worldX - worldX;
-    //         int dy = gp.player.worldY - worldY;
-            
-    //         // Set knockback direction opposite to where player is
-    //         if (Math.abs(dx) > Math.abs(dy)) {
-    //             // Player is more left/right than up/down
-    //             if (dx > 0) {
-    //                 // Player is to the RIGHT, so knockback LEFT
-    //                 knockbackDirection = "left";
-    //             } else {
-    //                 // Player is to the LEFT, so knockback RIGHT
-    //                 knockbackDirection = "right";
-    //             }
-    //         } else {
-    //             // Player is more up/down than left/right
-    //             if (dy > 0) {
-    //                 // Player is BELOW, so knockback UP
-    //                 knockbackDirection = "up";
-    //             } else {
-    //                 // Player is ABOVE, so knockback DOWN
-    //                 knockbackDirection = "down";
-    //             }
-    //         }
-            
-    //         // Store the knockback direction
-    //         Direction = knockbackDirection;
-            
-    //         // MOVE away from player
-    //         switch (knockbackDirection) {
-    //             case "up": worldY -= moveDistance; break;
-    //             case "down": worldY += moveDistance; break;
-    //             case "left": worldX -= moveDistance; break;
-    //             case "right": worldX += moveDistance; break;
-    //         }
-            
-    //         // CHECK collision AFTER moving
-    //         collisionOn = false;
-    //         gp.cChecker.checkTile(this);
-    //         gp.cChecker.checkObject(this, false);
-            
-    //         // Check for interactive tiles (for monsters)
-    //         if (this.type == type_monster) {
-    //             gp.cChecker.checkEntity(this, gp.iTile);
-    //         }
-            
-    //         // If collision detected with a solid tile or object, REVERT position
-    //         // BUT keep knockback active so it can try to move in a different direction
-    //         if (collisionOn == true) {
-    //             worldX = originalX;
-    //             worldY = originalY;
-                
-    //             // Try to slide along the wall instead of stopping completely
-    //             // This prevents getting stuck
-    //             if (knockbackDirection.equals("up") || knockbackDirection.equals("down")) {
-    //                 // Try moving left/right instead
-    //                 worldX += (knockbackDirection.equals("up") ? -moveDistance : moveDistance) / 2;
-    //                 worldY = originalY;
-                    
-    //                 // Check if this new position is valid
-    //                 collisionOn = false;
-    //                 gp.cChecker.checkTile(this);
-    //                 gp.cChecker.checkObject(this, false);
-                    
-    //                 if (collisionOn == true) {
-    //                     // If still colliding, revert completely
-    //                     worldX = originalX;
-    //                 }
-    //             } 
-    //             else if (knockbackDirection.equals("left") || knockbackDirection.equals("right")) {
-    //                 // Try moving up/down instead
-    //                 worldY += (knockbackDirection.equals("left") ? -moveDistance : moveDistance) / 2;
-    //                 worldX = originalX;
-                    
-    //                 // Check if this new position is valid
-    //                 collisionOn = false;
-    //                 gp.cChecker.checkTile(this);
-    //                 gp.cChecker.checkObject(this, false);
-                    
-    //                 if (collisionOn == true) {
-    //                     // If still colliding, revert completely
-    //                     worldY = originalY;
-    //                 }
-    //             }
-    //         }
-            
-    //         // Check for collision with player during knockback (for monsters)
-    //         if (this.type == type_monster && collisionOn == false && gp.player != null) {
-    //             boolean contactPlayer = gp.cChecker.checkPlayer(this);
-    //             if (contactPlayer == true && gp.player.invincible == false) {
-    //                 damageplayer(attack);
-    //             }
-    //         }
-            
-    //         // Update knockback timer
-    //         knockBackCounter++;
-    //         if(knockBackCounter > 20) {
-    //             knockBack = false;
-    //             speed = defaultSpeed;
-    //             knockBackCounter = 0;
-    //         }
-    //     }
-    //     else {
-    //         if (action == true) {
-    //             setAction();
-    //             checkCollision();
-    
-    //             if (collisionOn == false) {
-    //                 switch (Direction) {
-    //                     case "up": worldY -= speed; break;
-    //                     case "down": worldY += speed; break;
-    //                     case "left": worldX -= speed; break;
-    //                     case "right": worldX += speed; break;
-    //                 }
-    //             }
-    //         } else {
-    //             idle();
-    //         }
-    //     }
-        
-    //     // Update invincibility timer
-    //     if (invincible == true) {
-    //         invincibleCounter++;
-    //         if (invincibleCounter > 60) {
-    //             invincible = false;
-    //             invincibleCounter = 0;
-    //         }
-    //     }
-        
-    //     // SPRITE ANIMATION
-    //     spriteCounter++;
-    //     if (spriteCounter > 24) {
-    //         if (spriteNum == 1) {
-    //             spriteNum = 2;
-    //         } else if (spriteNum == 2) {
-    //             spriteNum = 1;
-    //         }
-    //         spriteCounter = 0;
-    //     }
-    
-    //     if (shotAvailableCounter < 30) {
-    //         shotAvailableCounter++;
-    //     }
-    // }
 
     public void idle () {
         //nothing
     }
+    
     public void checkAttackOrNot(int rate, int straight, int horizontal) {
 
         boolean targetInRange = false;
@@ -757,7 +585,6 @@ public class Entity {
                 }
                 break;
             case "right":
-                // FIX: Changed from getAttack() to getCenterX()
                 if (gp.player.getCenterX() > getCenterX() && xDis < straight && yDis < horizontal) {
                     targetInRange = true;
                 }
@@ -773,25 +600,23 @@ public class Entity {
             }
         }
     }
+    
     public void checkShootOrNot(int rate, int shotInterval) {
         int shootChance = new Random().nextInt(rate);
             
-            // Check if cooldown is ready (2 seconds = 120 frames at 60 FPS)
-            if (shootChance == 0 && projectiles.alive == false && shotAvailableCounter == shotInterval) {
-
-                    projectiles.set(getCenterX(), getCenterY(), Direction, true, this);
-                    // check vacancy before adding
-                    for (int ii = 0; ii < gp.projectile[1].length; ii++) {
-                        if (gp.projectile[gp.currentMap][ii] == null) {
-                            gp.projectile[gp.currentMap][ii] = projectiles;
-                            break;
-                        }
-                    }
-                    shotAvailableCounter = 0; // Reset cooldown
+        if (shootChance == 0 && projectiles.alive == false && shotAvailableCounter == shotInterval) {
+            projectiles.set(getCenterX(), getCenterY(), Direction, true, this);
+            for (int ii = 0; ii < gp.projectile[1].length; ii++) {
+                if (gp.projectile[gp.currentMap][ii] == null) {
+                    gp.projectile[gp.currentMap][ii] = projectiles;
+                    break;
+                }
             }
+            shotAvailableCounter = 0;
+        }
     }
+    
     public void checkStartChasingOrNot(Entity target, int distance, int rate) {
-        
         if (gettileDistance(target) < distance ) {
             int i = new Random().nextInt(rate);
             if (i == 0) {
@@ -799,8 +624,8 @@ public class Entity {
             }
         }
     }
+    
     public void checkStopChasingOrNot(Entity target, int distance, int rate) {
-        
         if (gettileDistance(target) > distance ) {
             int i = new Random().nextInt(rate);
             if (i == 0) {
@@ -808,11 +633,12 @@ public class Entity {
             }
         }
     }
+    
     public void getRandomDirection() {
         actionLockCounter++;
         if(actionLockCounter == 120) {
             Random random = new Random();
-            int i = random.nextInt(100)+1; //pick up numbner from 1 - 100
+            int i = random.nextInt(100)+1;
             
             if (i <=25) { Direction = "up"; }
             if (i >=25 && i <= 50) { Direction = "down"; } 
@@ -821,6 +647,7 @@ public class Entity {
             actionLockCounter = 0;
         }
     }
+    
     public void attacking() {
         spriteCounter++;
 
@@ -830,19 +657,18 @@ public class Entity {
         if (spriteCounter > motion1_duration && spriteCounter <= motion2_duration) {
             spriteNum = 2;
 
-            // save the current worldx, worldy, solidArea
             int currentWorldX = worldX;
             int currentWorldY = worldY;
             int solidAreaWidth = solidArea.width;
             int solidAreaHeight = solidArea.height;
-            // adjust players worldx for the attactarea
+            
             switch (Direction) {
                 case "up": worldY -= attackArea.height; break;
                 case "down": worldY += attackArea.height; break;
                 case "left": worldX -= attackArea.width; break;
                 case "right": worldX += attackArea.width; break;
             }
-            //attackarea become solid area
+            
             solidArea.width = attackArea.width;
             solidArea.height = attackArea.height;
 
@@ -852,7 +678,6 @@ public class Entity {
                 }
             }
             else {
-                // check monster collision with updated worldx, worldy, and solidarea
                 int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
                 gp.player.damageMonster(monsterIndex, this, attack, knockBackPower);
 
@@ -863,8 +688,6 @@ public class Entity {
                 gp.player.damageProjectile(projectileIndex);
             }
             
-
-            // after checking collision resotre the original data
             worldX = currentWorldX;
             worldY = currentWorldY;
             solidArea.width = solidAreaWidth;
@@ -886,7 +709,6 @@ public class Entity {
             screenY = worldY - gp.player.worldY + gp.player.screenY;
         }
 
-        // Only damage player if player is not invincible
         if (gp.player.invincible == false) {
             
             int damage = attack - gp.player.defense;
@@ -894,24 +716,16 @@ public class Entity {
                 damage = 1;
             }
             
-            // Get the opposite direction for guarding
             String canGuardDirection = getOppositeDirection(Direction);
             
-            // Check if player is guarding in the correct direction
             if (gp.player.guarding == true && gp.player.Direction.equals(canGuardDirection)) {
-                // PERFECT GUARD - NO DAMAGE!
-                gp.playSE(15); // Guard sound
+                gp.playSE(15);
                 gp.ui.showMessage("Perfect Guard! No damage!");
-                
-                // NO DAMAGE - DO NOT set invincible or transparent
-                return; // EXIT WITHOUT APPLYING DAMAGE OR EFFECTS
-                
+                return;
             } else {
-                // Guard failed or not guarding - TAKE DAMAGE
-                gp.playSE(6); // Hurt sound
+                gp.playSE(6);
                 gp.ui.showMessage(damage + " damage!");
                 
-                // Apply damage and effects
                 gp.player.life -= damage;
                 gp.player.transparent = true;
                 gp.player.invincible = true;
@@ -923,6 +737,7 @@ public class Entity {
             }
         }
     }
+    
     public void setKnockBack(Entity target, Entity attacker, int knockBackPower) {
         this.attacker = attacker;
         target.knockBack = true;
@@ -931,17 +746,7 @@ public class Entity {
         target.knockbackDirection = getOppositeDirection(attacker.Direction);
     }
 
-    // public void setKnockBack(Entity target,Entity attacker, int knockBackPower) {
-
-    //     this.attacker = attacker;
-    //     target.knockbackDirection = attacker.Direction;
-    //     target.speed += knockBackPower; 
-    //     target.knockBack = true;
-    //     target.knockBackCounter = 0;
-    // }
-
     public void moveTowardPlayer (int interval) {
-
         actionLockCounter++;
 
         if (actionLockCounter > interval) {
@@ -976,38 +781,30 @@ public class Entity {
     }
     
     public void draw(Graphics2D g2) {
-        // FIX: Add null check at the beginning
         if (gp.player == null) {
-            return; // Don't draw anything if player doesn't exist
+            return;
         }
         
         BufferedImage image = null;
         int screenX = worldX - gp.player.worldX + gp.player.screenX;
         int screenY = worldY - gp.player.worldY + gp.player.screenY;
         
-        // Get the actual image dimensions to determine scale
         int imageWidth = gp.TileSize;
         int imageHeight = gp.TileSize;
         
-        // Try to get actual image dimensions if available
         if (up1 != null) {
             imageWidth = up1.getWidth();
             imageHeight = up1.getHeight();
         }
         
-        // Calculate scale factor based on actual image size vs tile size
         int scale = imageWidth / gp.TileSize;
         if (scale < 1) scale = 1;
         
-        // Calculate draw dimensions based on actual image size
         int drawWidth = imageWidth;
         int drawHeight = imageHeight;
-        int drawX = screenX;
-        int drawY = screenY;
         int tempScreenX = screenX;
         int tempScreenY = screenY;
     
-        // Only draw if entity is on screen (using expanded bounds for larger sprites)
         int checkWidth = Math.max(gp.TileSize * 2, drawWidth);
         int checkHeight = Math.max(gp.TileSize * 2, drawHeight);
         
@@ -1016,7 +813,6 @@ public class Entity {
             worldY + checkHeight > gp.player.worldY - gp.player.screenY &&
             worldY - checkHeight < gp.player.worldY + gp.player.screenY) {
     
-            // Determine which image to draw based on state
             switch (Direction) {
                 case "up":
                     if (attacking == false && guarding == false) {
@@ -1026,7 +822,7 @@ public class Entity {
                         tempScreenY = screenY - (attackUp1 != null ? attackUp1.getHeight() - imageHeight : gp.TileSize * scale);
                         image = (spriteNum == 1) ? attackUp1 : attackUp2;
                         drawHeight = attackUp1 != null ? attackUp1.getHeight() : gp.TileSize * scale * 2;
-                        drawWidth = imageWidth; // Reset width to normal for up attacks
+                        drawWidth = imageWidth;
                     }
                     if (guarding == true) {
                         image = guardUp;
@@ -1039,7 +835,7 @@ public class Entity {
                     if (attacking == true) { 
                         image = (spriteNum == 1) ? attackDown1 : attackDown2;
                         drawHeight = attackDown1 != null ? attackDown1.getHeight() : gp.TileSize * scale * 2;
-                        drawWidth = imageWidth; // Reset width to normal for down attacks
+                        drawWidth = imageWidth;
                     }
                     if (guarding == true) {
                         image = guardDown;
@@ -1053,7 +849,7 @@ public class Entity {
                         tempScreenX = screenX - (attackLeft1 != null ? attackLeft1.getWidth() - imageWidth : gp.TileSize * scale);
                         image = (spriteNum == 1) ? attackLeft1 : attackLeft2;
                         drawWidth = attackLeft1 != null ? attackLeft1.getWidth() : gp.TileSize * scale * 2;
-                        drawHeight = imageHeight; // Reset height to normal for left attacks
+                        drawHeight = imageHeight;
                     }
                     if (guarding == true) {
                         image = guardLeft;
@@ -1064,11 +860,9 @@ public class Entity {
                         image = (spriteNum == 1) ? right1 : right2;
                     }
                     if (attacking == true) { 
-                        // For right attack, we don't need to adjust tempScreenX 
-                        // because the sprite extends to the right
                         image = (spriteNum == 1) ? attackRight1 : attackRight2;
                         drawWidth = attackRight1 != null ? attackRight1.getWidth() : gp.TileSize * scale * 2;
-                        drawHeight = imageHeight; // Reset height to normal for right attacks
+                        drawHeight = imageHeight;
                     }
                     if (guarding == true) {
                         image = guardRight;
@@ -1079,9 +873,8 @@ public class Entity {
                     break;
             }
     
-            // Draw monster HP bar (position based on original screen position, not draw position)
             if (type == 2 && hpBarOn == true) {
-                int barWidth = imageWidth; // Use actual image width for health bar
+                int barWidth = imageWidth;
                 double oneScale = (double)barWidth / maxLife;
                 double hpBarValue = oneScale * life;
     
@@ -1099,7 +892,6 @@ public class Entity {
                 }
             }
     
-            // Handle invincibility flash effect
             if (invincible == true) {
                 if (invincibleCounter % 10 < 5) {
                     changeAlpha(g2, 0.5f);
@@ -1108,49 +900,38 @@ public class Entity {
                 }
             }
             
-            // Handle dying animation
             if (dying == true) {
                 dyingAnimation(g2);
             }
             
-            // Draw the entity with proper dimensions
             if (image != null) {
                 g2.drawImage(image, tempScreenX, tempScreenY, drawWidth, drawHeight, null);
             }
             
-            // Reset alpha
             changeAlpha(g2, 1f);
     
-            // Draw slowed effect with image overlay
             if (slowed == true) {
-                // Increment slow counter
                 slowCounter++;
                 
-                // Calculate alpha for fade out effect (last 30 frames fade out)
-                float alpha = 0.5f; // Default 50% opacity
+                float alpha = 0.5f;
                 
-                // Fade out in the last 30 frames
                 if (slowCounter > SLOW_DURATION - 30) {
                     alpha = 0.5f * (float)(SLOW_DURATION - slowCounter) / 30;
                     if (alpha < 0) alpha = 0;
                 }
                 
-                // Apply transparency
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
                 
-                // Draw the slow effect image over the entity
                 if (slowEffectImage != null) {
                     g2.drawImage(slowEffectImage, screenX, screenY, imageWidth, imageHeight, null);
                 }
                 
-                // Reset composite
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
                 
-                // Auto-reset slow after duration
                 if (slowCounter >= SLOW_DURATION) {
                     slowed = false;
                     slowCounter = 0;
-                    speed = defaultSpeed; // Reset speed to default
+                    speed = defaultSpeed;
                 }
             }
         }
@@ -1241,6 +1022,7 @@ public class Entity {
             }
         }
     }
+    
     public void setSpawnPoint(int worldX, int worldY) {
         this.spawnWorldX = worldX;
         this.spawnWorldY = worldY;

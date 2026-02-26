@@ -63,6 +63,14 @@ public class KeyHandler implements KeyListener {
         else if (gp.gameState == gp.tradeState) {
             tradeState(code);
         }
+        // QUEST STATE
+        else if (gp.gameState == gp.questState) {
+            questState(code);
+        }
+        // ===== NEW: ENDING STATE =====
+        else if (gp.gameState == gp.endingState) {
+            endingState(code);
+        }
         // transition state - allow escape to cancel? (optional)
         else if (gp.gameState == gp.transitionState) {
             // Optionally allow cancel during transition
@@ -72,6 +80,27 @@ public class KeyHandler implements KeyListener {
             }
         }
     }   
+
+    // ===== NEW: Ending State Handler =====
+    public void endingState(int code) {
+        // ENTER key advances through ending phases
+        if (code == KeyEvent.VK_ENTER) {
+            enterPressed = true;
+            // The EndingManager will handle the actual phase transition
+            // This just sets the flag for it to detect
+        }
+        
+        // ESCAPE key can skip the ending and return to title
+        if (code == KeyEvent.VK_ESCAPE) {
+            gp.gameState = gp.titleState;
+            gp.resetGame(true);
+            gp.stopMusic();
+            gp.playMusic(0);
+            enterPressed = false;
+        }
+        
+        // Any other key can be ignored during ending
+    }
 
     public void titleState(int code) {
         if(gp.ui.titleScreenState == 0) {
@@ -96,6 +125,7 @@ public class KeyHandler implements KeyListener {
                     gp.ui.titleScreenState = 1;
                     gp.ui.commandNum = 0; // Reset commandNum for character selection
                     // gp.aSetter.resetAllPickedUpItems();
+                    gp.playMusic(0);
                 }
                 if(gp.ui.commandNum == 1) {
                     // Load Game - go to load selection screen
@@ -317,6 +347,7 @@ public class KeyHandler implements KeyListener {
     public void playState(int code) {
         if (code == KeyEvent.VK_Q) {
             gp.gameState = gp.questState;
+            gp.ui.questPage = 0; // Reset to first page when opening
             questkeyPressed = true;
         }
     
@@ -379,47 +410,31 @@ public class KeyHandler implements KeyListener {
             gp.gameState = gp.playState;
         }
     }
-    
-    // public void dialogueState(int code) {
 
-    //     if (code == KeyEvent.VK_ENTER) {
-    
-    //         // ================= SPECIAL NPC (VHONG) =================
-    //         if (gp.npc[gp.currentMap][gp.ui.npcIndex] instanceof NPC_vhong) {
-    
-    //             NPC_vhong npc =
-    //                 (NPC_vhong) gp.npc[gp.currentMap][gp.ui.npcIndex];
-    
-    //             npc.nextDialogue();
-    //             return;
-    //         }
-    
-    //         // ================= NORMAL DIALOGUE =================
-    
-    //         // If typewriter still animating → finish instantly
-    //         if (!gp.ui.isDialogueFinished()) {
-    //             gp.ui.skipToEnd();
-    //             return;
-    //         }
-    
-    //         // If more pages exist → go next
-    //         if (gp.ui.hasNextPage()) {
-    //             gp.ui.nextPage();
-    //             return;
-    //         }
-    
-    //         // ================= DIALOGUE FINISHED =================
-    //         // 🔥 THIS IS THE IMPORTANT PART
-    
-    //         if (gp.gameState == gp.cutsceneState) {
-    //             // Continue the cutscene instead of exiting to play
-    //             gp.csManager.scenePhase++;
-    //         } else {
-    //             // Normal gameplay dialogue closes normally
-    //             gp.gameState = gp.playState;
-    //         }
-    //     }
-    // }
+    public void questState(int code) {
+        // Close quest screen with Q
+        if (code == KeyEvent.VK_Q) {
+            gp.gameState = gp.playState;
+            questkeyPressed = false;
+            return;
+        }
+        
+        // Page navigation with LEFT/RIGHT arrows
+        if (code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_D) {
+            gp.ui.nextQuestPage();
+            gp.playSE(9); // Page turn sound
+        }
+        if (code == KeyEvent.VK_LEFT || code == KeyEvent.VK_A) {
+            gp.ui.prevQuestPage();
+            gp.playSE(9); // Page turn sound
+        }
+        
+        // Also allow Enter to close (optional)
+        if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_ESCAPE) {
+            gp.gameState = gp.playState;
+            questkeyPressed = false;
+        }
+    }
     
     public void dialogueState(int code) {
         if (code == KeyEvent.VK_ENTER) {
@@ -499,8 +514,17 @@ public class KeyHandler implements KeyListener {
             enterPressed = true;
         }
         
-        // Handle the Quit option in main options (subState 0, commandNum 5)
+        // Handle the Back option in main options (subState 0, commandNum 5)
         if (gp.ui.subState == 0 && gp.ui.commandNum == 5 && code == KeyEvent.VK_ENTER) {
+            gp.gameState = gp.playState;
+            gp.ui.commandNum = 0;
+            gp.ui.subState = 0;
+            enterPressed = false;
+            return;
+        }
+        
+        // Handle the Quit option in main options (subState 0, commandNum 4)
+        if (gp.ui.subState == 0 && gp.ui.commandNum == 4 && code == KeyEvent.VK_ENTER) {
             gp.ui.subState = 3; // Go to quit confirmation
             gp.ui.commandNum = 0; // Reset commandNum for quit confirmation
             enterPressed = false;
@@ -759,10 +783,11 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_F) {
             shotKeyPressed = false;
         }
-        if (code == KeyEvent.VK_Q) {
-            gp.gameState = gp.playState;
-            questkeyPressed = false;
-        }
+        // Remove this duplicate Q handler - already handled above
+        // if (code == KeyEvent.VK_Q) {
+        //     gp.gameState = gp.playState;
+        //     questkeyPressed = false;
+        // }
         if (code == KeyEvent.VK_SPACE) {
             spacePressed = false;
         }

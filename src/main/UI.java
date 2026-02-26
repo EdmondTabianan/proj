@@ -73,6 +73,10 @@ public class UI {
     public int loadingProgress = 0;
     private int loadingDirection = 1;
 
+    // Quest screen page tracking
+    public int questPage = 0;
+    private int maxQuestPages = 1; // 0=Main Quests, 1=Pyramid Details
+
     // Tip display variables
     private String currentTip = "";
     private long lastTipChangeTime = 0;
@@ -112,6 +116,7 @@ public class UI {
         crystal_blank = crystal.image2;
         Entity bronze_coin = new OBJ_Coin_Bronze(gp);
         coin = bronze_coin.down1;
+
     }
 
     private void loadLogoImage() {
@@ -381,7 +386,14 @@ public class UI {
             drawQuestScreen();
         }
         
+        // In your draw method, add:
+        else if (gp.gameState == gp.endingState) {
+            drawEndigScreen();
+        }
+        
     }
+
+    public void drawEndigScreen() {}
     
     public void drawPlayerLife() {
         // Add null check at the beginning
@@ -1502,8 +1514,10 @@ public class UI {
         if (commandNum == 5) {
             g2.drawString(">", textX - 25, textY);
             if (gp.keyH.enterPressed) {
-                gp.gameState = gp.playState; // Or gp.titleState if from title
+                // Return to play state
+                gp.gameState = gp.playState;
                 commandNum = 0;
+                subState = 0;
                 gp.keyH.enterPressed = false;
             }
         }
@@ -1591,105 +1605,169 @@ public class UI {
         int textX;
         int textY;
         
-        // Calculate frameWidth here (same as in drawOptionsScreen)
         int frameWidth = (int)(gp.TileSize * 8.5);
         
-        // Title - centered within the window
-        String text = "Control";
+        // Title
+        String text = "CONTROLS";
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 36f));
         textX = frameX + (frameWidth / 2) - (int)(g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2);
         textY = frameY + gp.TileSize;
         g2.drawString(text, textX, textY);
         
-        // Controls list - left column
+        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 24f));
+        
+        // Control pairs
+        String[][] controls = {
+            {"Move", "W/A/S/D"},
+            {"Attack", "ENTER"},
+            {"Ranged", "F"},
+            {"Character", "C"},
+            {"Quest Log", "Q"},
+            {"Pause", "P"},
+            {"Options", "ESC"},
+            {"Interact", "ENTER (near)"},
+            {"Guard", "SPACE"}
+        };
+        
         textX = frameX + gp.TileSize;
         textY = frameY + gp.TileSize * 2;
         
-        // Left column actions
-        g2.drawString("Move", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Attack", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Shoot", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Cast", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Character", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Pause", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Options", textX, textY);
+        for (String[] pair : controls) {
+            // Action (left)
+            g2.drawString(pair[0], textX, textY);
+            // Key (right)
+            g2.drawString(pair[1], frameX + gp.TileSize * 5, textY);
+            textY += 35;
+        }
         
-        // Key bindings - right column
-        textX = frameX + gp.TileSize * 5;
-        textY = frameY + gp.TileSize * 2;
-        
-        // Right column keys
-        g2.drawString("W/A/S/D", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("ENTER", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("Q", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("F", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("C", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("P", textX, textY);
-        textY += gp.TileSize;
-        g2.drawString("ESC", textX, textY);
-        
-        // Back option - centered within window
+        // Back button
         textY = frameY + gp.TileSize * 9;
         text = "Back";
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 32f));
+        g2.setColor(new Color(255, 215, 0));
         textX = frameX + (frameWidth / 2) - (int)(g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2);
-        g2.drawString("Back", textX, textY);
+        g2.drawString(text, textX, textY);
         
         if (commandNum == 0) {
-            g2.drawString(">", textX - 25, textY);
+            g2.setColor(Color.WHITE);
+            g2.drawString(">", textX - 30, textY);
             if (gp.keyH.enterPressed) {
                 subState = 0;
-                commandNum = 3; // Go back to Control option
+                commandNum = 3;
                 gp.keyH.enterPressed = false;
+                gp.playSE(9);
             }
         }
     }
-    
+
     public void option_endGameConfirmation(int frameX, int frameY) {
         int textX;
         int textY;
         
-        // Shorter question to fit better
-        textX = getXforCenteredText("Quit to Title?");
+        int frameWidth = (int)(gp.TileSize * 8.5);
+        int frameHeight = gp.TileSize * 10; // Get from options screen
+        
+        // Question - centered within the window
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 32f));
+        String question = "Quit to Title?";
+        textX = frameX + (frameWidth / 2) - (g2.getFontMetrics().stringWidth(question) / 2);
         textY = frameY + gp.TileSize * 3;
-        g2.drawString("Quit to Title?", textX, textY);
+        g2.setColor(Color.WHITE);
+        g2.drawString(question, textX, textY);
         
-        // Yes/No options
-        String[] options = {"YES", "NO"};
+        // YES option
         textY += gp.TileSize * 2;
+        String yesText = "YES";
+        textX = frameX + (frameWidth / 2) - (g2.getFontMetrics().stringWidth(yesText) / 2);
         
-        for (int i = 0; i < options.length; i++) {
-            textX = getXforCenteredText(options[i]);
-            g2.drawString(options[i], textX, textY);
-            
-            if (commandNum == i) {
-                g2.drawString(">", textX - 25, textY);
-                if (gp.keyH.enterPressed == true) {
-                    if (i == 0) {
-                        // Yes - quit to title
-                        gp.gameState = gp.titleState;
-                        gp.resetGame(true);
-                        gp.music.stop();
-                    } else {
-                        // No - back to options
-                        subState = 0;
-                        commandNum = 4; // Select Quit Game item
-                    }
-                    gp.keyH.enterPressed = false;
-                }
-            }
-            textY += gp.TileSize;
+        if (commandNum == 0) {
+            g2.setColor(new Color(255, 215, 0));
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 32f));
+            g2.drawString(">", textX - 30, textY);
+        } else {
+            g2.setColor(Color.WHITE);
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28f));
         }
+        g2.drawString(yesText, textX, textY);
+        
+        // NO option
+        textY += 50;
+        String noText = "NO";
+        textX = frameX + (frameWidth / 2) - (g2.getFontMetrics().stringWidth(noText) / 2);
+        
+        if (commandNum == 1) {
+            g2.setColor(new Color(255, 215, 0));
+            g2.setFont(g2.getFont().deriveFont(Font.BOLD, 32f));
+            g2.drawString(">", textX - 30, textY);
+        } else {
+            g2.setColor(Color.WHITE);
+            g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 28f));
+        }
+        g2.drawString(noText, textX, textY);
+        
+        // Handle input
+        if (commandNum == 0 || commandNum == 1) {
+            if (gp.keyH.enterPressed == true) {
+                if (commandNum == 0) {
+                    // Yes - quit to title
+                    gp.gameState = gp.titleState;
+                    gp.resetGame(true);
+                    gp.music.stop();
+                } else {
+                    // No - back to options
+                    subState = 0;
+                    commandNum = 4;
+                }
+                gp.keyH.enterPressed = false;
+                gp.playSE(9);
+            }
+        }
+        
+        // Draw navigation hint
+        g2.setFont(g2.getFont().deriveFont(Font.ITALIC, 16f));
+        g2.setColor(new Color(150, 150, 150));
+        String hint = "Use ↑/↓ to select, ENTER to confirm";
+        int hintX = frameX + (frameWidth / 2) - (g2.getFontMetrics().stringWidth(hint) / 2);
+        int hintY = frameY + frameHeight - 40;
+        g2.drawString(hint, hintX, hintY);
     }
+
+    // public void option_endGameConfirmation(int frameX, int frameY) {
+    //     int textX;
+    //     int textY;
+        
+    //     // Shorter question to fit better
+    //     textX = getXforCenteredText("Quit to Title?");
+    //     textY = frameY + gp.TileSize * 3;
+    //     g2.drawString("Quit to Title?", textX, textY);
+        
+    //     // Yes/No options
+    //     String[] options = {"YES", "NO"};
+    //     textY += gp.TileSize * 2;
+        
+    //     for (int i = 0; i < options.length; i++) {
+    //         textX = getXforCenteredText(options[i]);
+    //         g2.drawString(options[i], textX, textY);
+            
+    //         if (commandNum == i) {
+    //             g2.drawString(">", textX - 25, textY);
+    //             if (gp.keyH.enterPressed == true) {
+    //                 if (i == 0) {
+    //                     // Yes - quit to title
+    //                     gp.gameState = gp.titleState;
+    //                     gp.resetGame(true);
+    //                     gp.music.stop();
+    //                 } else {
+    //                     // No - back to options
+    //                     subState = 0;
+    //                     commandNum = 4; // Select Quit Game item
+    //                 }
+    //                 gp.keyH.enterPressed = false;
+    //             }
+    //         }
+    //         textY += gp.TileSize;
+    //     }
+    // }
     
     public void drawTransitionScreen() {
         counter++;
@@ -1911,100 +1989,397 @@ public class UI {
         // Add null check
         if (gp.player == null) return;
         
-        int frameX = gp.TileSize * 2;
+        // Page tracking variables
+        // private int questPage = 0;
+        // private int maxQuestPages = 2; // 0=Main Quests, 1=Pyramid Details, 2=Boss/Lost Tomb
+        
+        // Smaller frame - center of screen
+        int frameX = gp.TileSize * 3;
         int frameY = gp.TileSize;
-        int frameWidth = gp.ScreenWidth - (gp.TileSize * 4);
-        int frameHeight = gp.TileSize * 10;
+        int frameWidth = gp.ScreenWidth - (gp.TileSize * 6);
+        int frameHeight = gp.ScreenHeight - (gp.TileSize * 2);
         
         drawSubWindow(frameX, frameY, frameWidth, frameHeight);
     
         g2.setColor(Color.white);
-        g2.setFont(g2.getFont().deriveFont(32f));
+        g2.setFont(g2.getFont().deriveFont(28f));
     
         int textX = frameX + gp.TileSize;
-        int textY = frameY + gp.TileSize;
+        int textY = frameY + gp.TileSize + 10;
     
-        g2.drawString("QUEST LOG", textX, textY);
-        textY += gp.TileSize;
+        // Draw title with page indicator
+        if (maxQuestPages > 0) {
+            g2.drawString("QUEST LOG  " + (questPage + 1) + "/" + (maxQuestPages + 1), textX, textY);
+        } else {
+            g2.drawString("QUEST LOG", textX, textY);
+        }
+        textY += 45;
     
-        // ===== SLIME QUEST (VHONG) =====
-        // Show only if questProgress >= 0 (always available)
-        if (gp.questProgress >= 0) {
-            g2.setFont(g2.getFont().deriveFont(28f));
-            g2.drawString("1. Slime Hunt", textX, textY);
-            textY += 30;
-            
-            if (gp.questProgress == 0) {
-                g2.drawString("   Talk to Vhong to start", textX + 20, textY);
-            }
-            else if (gp.questProgress == 1) {
-                if (gp.player.killCount < 3) {
-                    g2.drawString("   Kill 3 Slimes: " + gp.player.killCount + " / 3", textX + 20, textY);
+        // ===== PAGE 0: MAIN QUESTS (Vhong, Beverly, Ding) =====
+        if (questPage == 0) {
+            // ===== SLIME QUEST (VHONG) =====
+            if (gp.questProgress >= 0) {
+                // Quest title
+                g2.setFont(g2.getFont().deriveFont(24f));
+                if (gp.questProgress >= 2) {
+                    g2.setColor(new Color(100, 255, 100));
+                    g2.drawString("✓ 1. Slime Hunt (Vhong)", textX, textY);
                 } else {
-                    g2.drawString("   Kill 3 Slimes: COMPLETED", textX + 20, textY);
+                    g2.setColor(Color.white);
+                    g2.drawString("1. Slime Hunt (Vhong)", textX, textY);
+                }
+                textY += 30;
+                
+                g2.setColor(Color.white);
+                g2.setFont(g2.getFont().deriveFont(20f));
+                
+                if (gp.questProgress == 0) {
+                    g2.drawString("   ▶ Talk to Vhong in the village", textX + 15, textY);
                     textY += 25;
-                    g2.drawString("   Return to Vhong for your reward!", textX + 20, textY);
+                    g2.setColor(Color.yellow);
+                    g2.drawString("   ! Vhong is waiting", textX + 15, textY);
+                    textY += 25;
+                }
+                else if (gp.questProgress == 1) {
+                    if (gp.player.killCount < 3) {
+                        g2.drawString("   ▶ Kill Slimes: " + gp.player.killCount + "/3", textX + 15, textY);
+                        textY += 25;
+                        drawProgressBar(textX + 15, textY - 12, 180, 15, (gp.player.killCount * 100) / 3);
+                    } else {
+                        g2.setColor(new Color(255, 255, 100));
+                        g2.drawString("   ✓ Slimes: COMPLETED", textX + 15, textY);
+                        textY += 25;
+                        g2.setColor(Color.yellow);
+                        g2.drawString("   ! Return to Vhong for tablet", textX + 15, textY);
+                    }
+                    textY += 25;
+                }
+                else if (gp.questProgress >= 2) {
+                    g2.setColor(new Color(150, 255, 150));
+                    g2.drawString("   ✓ Slimes: COMPLETED", textX + 15, textY);
+                    textY += 25;
+                    if (gp.questProgress == 2) {
+                        g2.setColor(Color.cyan);
+                        g2.drawString("   [TABLET] Received - East passage open", textX + 15, textY);
+                    }
+                    textY += 25;
+                }
+            
+                textY += 10;
+                g2.setColor(Color.white);
+            }
+    
+            // ===== SNAKE QUEST (BEVERLY) =====
+            if (gp.questProgress >= 2) {
+                g2.setFont(g2.getFont().deriveFont(24f));
+                if (gp.questProgress >= 4) {
+                    g2.setColor(new Color(100, 255, 100));
+                    g2.drawString("✓ 2. Snake Hunt (Beverly)", textX, textY);
+                } else {
+                    g2.setColor(Color.white);
+                    g2.drawString("2. Snake Hunt (Beverly)", textX, textY);
+                }
+                textY += 30;
+                
+                g2.setColor(Color.white);
+                g2.setFont(g2.getFont().deriveFont(20f));
+                
+                if (gp.questProgress == 2) {
+                    g2.drawString("   ▶ Talk to Beverly in eastern desert", textX + 15, textY);
+                    textY += 25;
+                    g2.setColor(Color.yellow);
+                    g2.drawString("   ! Beverly is waiting", textX + 15, textY);
+                    textY += 25;
+                }
+                else if (gp.questProgress == 3) {
+                    if (gp.player.killCount < 3) {
+                        g2.drawString("   ▶ Kill Snakes: " + gp.player.killCount + "/3", textX + 15, textY);
+                        textY += 25;
+                        drawProgressBar(textX + 15, textY - 12, 180, 15, (gp.player.killCount * 100) / 3);
+                    } else {
+                        g2.setColor(new Color(255, 255, 100));
+                        g2.drawString("   ✓ Snakes: COMPLETED", textX + 15, textY);
+                        textY += 25;
+                        g2.setColor(Color.yellow);
+                        g2.drawString("   ! Return to Beverly for SNAKE KEY", textX + 15, textY);
+                    }
+                    textY += 25;
+                }
+                else if (gp.questProgress >= 4) {
+                    g2.setColor(new Color(150, 255, 150));
+                    g2.drawString("   ✓ Snakes: COMPLETED", textX + 15, textY);
+                    textY += 25;
+                    
+                    if (gp.questProgress == 4 && gp.player.hasKey == 0) {
+                        g2.setColor(Color.cyan);
+                        g2.drawString("   🔑 Find SNAKE KEY in desert (7,10)", textX + 15, textY);
+                    } else if (gp.player.hasKey == 1) {
+                        g2.setColor(Color.green);
+                        g2.drawString("   🔑 SNAKE KEY OBTAINED", textX + 15, textY);
+                    }
+                    textY += 25;
+                }
+            
+                textY += 10;
+                g2.setColor(Color.white);
+            }
+    
+            // ===== FINAL CHALLENGE (DING) =====
+            if (gp.questProgress >= 3) {
+                g2.setFont(g2.getFont().deriveFont(24f));
+                if (gp.questProgress >= 5) {
+                    g2.setColor(new Color(100, 255, 100));
+                    g2.drawString("✓ 3. Final Challenge (Ding)", textX, textY);
+                } else {
+                    g2.setColor(Color.white);
+                    g2.drawString("3. Final Challenge (Ding)", textX, textY);
+                }
+                textY += 30;
+                
+                g2.setColor(Color.white);
+                g2.setFont(g2.getFont().deriveFont(20f));
+                
+                if (gp.questProgress == 3) {
+                    int totalKills = (gp.player != null) ? gp.player.killCount : 0;
+                    if (totalKills < 6) {
+                        g2.drawString("   ▶ Talk to Ding in northern ruins", textX + 15, textY);
+                        textY += 25;
+                        g2.drawString("   ▶ Monster Kills: " + totalKills + "/6", textX + 15, textY);
+                        textY += 25;
+                        drawProgressBar(textX + 15, textY - 12, 180, 15, (totalKills * 100) / 6);
+                    } else {
+                        g2.setColor(new Color(255, 255, 100));
+                        g2.drawString("   ✓ Monster Kills: " + totalKills + "/6", textX + 15, textY);
+                        textY += 25;
+                        g2.drawString("   ! Return to Ding for PYRAMID KEY", textX + 15, textY);
+                    }
+                    textY += 25;
+                }
+                else if (gp.questProgress == 4) {
+                    g2.setColor(new Color(150, 255, 150));
+                    g2.drawString("   ✓ Trials: COMPLETED", textX + 15, textY);
+                    textY += 25;
+                    
+                    if (gp.player.hasKey == 1) {
+                        g2.setColor(Color.cyan);
+                        g2.drawString("   🔑 Find PYRAMID KEY northwest (map1,10,8)", textX + 15, textY);
+                    } else if (gp.player.hasKey == 2) {
+                        g2.setColor(Color.green);
+                        g2.drawString("   🔑 PYRAMID KEY OBTAINED", textX + 15, textY);
+                        textY += 25;
+                        g2.setColor(Color.orange);
+                        g2.drawString("   ⬆ Sail to pyramid for final quest!", textX + 15, textY);
+                    }
+                    textY += 25;
                 }
             }
-            else if (gp.questProgress >= 2) {
-                g2.drawString("   Kill 3 Slimes: COMPLETED", textX + 20, textY);
-            }
-        
-            textY += 50;
         }
-    
-        // ===== SNAKE QUEST (BEVERLY) =====
-        // Show only if questProgress >= 2 (unlocked after slime quest)
-        if (gp.questProgress >= 2) {
-            g2.setFont(g2.getFont().deriveFont(28f));
-            g2.drawString("2. Snake Hunt", textX, textY);
+        
+        // ===== PAGE 1: PYRAMID & SAILOR =====
+        else if (questPage == 1) {
+            g2.setFont(g2.getFont().deriveFont(24f));
+            g2.setColor(new Color(255, 215, 0));
+            g2.drawString("THE PYRAMID", textX, textY);
+            textY += 35;
+            
+            g2.setColor(Color.white);
+            g2.setFont(g2.getFont().deriveFont(20f));
+            
+            // Show Sailor's role based on progress
+            g2.drawString("Sailor's Ship:", textX + 10, textY);
+            textY += 25;
+            
+            if (gp.questProgress < 4) {
+                g2.drawString("   ⚓ Locked - Complete quests first", textX + 20, textY);
+                textY += 25;
+                g2.drawString("   Requirements:", textX + 20, textY);
+                textY += 25;
+                g2.drawString("   • Snake key from Beverly", textX + 30, textY);
+                textY += 22;
+                g2.drawString("   • Pyramid key from Ding", textX + 30, textY);
+            }
+            else if (gp.player.hasKey == 1) {
+                g2.setColor(Color.cyan);
+                g2.drawString("   ⚓ Has Snake Key", textX + 20, textY);
+                textY += 30;
+                g2.setColor(Color.white);
+                g2.drawString("   Need Pyramid Key to enter pyramid!", textX + 20, textY);
+                textY += 25;
+                g2.drawString("   Find it in northern ruins (map 1)", textX + 20, textY);
+            }
+            else if (gp.player.hasKey == 2) {
+                g2.setColor(Color.green);
+                g2.drawString("   ⚓ HAS PYRAMID KEY!", textX + 20, textY);
+                textY += 30;
+                g2.setColor(Color.orange);
+                g2.drawString("   ✓ Pyramid entrance unlocked!", textX + 20, textY);
+                textY += 25;
+                g2.drawString("   Talk to Sailor to sail to pyramid", textX + 20, textY);
+            }
+            
             textY += 30;
             
-            if (gp.questProgress == 2) {
-                g2.drawString("   Talk to Beverly in the shop", textX + 20, textY);
+            // Pyramid status
+            if (gp.currentMap == 2) {
+                g2.setColor(new Color(255, 200, 0));
+                g2.drawString("★ YOU ARE INSIDE THE PYRAMID ★", textX + 10, textY);
+                textY += 30;
+            } else if (gp.player.hasKey == 2 && gp.questProgress < 5) {
+                g2.drawString("Pyramid Status: UNLOCKED - Ready to enter", textX + 10, textY);
+            } else if (gp.questProgress >= 5) {
+                g2.drawString("Pyramid Status: CLEARED", textX + 10, textY);
             }
-            else if (gp.questProgress == 3) {
-                if (gp.player.killCount < 3) {
-                    g2.drawString("   Kill 3 Snakes: " + gp.player.killCount + " / 3", textX + 20, textY);
-                } else {
-                    g2.drawString("   Kill 3 Snakes: COMPLETED", textX + 20, textY);
+        }
+        
+        // ===== PAGE 2: BOSS & LOST TOMB =====
+        else if (questPage == 2) {
+            g2.setFont(g2.getFont().deriveFont(24f));
+            g2.setColor(new Color(255, 215, 0));
+            g2.drawString("LOST TOMB", textX, textY);
+            textY += 35;
+            
+            g2.setColor(Color.white);
+            g2.setFont(g2.getFont().deriveFont(20f));
+            
+            if (gp.questProgress < 5) {
+                if (gp.player.hasKey == 2) {
+                    g2.drawString("⚠ BOSS CHAMBER AWAITS!", textX + 10, textY);
+                    textY += 35;
+                    g2.drawString("Deep within the pyramid lies", textX + 10, textY);
                     textY += 25;
-                    g2.drawString("   Return to Beverly for your key!", textX + 20, textY);
+                    g2.drawString("the ANCIENT GUARDIAN.", textX + 10, textY);
+                    textY += 35;
+                    g2.setColor(Color.red);
+                    g2.drawString("Defeat the boss to claim:", textX + 10, textY);
+                    textY += 30;
+                    g2.setColor(Color.orange);
+                    g2.drawString("• The Lost Tomb's Treasure", textX + 25, textY);
+                    textY += 25;
+                    g2.drawString("• Eternal Glory", textX + 25, textY);
+                    textY += 25;
+                    g2.drawString("• Legend Status", textX + 25, textY);
+                } else {
+                    g2.drawString("???", textX + 10, textY);
+                    textY += 30;
+                    g2.drawString("Find the pyramid key to", textX + 10, textY);
+                    textY += 25;
+                    g2.drawString("learn more about the lost tomb.", textX + 10, textY);
                 }
+            } else {
+                g2.setColor(new Color(255, 255, 100));
+                g2.drawString("🏆 BOSS DEFEATED! 🏆", textX + 10, textY);
+                textY += 40;
+                g2.setColor(new Color(100, 255, 100));
+                g2.drawString("You have claimed the", textX + 10, textY);
+                textY += 30;
+                g2.drawString("LOST TOMB'S TREASURE!", textX + 10, textY);
+                textY += 40;
+                g2.setColor(new Color(255, 215, 0));
+                g2.drawString("YOU ARE A LEGEND!", textX + 10, textY);
+                
+                // Draw a small trophy
+                textY += 40;
+                g2.setFont(g2.getFont().deriveFont(24f));
+                g2.drawString("   🏆", textX + 50, textY);
             }
-            else if (gp.questProgress >= 4) {
-                g2.drawString("   Kill 3 Snakes: COMPLETED", textX + 20, textY);
-            }
-        
-            textY += 50;
         }
     
-        // ===== FINAL QUEST (DING) =====
-        // Show only if questProgress >= 3 (unlocked after snake quest)
-        if (gp.questProgress >= 3) {
-            g2.setFont(g2.getFont().deriveFont(28f));
-            g2.drawString("3. Final Challenge", textX, textY);
-            textY += 30;
-            
-            if (gp.questProgress == 3) {
-                g2.drawString("   Talk to Ding in the village", textX + 20, textY);
-                textY += 25;
-                int totalKills = (gp.player != null) ? gp.player.killCount : 0;
-                g2.drawString("   Total Kills: " + totalKills + " / 6", textX + 20, textY);
-            }
-            else if (gp.questProgress >= 4) {
-                g2.drawString("   Defeat 6 Monsters: COMPLETED", textX + 20, textY);
-                textY += 25;
-                g2.drawString("   ALL QUESTS COMPLETE!", textX + 20, textY);
-            }
+        // ===== NAVIGATION =====
+        int navY = frameY + frameHeight - 60;
+        g2.setColor(Color.lightGray);
+        g2.setFont(g2.getFont().deriveFont(16f));
         
-            textY += 50;
+        if (questPage > 0) {
+            g2.drawString("◀ PREV", textX, navY);
         }
-    
-        // ===== INSTRUCTIONS =====
-        g2.setFont(g2.getFont().deriveFont(22f));
-        g2.drawString("Press Q to close", textX, textY);
+        
+        if (questPage < maxQuestPages) {
+            String nextText = "NEXT ▶";
+            int nextWidth = (int)g2.getFontMetrics().getStringBounds(nextText, g2).getWidth();
+            g2.drawString(nextText, frameX + frameWidth - nextWidth - 30, navY);
+        }
+        
+        // Legend
+        g2.setFont(g2.getFont().deriveFont(14f));
+        g2.drawString("[ACTIVE]  ✓ [DONE]  ! [NPC]  🔑 [KEY]  ⚓ [SHIP]", textX, navY - 20);
+        
+        // Close instruction
+        g2.setFont(g2.getFont().deriveFont(16f));
+        g2.setColor(Color.white);
+        g2.drawString("Press Q to close", textX, navY + 25);
     }
+    
+    // Progress bar helper
+    private void drawProgressBar(int x, int y, int width, int height, int percent) {
+        // Draw background
+        g2.setColor(new Color(60, 60, 60));
+        g2.fillRect(x, y, width, height);
+        
+        // Draw progress
+        if (percent > 0) {
+            if (percent < 50) g2.setColor(new Color(255, 200, 100));
+            else if (percent < 100) g2.setColor(new Color(100, 255, 100));
+            else g2.setColor(new Color(0, 255, 255));
+            
+            int progressWidth = (width * percent) / 100;
+            g2.fillRect(x, y, progressWidth, height);
+        }
+        
+        // Draw border
+        g2.setColor(Color.white);
+        g2.drawRect(x, y, width, height);
+    }
+    
+    public void nextQuestPage() {
+        if (questPage < maxQuestPages) {
+            questPage++;
+            gp.playSE(5); // Page turn sound
+        }
+    }
+    
+    public void prevQuestPage() {
+        if (questPage > 0) {
+            questPage--;
+            gp.playSE(5); // Page turn sound
+        }
+    }
+    
+    // Add these key handlers in your KeyHandler class:
+    // if (code == KeyEvent.VK_RIGHT && gp.gameState == gp.questState) {
+    //     ui.nextQuestPage();
+    // }
+    // if (code == KeyEvent.VK_LEFT && gp.gameState == gp.questState) {
+    //     ui.prevQuestPage();
+    // }
+    
+    // Helper method to draw progress bar
+    // private void drawProgressBar(int x, int y, int width, int height, int percent) {
+    //     // Draw background
+    //     g2.setColor(new Color(60, 60, 60));
+    //     g2.fillRect(x, y, width, height);
+        
+    //     // Draw progress
+    //     if (percent > 0) {
+    //         if (percent < 50) {
+    //             g2.setColor(new Color(255, 200, 100)); // Orange-yellow
+    //         } else if (percent < 100) {
+    //             g2.setColor(new Color(100, 255, 100)); // Green
+    //         } else {
+    //             g2.setColor(new Color(0, 255, 255)); // Cyan for completed
+    //         }
+    //         int progressWidth = (width * percent) / 100;
+    //         g2.fillRect(x, y, progressWidth, height);
+    //     }
+        
+    //     // Draw border
+    //     g2.setColor(Color.white);
+    //     g2.drawRect(x, y, width, height);
+        
+    //     // Draw percent text
+    //     g2.setFont(g2.getFont().deriveFont(14f));
+    //     g2.setColor(Color.white);
+    //     g2.drawString(percent + "%", x + width + 5, y + height - 2);
+    // }
 
     public int getItemIndexOnSlot(int slotCol, int slotRow) {
         int itemIndex = slotCol + (slotRow*5);

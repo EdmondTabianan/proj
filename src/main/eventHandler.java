@@ -83,6 +83,7 @@ public class eventHandler {
             else if(hit(1, 42, 33, "any") == true) {damagePit(gp.dialogueState);}
             else if(hit(1, 38, 27, "any") == true) {damagePit(gp.dialogueState);}
             else if(hit(5, 25, 39, "any" ) == true) {AnubisBoss();}
+            else if(hit(5, 25, 6, "up")== true) {Ending();}
         }
     }
 
@@ -273,10 +274,9 @@ public class eventHandler {
             if (gp.questProgress == 0) {
                 dialoguePages = new String[] {
                     "Ahoy there, Hunter!",
-                    "Welcome to island!",
-                    "You look like you're on a adventure.",
-                    "Do you need passage to my ship?",
-                    "you'll need to finish the quest first.",
+                    "Welcome to the island!",
+                    "You look like you're on an adventure.",
+                    "You'll need to finish the quests first.",
                     "Talk to Vhong in the village.",
                     "He'll tell you what needs to be done.",
                     "The sailor points toward the village."
@@ -286,16 +286,66 @@ public class eventHandler {
                 gp.gameState = gp.dialogueState;
                 gp.playSE(10); // Denied sound
             }
-            // IF HAS KEY - Player has the key from snakes (hasKey == 1)
+            // HAS PYRAMID KEY - Player has the pyramid key (hasKey == 2) - FINAL QUEST
+            else if (gp.player.hasKey == 2) {
+                // Teleport to the destination map specified in the event
+                gp.player.Direction = "down"; // Face down to show readiness to board
+                
+                // Determine which map we're going to based on current map
+                if (gp.currentMap == 0) {
+                    // On first map, going to pyramid island (map 2)
+                    dialoguePages = new String[] {
+                        "You have the PYRAMID KEY! The ancient prophecy speaks of this!",
+                        "The lost tomb deep within the pyramid awaits your discovery.",
+                        "Legends say only the worthy can find its hidden chambers.",
+                        "The sailor unties the ropes with reverence.",
+                        "The ship sets sail toward the sacred pyramid island...",
+                        "Arriving at the PYRAMID OF THE ANCIENTS!",
+                        "Find the lost tomb and claim your destiny!"
+                    };
+                    
+                    // Teleport to pyramid map (assuming map 2 is pyramid)
+                    teleport(2, 10, 10); // Adjust coordinates as needed
+                } 
+                else if (gp.currentMap == 2) {
+                    // On pyramid map, returning to first map
+                    dialoguePages = new String[] {
+                        "Welcome back from the pyramid, tomb explorer!",
+                        "Did you find the lost tomb?",
+                        "The ancient spirits watch over you.",
+                        "Ready to return to the main island?",
+                        "The sailor unties the ropes.",
+                        "Returning to first map..."
+                    };
+                    
+                    // Return to main island
+                    teleport(0, map, row);
+                }
+                else {
+                    // Default teleport
+                    teleport(map, col, row);
+                    dialoguePages = new String[] {
+                        "Setting sail to new lands...",
+                        "The pyramid key glows with ancient power!"
+                    };
+                }
+                
+                gp.ui.setDialogue(dialoguePages);
+                gp.gameState = gp.dialogueState;
+                gp.playSE(13); // Ship sailing sound
+            }
+            // HAS SNAKE KEY - Player has the snake key (hasKey == 1)
             else if (gp.player.hasKey == 1) {
                 // Teleport to the destination map specified in the event
                 gp.player.Direction = "down"; // Face down to show readiness to board
                 
                 // Determine which map we're going to based on current map
                 if (gp.currentMap == 0) {
-                    // On first map, going to second map
+                    // On first map, going to second map (intermediate area)
                     dialoguePages = new String[] {
-                        "You have the key! You've proven yourself!",
+                        "You have the snake key! You've proven yourself!",
+                        "But the true challenge lies beyond...",
+                        "Find the pyramid key to unlock the lost tomb.",
                         "The sailor unties the ropes.",
                         "The ship sets sail across the sea...",
                         "Arriving at the second map!"
@@ -342,36 +392,108 @@ public class eventHandler {
                     "But there's someone else you should meet.",
                     "Talk to Beverly in the village.",
                     "She has a task involving snakes.",
-                    "Complete her quest before sailing."
+                    "Complete her quest to get the first key.",
+                    "Then seek the pyramid key for the lost tomb!"
                 };
                 
                 gp.ui.setDialogue(dialoguePages);
                 gp.gameState = gp.dialogueState;
                 gp.playSE(10); // Denied sound
             }
-            // READY TO SAIL - Player has completed all quests (questProgress >= 4)
-            else if (gp.questProgress >= 4) {
+            // SNAKE QUEST ACTIVE - Player is on snake quest (questProgress 3)
+            else if (gp.questProgress == 3) {
+                dialoguePages = new String[] {
+                    "I see you're hunting snakes.",
+                    "That's good - you'll need that snake key.",
+                    "But the real treasure lies in the pyramid.",
+                    "Defeat all three snakes first,",
+                    "then seek the pyramid key for the lost tomb!"
+                };
+                
+                gp.ui.setDialogue(dialoguePages);
+                gp.gameState = gp.dialogueState;
+                gp.playSE(10); // Denied sound
+            }
+            // READY FOR PYRAMID - Player has completed all but needs pyramid key (questProgress 4)
+            else if (gp.questProgress == 4 && gp.player.hasKey == 1) {
+                dialoguePages = new String[] {
+                    "You have the snake key, but the pyramid requires more.",
+                    "Deep in the second map, a pyramid key is hidden.",
+                    "Find it, and the lost tomb will open for you.",
+                    "The tomb holds treasures beyond imagination!",
+                    "Return to me when you hold the PYRAMID KEY."
+                };
+                
+                gp.ui.setDialogue(dialoguePages);
+                gp.gameState = gp.dialogueState;
+                gp.playSE(10); // Denied sound - can't sail to pyramid yet
+            }
+            // READY TO SAIL TO PYRAMID - Player has pyramid key (questProgress 4, hasKey == 2)
+            else if (gp.questProgress >= 4 && gp.player.hasKey == 2) {
                 if (gp.currentMap == 0) {
                     dialoguePages = new String[] {
-                        "Ready to set sail, hero?",
+                        "You have the PYRAMID KEY! The lost tomb awaits!",
+                        "Legends speak of three chambers within the pyramid.",
+                        "Only the worthy can reach the innermost tomb.",
+                        "Ready to set sail for the pyramid, hero?",
                         "The wind is good today.",
-                        "Hold tight as we depart!",
-                        "Arriving in second map..."
+                        "Hold tight as we depart for the PYRAMID OF THE ANCIENTS!"
+                    };
+                } else if (gp.currentMap == 2) {
+                    dialoguePages = new String[] {
+                        "Welcome back, tomb explorer!",
+                        "The pyramid's secrets are yours to discover.",
+                        "Find the three chambers and reach the lost tomb!",
+                        "Ready to return to the main island?"
                     };
                 } else {
                     dialoguePages = new String[] {
-                        "Welcome back, brave traveler!",
-                        "Ready to return to the main island?",
-                        "The sailor unties the ropes.",
-                        "Returning to first map..."
+                        "Ready to set sail, key bearer?",
+                        "The pyramid awaits your exploration!",
+                        "The lost tomb is your final destination."
                     };
                 }
                 
                 gp.ui.setDialogue(dialoguePages);
                 gp.gameState = gp.dialogueState;
                 
-                // Call teleport directly
-                teleport(map, col, row);
+                // Teleport based on destination
+                if (gp.currentMap == 0) {
+                    // Going to pyramid map
+                    teleport(2, 10, 10); // Adjust coordinates
+                } else {
+                    // Returning from pyramid
+                    teleport(0, col, row);
+                }
+                
+                gp.playSE(13); // Ship sailing sound
+            }
+            // ALL QUESTS COMPLETE - Player has explored pyramid (questProgress 5)
+            else if (gp.questProgress >= 5) {
+                if (gp.currentMap == 0) {
+                    dialoguePages = new String[] {
+                        "You found the lost tomb! You are a LEGEND!",
+                        "The ancient treasure is yours!",
+                        "Would you like to return to the pyramid to explore more?",
+                        "The sailor bows respectfully."
+                    };
+                } else {
+                    dialoguePages = new String[] {
+                        "The pyramid acknowledges you, tomb conqueror!",
+                        "You have claimed the treasure of the lost tomb!",
+                        "Ready to return home, legend?"
+                    };
+                }
+                
+                gp.ui.setDialogue(dialoguePages);
+                gp.gameState = gp.dialogueState;
+                
+                // Allow teleportation even after completion
+                if (gp.currentMap == 0) {
+                    teleport(2, 10, 10);
+                } else {
+                    teleport(0, col, row);
+                }
                 
                 gp.playSE(13); // Ship sailing sound
             }
@@ -381,13 +503,17 @@ public class eventHandler {
                     "The sailor shakes his head.",
                     "Not yet, adventurer.",
                     "Complete the tasks given to you.",
-                    "Then we can talk about sailing."
+                    "Seek the snake key, then the pyramid key.",
+                    "The lost tomb awaits the worthy."
                 };
                 
                 gp.ui.setDialogue(dialoguePages);
                 gp.gameState = gp.dialogueState;
                 gp.playSE(10); // Denied sound
             }
+            
+            // Reset enterPressed to prevent multiple triggers
+            gp.keyH.enterPressed = false;
         }
     }
 
@@ -484,6 +610,16 @@ private void facePlayerToSailor() {
             gp.gameState = gp.cutsceneState;
             gp.csManager.sceneNum = gp.csManager.anubis;
             gp.csManager.scenePhase = 0; // Important: Reset the phase!
+        }
+    }
+    public void Ending() {
+        if (gp.keyH.enterPressed == true) {
+            gp.player.attackCanceled = true;
+            gp.keyH.enterPressed = false;
+            
+            // Start the ending sequence
+            gp.endingManager.startEnding();
+            gp.gameState = gp.endingState;
         }
     }
 }

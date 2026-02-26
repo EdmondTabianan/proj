@@ -16,6 +16,11 @@ public class CutsceneManager {
     // Store original player position for camera return
     private int originalPlayerY;
 
+    // Dialogue tracking variables
+    private boolean anubisDialogueStarted = false;
+    private int anubisDialogueLength = 0;
+    private boolean phaseAdvanced = false;
+
     // scene number
     public final int NA = 0;
     public final int anubis = 1;
@@ -36,6 +41,11 @@ public class CutsceneManager {
         // PHASE 0: Setup - spawn door and dummy player
         if (scenePhase == 0) {
             gp.bossBattleOn = true;
+            
+            // Reset tracking variables
+            anubisDialogueStarted = false;
+            anubisDialogueLength = 0;
+            phaseAdvanced = false;
             
             // STORE ORIGINAL PLAYER POSITION
             originalPlayerY = gp.player.worldY;
@@ -97,33 +107,54 @@ public class CutsceneManager {
         
         // PHASE 3: Show Anubis dialogue
         else if (scenePhase == 3) {
-    
-            // Only set dialogue if not already in dialogue state
-            if (gp.gameState != gp.dialogueState) {
+            // Start dialogue if not started yet
+            if (!anubisDialogueStarted && gp.gameState != gp.dialogueState) {
                 
                 // Find Anubis in the current map
                 for (int i = 0; i < gp.monster[gp.currentMap].length; i++) {
-                    
                     if (gp.monster[gp.currentMap][i] instanceof MON_anubis) {
                         
                         MON_anubis anubis = (MON_anubis) gp.monster[gp.currentMap][i];
                         
                         // Create and fill the dialogue pages array
-                        String[] dialoguePages = new String[4];
+                        String[] dialoguePages = new String[5];
                         dialoguePages[0] = anubis.dialogues[5][0];
                         dialoguePages[1] = anubis.dialogues[5][1];
                         dialoguePages[2] = anubis.dialogues[5][2];
                         dialoguePages[3] = anubis.dialogues[5][3];
+                        dialoguePages[4] = anubis.dialogues[5][4];
+                        
+                        // Store dialogue length
+                        anubisDialogueLength = dialoguePages.length;
                         
                         // Set the dialogue
                         gp.ui.setDialogue(dialoguePages);
                         gp.gameState = gp.dialogueState;
+                        anubisDialogueStarted = true;
+
+                        System.out.println("Anubis dialogue started with " + anubisDialogueLength + " pages");
                         
                         break;
                     }
                 }
             }
-            // If already in dialogue state, do nothing and wait
+            
+            // Check if dialogue is finished and we need to advance
+            if (anubisDialogueStarted && !phaseAdvanced && gp.gameState != gp.dialogueState) {
+                
+                // Check condition: if dialogue had more than 3 pages, advance to phase 4
+                if (anubisDialogueLength > 4) {
+                    scenePhase = 4;
+                    phaseAdvanced = true;
+                    System.out.println("Advanced to phase 4 - dialogue had " + anubisDialogueLength + " pages (> 3)");
+                } else {
+                    // Dialogue had 3 or fewer pages - still advance to phase 4
+                    // (or you could handle differently)
+                    scenePhase = 4;
+                    phaseAdvanced = true;
+                    System.out.println("Advanced to phase 4 - dialogue had " + anubisDialogueLength + " pages (<= 3)");
+                }
+            }
         }
         
         // PHASE 4: Move camera back down to player
@@ -142,9 +173,17 @@ public class CutsceneManager {
                 for (int i = 0; i < gp.npc[gp.currentMap].length; i++) {
                     if (gp.npc[gp.currentMap][i] != null && gp.npc[gp.currentMap][i].name.equals(PlayerDummy.npcName)) {
                         // Restore player position (just in case)
-                        gp.monster[gp.currentMap][i].sleep = false;
                         gp.player.worldX = gp.npc[gp.currentMap][i].worldX;
                         gp.player.worldY = gp.npc[gp.currentMap][i].worldY;
+                        
+                        // Wake up Anubis
+                        for (int j = 0; j < gp.monster[gp.currentMap].length; j++) {
+                            if (gp.monster[gp.currentMap][j] instanceof MON_anubis) {
+                                gp.monster[gp.currentMap][j].sleep = false;
+                                break;
+                            }
+                        }
+                        
                         // Delete dummy
                         gp.npc[gp.currentMap][i] = null;
                         break;

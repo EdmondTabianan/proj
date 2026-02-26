@@ -40,11 +40,11 @@ public class MON_anubis extends Entity {
             playerLevel = gp.player.level;
         }
         
-        maxLife = 50 + playerLevel / 5;
+        maxLife = 50;
         life = maxLife;
-        strength = 10;
+        strength = 8;
         attack = strength;
-        defense = 3 + playerLevel / 3;
+        defense = 5;
         exp = 50 + playerLevel;
 
         int spriteSize = gp.TileSize * 5;
@@ -135,11 +135,12 @@ public class MON_anubis extends Entity {
     //     dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
     // } 
     public void setDialogue() {
-        
-        dialogues[5][0] = "Anong gentle gentle?";
-        dialogues[5][1] = "Ilalabas ko ang aking dragon.";
-        dialogues[5][2] = "Dragon na maliit na may tatong sisiw.";
-        dialogues[5][3] = "Gusto mo bang makita ang aking 100 prosyento lakas?";
+
+        dialogues[5][0] = "You dare disturb my slumber, mortal?";
+        dialogues[5][1] = "I am Anubis, Guardian of the Dead, \nKeeper of the Scales of Judgment.";
+        dialogues[5][2] = "For thousands of years, \nI have protected the sacred tomb from intruders like you.";
+        dialogues[5][3] = "If you seek the treasures of the pharaohs, \nyou must first prove yourself worthy!";
+        dialogues[5][4] = "Face me in battle, \nand let the scales decide your fate!";
     }
     public void setAction() {
         if (gp.player == null) return;

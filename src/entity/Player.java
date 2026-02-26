@@ -78,8 +78,8 @@ public class Player extends Entity {
         maxMana = 4;
         mana = maxMana;
         arrow = 10;
-        strength = 10; // the higher the strength, higher the damage.
-        dexterity = 1; // the higher the dexterity, less the damage.
+        strength = 1000; // the higher the strength, higher the damage.
+        dexterity = 100; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
@@ -123,7 +123,7 @@ public class Player extends Entity {
                 worldY = gp.TileSize * 3;
                 break;
             case 5: // Pyramid second basement - stairs down
-                worldX = gp.TileSize * 43;
+                worldX = gp.TileSize * 42;
                 worldY = gp.TileSize * 44;
                 break;
             case 6:

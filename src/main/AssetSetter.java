@@ -60,7 +60,7 @@ public class AssetSetter {
             {0, 28, 15, OBJ_Doors.class, false},
             {0, 12, 17, OBJ_bow_normal.class, true},
             {1, 24, 43, OBJ_boat.class, true},
-            // {1, 10, 8, OBJ_Key.class, true},
+            {1, 10, 8, OBJ_Key.class, true},
 
             // shop
             {3, 28, 24, OBJ_display_bow.class, false},

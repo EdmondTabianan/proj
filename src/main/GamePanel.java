@@ -64,6 +64,7 @@ public class GamePanel extends JPanel implements Runnable {
     public Entity projectile[][] = new Entity[maxMap][20];
     ArrayList<Entity> entityList = new ArrayList<>();
     public boolean questSlimesSpawned = false;
+    public EndingManager endingManager;
 
     // GAME STATE
     public int gameState;
@@ -80,6 +81,7 @@ public class GamePanel extends JPanel implements Runnable {
     public final int questState = 10;
     public final int cutsceneState = 11;
     public final int sleepState = 12;
+    public final int endingState = 13;
 
     // others 
     public boolean bossBattleOn = false;
@@ -98,8 +100,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
 
         loadingManager = new LoadingManager(this);
+        endingManager = new EndingManager(this);
         gameState = loadingState;
     }
+
 
     public void setupGame() {
         
@@ -110,6 +114,7 @@ public class GamePanel extends JPanel implements Runnable {
             aSetter.setMonster(currentMap);
             aSetter.setInteractiveTile(currentMap);
         }
+        
     }
     public void resetGame(boolean restart) {
         if (restart == true) {
@@ -128,11 +133,15 @@ public class GamePanel extends JPanel implements Runnable {
             aSetter.setMonster(currentMap);
             aSetter.setInteractiveTile(currentMap);
             
+            // Reset ending state if needed
+            if (gameState == endingState) {
+                gameState = titleState;
+            }
+            
         } else {
             // Just retry from game over - keep items and progress
             player.respawnAtMapEntrance(currentMap); // Respawn at safe location
             player.resetLifeAndMana(); // Just restore health/mana
-            
         }
     }
 
@@ -282,6 +291,10 @@ public class GamePanel extends JPanel implements Runnable {
         else if (gameState == titleState) {
             ui.draw(g2);
         }
+        // ===== NEW: Handle ending state with EndingManager =====
+        else if (gameState == endingState) {
+            endingManager.draw(g2);
+        }
         else if (gameState == playState || gameState == pauseState || 
                  gameState == dialogueState || gameState == characterState ||
                  gameState == optionsState || gameState == gameOverState ||
@@ -358,13 +371,12 @@ public class GamePanel extends JPanel implements Runnable {
                 
                 // Empty entities list
                 entityList.clear();
-
+    
                 csManager.draw(g2);
     
                 // Draw UI
                 ui.draw(g2);
             } else {
-
                 gameState = titleState;
                 ui.draw(g2);
             }

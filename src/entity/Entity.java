@@ -121,6 +121,7 @@ public class Entity {
 
     public int questProgress = 0;
     public int questStatus; // 0 - inactive 1 - active
+    public int questState = 0;
 
     // npc direction
     public String npcDirection = "";

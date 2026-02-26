@@ -165,7 +165,7 @@ public class NPC_Beverly extends Entity {
                         dialoguePages = new String[] {
                             "You've defeated " + gp.player.killCount + " out of 3 snakes.",
                             "You still need to defeat " + remaining + " more.",
-                            "Keep hunting! The SNAKE KEY will be yours!",
+                            "Keep hunting! The KEY will be yours!",
                             "Remember - this is just the beginning.",
                             "The pyramid's lost tomb awaits the worthy!"
                         };
@@ -173,7 +173,7 @@ public class NPC_Beverly extends Entity {
                 } else {
                     dialoguePages = new String[] {
                         "Defeat the three snakes in the eastern desert!",
-                        "The SNAKE KEY is your reward."
+                        "The KEY is your reward."
                     };
                 }
                 this.questState = 1;      // Still active
@@ -184,7 +184,7 @@ public class NPC_Beverly extends Entity {
                 // Snake quest complete - key should be found
                 if (gp.player != null && gp.player.hasKey == 1) {
                     dialoguePages = new String[] {
-                        "You found the SNAKE KEY! That's excellent!",
+                        "You found the KEY! That's excellent!",
                         "Now you can sail to new lands.",
                         "But the real treasure lies in the pyramid.",
                         "Find the PYRAMID KEY to unlock the lost tomb!",
@@ -193,7 +193,7 @@ public class NPC_Beverly extends Entity {
                     };
                 } else {
                     dialoguePages = new String[] {
-                        "The SNAKE KEY is hidden somewhere in this area.",
+                        "The KEY is hidden somewhere in this area.",
                         "Find it - it will allow you to sail.",
                         "Then seek the pyramid key for the lost tomb!"
                     };
@@ -242,7 +242,7 @@ public class NPC_Beverly extends Entity {
         if (firstSnakeMeeting) {
             spawnSnakes();
             snakesSpawned = true;
-            gp.ui.showMessage("Beverly: Defeat 3 snakes in the eastern desert!");
+            gp.ui.showMessage("Beverly: Defeat 3 snakes in the  passage!");
         }
         
         findMyIndex();
@@ -279,8 +279,6 @@ public class NPC_Beverly extends Entity {
         // Case 2: Snake quest completed (killCount >= 3) - key already spawned in prepareDialoguePages
         if (gp.questProgress == 3 && gp.player != null && gp.player.killCount >= 3 && keySpawned) {
             // Don't advance progress yet - player needs to FIND the key first
-            System.out.println(" SNAKE KEY SPAWNED - Find it to progress!");
-            gp.ui.showMessage("The Snake Key has appeared somewhere in the desert!");
             
             // Note: killCount NOT reset here - player needs to find key first
         }
@@ -290,7 +288,7 @@ public class NPC_Beverly extends Entity {
             gp.questProgress = 4;
             gp.playSE(1); // Reward sound
             System.out.println(" QUEST PROGRESS: 3 → 4 (Snake key obtained)");
-            gp.ui.showMessage("You obtained the Snake Key! Now seek the Pyramid Key!");
+            gp.ui.showMessage("You obtained the Key! Now seek the Pyramid Key!");
             
             // RESET KILL COUNT HERE - After snake quest complete, before pyramid quest
             if (gp.player != null) {

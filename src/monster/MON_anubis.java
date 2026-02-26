@@ -40,12 +40,12 @@ public class MON_anubis extends Entity {
             playerLevel = gp.player.level;
         }
         
-        maxLife = 50;
+        maxLife = 25;
         life = maxLife;
-        strength = 8;
+        strength = 5;
         attack = strength;
-        defense = 5;
-        exp = 50 + playerLevel;
+        defense = 4;
+        exp = 50;
 
         int spriteSize = gp.TileSize * 5;
 

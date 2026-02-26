@@ -78,8 +78,8 @@ public class Player extends Entity {
         maxMana = 4;
         mana = maxMana;
         arrow = 10;
-        strength = 1000; // the higher the strength, higher the damage.
-        dexterity = 100; // the higher the dexterity, less the damage.
+        strength = 1; // the higher the strength, higher the damage.
+        dexterity = 1; // the higher the dexterity, less the damage.
         exp = 0;
         nextLevelExp = 5;
         coin = 0;
@@ -161,7 +161,6 @@ public class Player extends Entity {
         inventory.add(currentweapon);
         inventory.add(currentShield);
         inventory.add(currentRange);
-        inventory.add(new OBJ_Axe(gp));
     }
     public int getAttack() {
         attackArea = currentweapon.attackArea;

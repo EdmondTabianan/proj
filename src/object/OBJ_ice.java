@@ -18,7 +18,7 @@ public class OBJ_ice extends Projectile {
         this.maxLife = 80;
         this.life = maxLife;
         this.defaultSpeed = 5;
-        this.attack = gp.player.attack + 2;
+        this.attack = 2;
         this.useCost = 1;
         this.alive = false;
         this.knockBackPower = 0;
